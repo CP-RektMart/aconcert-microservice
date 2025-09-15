@@ -1,0 +1,26 @@
+version: "2"
+
+# Auth service
+sql:
+  - engine: "postgresql"
+    schema: "services/auth/db/migrations/"
+    queries: "services/auth/db/queries/"
+    gen:
+      go:
+        package: "db"
+        out: "services/auth/codegen"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_interface: true
+
+  # Event service
+  - engine: "postgresql"
+    schema: "services/event/db/migrations/"
+    queries: "services/event/db/queries/"
+    gen:
+      go:
+        package: "db"
+        out: "services/event/codegen"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_interface: true
