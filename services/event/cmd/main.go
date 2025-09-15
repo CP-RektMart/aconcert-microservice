@@ -1,7 +1,27 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"net"
+
+	grpcserver "github.com/cp-rektmart/aconcert-microservice/event/grpc-server"
+	pb "github.com/cp-rektmart/aconcert-microservice/event/proto"
+	"google.golang.org/grpc"
+)
 
 func main() {
-	fmt.Println("Event Service")
+	addr := ":50051"
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	eventServer := grpcserver.NewEventServer()
+	pb.RegisterEventServiceServer(grpcServer, eventServer)
+
+	log.Println("gRPC server running on", addr)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve gRPC: %v", err)
+	}
 }
