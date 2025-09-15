@@ -1,4 +1,5 @@
 // protoc --go_out=. --go-grpc_out=. ./services/event/proto/event/event.proto
+
 syntax = "proto3";
 
 package event;

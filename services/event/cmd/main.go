@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 
+	_ "google.golang.org/genproto/protobuf/ptype"
+
 	grpcserver "github.com/cp-rektmart/aconcert-microservice/event/grpc-server"
 	pb "github.com/cp-rektmart/aconcert-microservice/event/proto"
 	"google.golang.org/grpc"
