@@ -1,0 +1,105 @@
+// protoc --go_out=. --go-grpc_out=. ./services/event/proto/event/event.proto
+syntax = "proto3";
+
+package event;
+
+option go_package = "proto/event;event";
+
+import "google/protobuf/empty.proto";
+
+// Event message
+message Event {
+  string id = 1;
+  string createdAt = 2;
+  string updatedAt = 3;
+  string deletedAt = 4;
+
+  string name = 5;
+  string description = 6;
+  string locationId = 7;
+  repeated string artist = 8;
+  string eventDate = 9;
+  string thumbnail = 10;
+  repeated string images = 11;
+}
+
+// CreateEvent
+message CreateEventRequest {
+  string name = 1;
+  string description = 2;
+  string locationId = 3;
+  repeated string artist = 4;
+  string eventDate = 5;
+  string thumbnail = 6;
+  repeated string images = 7;
+}
+
+message CreateEventResponse {
+  string id = 1;
+}
+
+// GetEvent
+message GetEventRequest {
+  string id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
+}
+
+// UpdateEvent
+message UpdateEventRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string locationId = 4;
+  repeated string artist = 5;
+  string eventDate = 6;
+  string thumbnail = 7;
+  repeated string images = 8;
+}
+
+message UpdateEventResponse {
+  string id = 1;
+}
+
+// DeleteEvent
+message DeleteEventRequest {
+  string id = 1;
+}
+
+message DeleteEventResponse {
+  google.protobuf.Empty empty = 1;
+}
+
+// Pagination message
+message Pagination {
+  int32 total = 1;
+  int32 count = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+// ListEvents request with sorting, ordering, and pagination
+message ListEventsRequest {
+  string query = 1;        // search keyword
+  string sort_by = 2;      // field to sort by (e.g., "name", "eventDate")
+  string order = 3;        // "asc" or "desc"
+  int32 limit = 4;         // number of items per page
+  int32 page = 5;          // page number
+}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+  Pagination pagination = 2;
+}
+
+// EventService definition
+service EventService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+}
