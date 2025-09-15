@@ -27,21 +27,31 @@ func (p Provider) String() string {
 }
 
 type User struct {
-	ID        uuid.UUID
-	Provider  Provider
-	Email     string
-	Fullname  string
-	Phone     string
-	Role      UserRole
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID           uuid.UUID
+	Provider     Provider
+	Email        string
+	Firstname    string
+	Lastname     string
+	ProfileImage string
+	Birthdate    time.Time
+	Phone        string
+	Role         UserRole
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    *time.Time
 }
 
 func (u User) String() string {
-	return u.Fullname
+	return u.Firstname + " " + u.Lastname
 }
 
 type CachedTokens struct {
 	AccessUID  uuid.UUID
 	RefreshUID uuid.UUID
+}
+
+type Token struct {
+	AccessToken  string
+	RefreshToken string
+	Exp          int64
 }
