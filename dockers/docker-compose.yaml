@@ -1,0 +1,74 @@
+version: "3.8"
+
+name: aconcert
+
+services:
+  # Auth Service Database
+  auth-db:
+    image: postgres:15-alpine
+    container_name: aconcert-auth-db
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+      - ../services/auth/db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - aconcert-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Event Service Database
+  event-db:
+    image: postgres:15-alpine
+    container_name: aconcert-event-db
+    environment:
+      POSTGRES_DB: event_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - event_db_data:/var/lib/postgresql/data
+      - ../services/event/db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - aconcert-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_user -d event_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for caching/sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: aconcert-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - aconcert-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  auth_db_data:
+    driver: local
+  event_db_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  aconcert-network:
+    driver: bridge

@@ -1,5 +1,4 @@
--- events.sql
-
+-- migrate:up
 CREATE TABLE events (
     id UUID PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -14,3 +13,6 @@ CREATE TABLE events (
     thumbnail TEXT,
     images TEXT[]
 );
+
+-- migrate:down
+DROP TABLE IF EXISTS events;
