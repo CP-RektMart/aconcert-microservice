@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/caarlos0/env/v10"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/jwt"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/awss3"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
@@ -28,9 +29,9 @@ type AppConfig struct {
 	Logger       logger.Config   `envPrefix:"LOGGER_"`
 	Postgres     postgres.Config `envPrefix:"POSTGRES_"`
 	Redis        redis.Config    `envPrefix:"REDIS_"`
-	// JWT          jwt.Config      `envPrefix:"JWT_"`
-	S3   awss3.Config `envPrefix:"S3_"`
-	Cors CorsConfig   `envPrefix:"CORS_"`
+	JWT          jwt.Config      `envPrefix:"JWT_"`
+	S3           awss3.Config    `envPrefix:"S3_"`
+	Cors         CorsConfig      `envPrefix:"CORS_"`
 }
 
 func Load() *AppConfig {

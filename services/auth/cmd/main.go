@@ -10,6 +10,11 @@ import (
 	"syscall"
 
 	"github.com/cp-rektmart/aconcert-microservice/auth/config"
+	db "github.com/cp-rektmart/aconcert-microservice/auth/db/codegen"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/domain"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/handler"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/middlewares/authentication"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/repositories"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
@@ -45,7 +50,7 @@ func main() {
 		}
 	}()
 
-	// queries := gen.New(pgConn)
+	queries := db.New(pgConn)
 
 	app := fiber.New(fiber.Config{
 		AppName:       conf.Name,
@@ -67,6 +72,15 @@ func main() {
 	})).
 		Use(requestid.New()).
 		Use(requestlogger.New())
+
+	repo := repositories.NewRepository(queries, redisConn, &conf.JWT)
+	domain := domain.New(repo)
+
+	authMiddleware := authentication.NewAuthMiddleware(repo, &conf.JWT)
+	handler := handler.NewHandler(domain, authMiddleware)
+
+	v1 := app.Group("/v1")
+	handler.Mount(v1)
 
 	go func() {
 		if err := app.Listen(fmt.Sprintf(":%d", conf.Port)); err != nil {
