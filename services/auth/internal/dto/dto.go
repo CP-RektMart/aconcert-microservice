@@ -16,13 +16,13 @@ type UserResponse struct {
 	Email        string            `json:"email" validate:"required"`
 	Firstname    string            `json:"firstname" validate:"required"`
 	Lastname     string            `json:"lastname" validate:"required"`
-	ProfileImage string            `json:"profileImage" validate:"required"`
-	Birthdate    time.Time         `json:"birthdate" validate:"required"`
-	Phone        string            `json:"phone" validate:"required"`
+	ProfileImage *string           `json:"profileImage" validate:"required"`
+	Birthdate    *time.Time        `json:"birthdate" validate:"required"`
+	Phone        *string           `json:"phone" validate:"required"`
 	Role         entities.UserRole `json:"role" validate:"required"`
 	CreatedAt    time.Time         `json:"createdAt" validate:"required"`
 	UpdatedAt    time.Time         `json:"updatedAt" validate:"required"`
-	DeletedAt    time.Time         `json:"deletedAt"`
+	DeletedAt    *time.Time        `json:"deletedAt"`
 }
 
 type LoginWithProviderRequest struct {
