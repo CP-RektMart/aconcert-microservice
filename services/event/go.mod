@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/caarlos0/env/v10 v10.0.0
-	github.com/cp-rektmart/aconcert-microservice v0.0.0-20250916055058-8fd85a1b698c
+	github.com/cp-rektmart/aconcert-microservice v0.0.0-20250916070158-0dc391f5fc12
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6

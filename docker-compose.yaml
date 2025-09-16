@@ -44,7 +44,7 @@ services:
   event-service:
     build:
       context: ./services/event
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     container_name: aconcert-event-service
     environment:
       DATABASE_URL: postgres://postgres:password@event-db:5432/event-postgres?sslmode=disable
