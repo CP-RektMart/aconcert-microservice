@@ -8,8 +8,10 @@ import (
 	"github.com/cockroachdb/errors"
 	db "github.com/cp-rektmart/aconcert-microservice/auth/db/codegen"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/entities"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/errs"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/jwt"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/redis/go-redis/v9"
 )
@@ -72,6 +74,9 @@ func (r *AuthRepositoryImpl) CreateUser(ctx context.Context, userInput entities.
 func (r *AuthRepositoryImpl) GetUser(ctx context.Context, id uuid.UUID) (entities.User, error) {
 	user, err := r.db.GetUser(ctx, ParseUUID(id))
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.User{}, errs.ErrNotFound
+		}
 		return entities.User{}, errors.Wrap(err, "can't get user")
 	}
 
@@ -84,6 +89,9 @@ func (r *AuthRepositoryImpl) GetUserByProviderEmail(ctx context.Context, provide
 		Email:    email,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.User{}, errs.ErrNotFound
+		}
 		return entities.User{}, errors.Wrap(err, "can't get user by provider and email")
 	}
 
