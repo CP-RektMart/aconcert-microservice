@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"encoding/json"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	db "github.com/cp-rektmart/aconcert-microservice/auth/db/codegen"
@@ -10,6 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/redis/go-redis/v9"
+)
+
+const (
+	AuthTokenKey = "auth:token"
 )
 
 type AuthRepository interface {
@@ -85,15 +91,54 @@ func (r *AuthRepositoryImpl) GetUserByProviderEmail(ctx context.Context, provide
 }
 
 // Redis
+type tokenUID struct {
+	AccessUID  uuid.UUID `msgpack:"access_uid"`
+	RefreshUID uuid.UUID `msgpack:"refresh_uid"`
+}
+
+func (r *AuthRepositoryImpl) getTokenKey(userID uuid.UUID) string {
+	return AuthTokenKey + ":" + userID.String()
+}
 
 func (r *AuthRepositoryImpl) GetUserAuthToken(ctx context.Context, userID uuid.UUID) (entities.CachedTokens, error) {
-	panic("unimplemented")
+	redisToken, err := r.redisClient.Get(ctx, r.getTokenKey(userID)).Bytes()
+	if err != nil {
+		return entities.CachedTokens{}, errors.Wrap(err, "can't get token")
+	}
+
+	cachedToken := tokenUID{}
+	if err = json.Unmarshal(redisToken, &cachedToken); err != nil {
+		return entities.CachedTokens{}, errors.Wrap(err, "can't unmarshal cached token")
+	}
+
+	return entities.CachedTokens{
+		AccessUID:  cachedToken.AccessUID,
+		RefreshUID: cachedToken.RefreshUID,
+	}, nil
 }
 
 func (r *AuthRepositoryImpl) SetUserAuthToken(ctx context.Context, userID uuid.UUID, token entities.CachedTokens) error {
-	panic("unimplemented")
+	cachedToken, err := json.Marshal(tokenUID{
+		AccessUID:  token.AccessUID,
+		RefreshUID: token.RefreshUID,
+	})
+	if err != nil {
+		return errors.Wrap(err, "can't marshal cached token")
+	}
+
+	err = r.redisClient.Set(ctx, r.getTokenKey(userID), string(cachedToken), time.Second*time.Duration(r.jwtConfig.AutoLogout)).Err()
+	if err != nil {
+		return errors.Wrap(err, "can't set token")
+	}
+
+	return nil
 }
 
 func (r *AuthRepositoryImpl) DeleteUserAuthToken(ctx context.Context, userID uuid.UUID) error {
-	panic("unimplemented")
+	err := r.redisClient.Del(ctx, r.getTokenKey(userID)).Err()
+	if err != nil {
+		return errors.Wrap(err, "can't delete token")
+	}
+
+	return nil
 }
