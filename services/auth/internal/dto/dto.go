@@ -57,3 +57,32 @@ type LoginWithProviderResponse struct {
 	User         UserResponse `json:"user" validate:"required"`
 	IsNewUser    bool         `json:"isNewUser" validate:"required"`
 }
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken" validate:"required"`
+}
+
+func (r *RefreshTokenRequest) Parse(c *fiber.Ctx) error {
+	if err := c.BodyParser(r); err != nil {
+		return errors.Wrap(err, "failed to parse request")
+	}
+
+	if err := r.Validate(); err != nil {
+		return errors.Wrap(err, "failed to validate request")
+	}
+
+	return nil
+}
+
+func (r *RefreshTokenRequest) Validate() error {
+	v := validator.New()
+	v.Must(r.RefreshToken != "", "refresh token is required")
+
+	return errors.WithStack(v.Error())
+}
+
+type RefreshTokenResponse struct {
+	AccessToken  string `json:"accessToken" validate:"required"`
+	RefreshToken string `json:"refreshToken" validate:"required"`
+	Exp          int64  `json:"exp" validate:"required"`
+}
