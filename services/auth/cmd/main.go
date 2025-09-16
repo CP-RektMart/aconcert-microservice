@@ -74,7 +74,7 @@ func main() {
 		Use(requestlogger.New())
 
 	repo := repositories.NewRepository(queries, redisConn, &conf.JWT)
-	domain := domain.New(repo)
+	domain := domain.New(repo, &conf.JWT, &conf.Google)
 
 	authMiddleware := authentication.NewAuthMiddleware(repo, &conf.JWT)
 	handler := handler.NewHandler(domain, authMiddleware)

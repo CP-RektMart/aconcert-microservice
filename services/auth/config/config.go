@@ -21,6 +21,10 @@ type CorsConfig struct {
 	AllowCredentials bool   `env:"ALLOW_CREDENTIALS"`
 }
 
+type GoogleConfig struct {
+	ClientID string `env:"CLIENT_ID"`
+}
+
 type AppConfig struct {
 	Name         string          `env:"NAME"`
 	Port         int             `env:"PORT"`
@@ -32,6 +36,7 @@ type AppConfig struct {
 	JWT          jwt.Config      `envPrefix:"JWT_"`
 	S3           awss3.Config    `envPrefix:"S3_"`
 	Cors         CorsConfig      `envPrefix:"CORS_"`
+	Google       GoogleConfig    `envPrefix:"GOOGLE_"`
 }
 
 func Load() *AppConfig {

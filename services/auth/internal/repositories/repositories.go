@@ -13,6 +13,7 @@ import (
 type AuthRepository interface {
 	GetUser(ctx context.Context, id uuid.UUID) (entities.User, error)
 	CreateUser(ctx context.Context, userInput entities.CreateUserInput) (entities.User, error)
+	GetUserByProviderEmail(ctx context.Context, provider entities.Provider, email string) (entities.User, error)
 
 	// Redis
 	SetUserAuthToken(ctx context.Context, userID uuid.UUID, token entities.CachedTokens) error
@@ -39,6 +40,10 @@ func (a *AuthRepositoryImpl) CreateUser(ctx context.Context, userInput entities.
 }
 
 func (a *AuthRepositoryImpl) GetUser(ctx context.Context, id uuid.UUID) (entities.User, error) {
+	panic("unimplemented")
+}
+
+func (a *AuthRepositoryImpl) GetUserByProviderEmail(ctx context.Context, provider entities.Provider, email string) (entities.User, error) {
 	panic("unimplemented")
 }
 
