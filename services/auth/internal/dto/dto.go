@@ -16,13 +16,13 @@ type UserResponse struct {
 	Email        string            `json:"email" validate:"required"`
 	Firstname    string            `json:"firstname" validate:"required"`
 	Lastname     string            `json:"lastname" validate:"required"`
-	ProfileImage string            `json:"profileImage" validate:"required"`
-	Birthdate    time.Time         `json:"birthdate" validate:"required"`
-	Phone        string            `json:"phone" validate:"required"`
+	ProfileImage *string           `json:"profileImage" validate:"required"`
+	Birthdate    *time.Time        `json:"birthdate" validate:"required"`
+	Phone        *string           `json:"phone" validate:"required"`
 	Role         entities.UserRole `json:"role" validate:"required"`
 	CreatedAt    time.Time         `json:"createdAt" validate:"required"`
 	UpdatedAt    time.Time         `json:"updatedAt" validate:"required"`
-	DeletedAt    time.Time         `json:"deletedAt"`
+	DeletedAt    *time.Time        `json:"deletedAt"`
 }
 
 type LoginWithProviderRequest struct {
@@ -56,4 +56,33 @@ type LoginWithProviderResponse struct {
 	Exp          int64        `json:"exp" validate:"required"`
 	User         UserResponse `json:"user" validate:"required"`
 	IsNewUser    bool         `json:"isNewUser" validate:"required"`
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken" validate:"required"`
+}
+
+func (r *RefreshTokenRequest) Parse(c *fiber.Ctx) error {
+	if err := c.BodyParser(r); err != nil {
+		return errors.Wrap(err, "failed to parse request")
+	}
+
+	if err := r.Validate(); err != nil {
+		return errors.Wrap(err, "failed to validate request")
+	}
+
+	return nil
+}
+
+func (r *RefreshTokenRequest) Validate() error {
+	v := validator.New()
+	v.Must(r.RefreshToken != "", "refresh token is required")
+
+	return errors.WithStack(v.Error())
+}
+
+type RefreshTokenResponse struct {
+	AccessToken  string `json:"accessToken" validate:"required"`
+	RefreshToken string `json:"refreshToken" validate:"required"`
+	Exp          int64  `json:"exp" validate:"required"`
 }

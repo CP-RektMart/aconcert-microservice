@@ -55,3 +55,13 @@ type Token struct {
 	RefreshToken string
 	Exp          int64
 }
+
+type CreateUserInput struct {
+	Provider     Provider
+	Email        string
+	Firstname    string
+	Lastname     string
+	ProfileImage string
+	Phone        string
+	Role         UserRole
+}

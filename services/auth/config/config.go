@@ -1,10 +1,13 @@
 package config
 
 import (
+	"github.com/caarlos0/env/v10"
+	"github.com/cp-rektmart/aconcert-microservice/auth/internal/jwt"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/awss3"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -18,6 +21,10 @@ type CorsConfig struct {
 	AllowCredentials bool   `env:"ALLOW_CREDENTIALS"`
 }
 
+type GoogleConfig struct {
+	ClientID string `env:"CLIENT_ID"`
+}
+
 type AppConfig struct {
 	Name         string          `env:"NAME"`
 	Port         int             `env:"PORT"`
@@ -26,7 +33,19 @@ type AppConfig struct {
 	Logger       logger.Config   `envPrefix:"LOGGER_"`
 	Postgres     postgres.Config `envPrefix:"POSTGRES_"`
 	Redis        redis.Config    `envPrefix:"REDIS_"`
-	// JWT          jwt.Config      `envPrefix:"JWT_"`
-	S3   awss3.Config `envPrefix:"S3_"`
-	Cors CorsConfig   `envPrefix:"CORS_"`
+	JWT          jwt.Config      `envPrefix:"JWT_"`
+	S3           awss3.Config    `envPrefix:"S3_"`
+	Cors         CorsConfig      `envPrefix:"CORS_"`
+	Google       GoogleConfig    `envPrefix:"GOOGLE_"`
+}
+
+func Load() *AppConfig {
+	appConfig := &AppConfig{}
+	_ = godotenv.Load()
+
+	if err := env.Parse(appConfig); err != nil {
+		panic(err)
+	}
+
+	return appConfig
 }

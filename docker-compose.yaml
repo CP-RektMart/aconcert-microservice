@@ -2,25 +2,22 @@ name: aconcert
 
 services:
   # Auth Service Database
-  auth-db:
-    image: postgres:15-alpine
-    container_name: aconcert-auth-db
-    environment:
-      POSTGRES_DB: auth_db
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: password
+  auth-postgres:
+    image: postgres:latest
+    container_name: auth-postgres
     ports:
-      - "5432:5432"
+      - "6431:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
     volumes:
-      - auth_db_data:/var/lib/postgresql/data
-      - ../services/auth/db/migrations:/docker-entrypoint-initdb.d
-    networks:
-      - aconcert-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U root -d auth_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ./data/postgresql:/var/lib/postgresql/data
+  auth-redis:
+    image: redis:latest
+    container_name: auth-redis
+    ports:
+      - "6969:6379"
 
   # Event Service Database
   event-db:

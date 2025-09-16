@@ -9,11 +9,11 @@ import (
 )
 
 type handler struct {
-	domain         domain.Domain
+	domain         domain.AuthDomain
 	authMiddleware authentication.AuthMiddleware
 }
 
-func NewHandler(domain domain.Domain, authMiddleware authentication.AuthMiddleware) *handler {
+func NewHandler(domain domain.AuthDomain, authMiddleware authentication.AuthMiddleware) *handler {
 	return &handler{
 		domain:         domain,
 		authMiddleware: authMiddleware,
@@ -23,9 +23,9 @@ func NewHandler(domain domain.Domain, authMiddleware authentication.AuthMiddlewa
 func (h *handler) Mount(r fiber.Router) {
 	userGroup := r.Group("/auth")
 	userGroup.Post("/login", h.LoginWithProvider)
-	// userGroup.Post("/refresh", h.RefreshToken)
-	// userGroup.Post("/logout", h.authMiddleware.Auth, h.Logout)
-	// userGroup.Get("/me", h.authMiddleware.Auth, h.GetProfile)
+	userGroup.Post("/refresh", h.RefreshToken)
+	userGroup.Post("/logout", h.authMiddleware.Auth, h.Logout)
+	userGroup.Get("/me", h.authMiddleware.Auth, h.GetProfile)
 }
 
 func (h *handler) LoginWithProvider(c *fiber.Ctx) error {
@@ -48,4 +48,57 @@ func (h *handler) LoginWithProvider(c *fiber.Ctx) error {
 		User:         dto.UserEntityToDTO(user),
 		IsNewUser:    isNewUser,
 	})
+}
+
+func (h *handler) RefreshToken(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	var req dto.RefreshTokenRequest
+	if err := req.Parse(c); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	bearerToken := req.RefreshToken
+	token, err := h.domain.RefreshToken(ctx, bearerToken)
+	if err != nil {
+		return errors.Wrap(err, "failed to refresh token")
+	}
+
+	return c.JSON(dto.RefreshTokenResponse{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Exp:          token.Exp,
+	})
+}
+
+func (h *handler) Logout(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	userID, err := h.authMiddleware.GetUserIDFromContext(c.UserContext())
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	err = h.domain.Logout(ctx, userID)
+	if err != nil {
+		return errors.Wrap(err, "failed to logout")
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *handler) GetProfile(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	userID, err := h.authMiddleware.GetUserIDFromContext(ctx)
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	user, err := h.domain.GetUser(ctx, userID)
+	if err != nil {
+		return errors.Wrap(err, "failed to get user")
+	}
+
+	return c.JSON(dto.UserEntityToDTO(user))
 }
