@@ -7,22 +7,96 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, created_at, updated_at, deleted_at, email, first_name, last_name, phone, profile_image, birth_date, role
-FROM users
-WHERE email = $1 AND deleted_at IS NULL
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (provider, email, first_name, last_name, profile_image, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, updated_at, deleted_at, provider, email, first_name, last_name, phone, profile_image, birth_date, role
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, email)
+type CreateUserParams struct {
+	Provider     string      `json:"provider"`
+	Email        string      `json:"email"`
+	FirstName    string      `json:"first_name"`
+	LastName     string      `json:"last_name"`
+	ProfileImage pgtype.Text `json:"profile_image"`
+	Role         string      `json:"role"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUser,
+		arg.Provider,
+		arg.Email,
+		arg.FirstName,
+		arg.LastName,
+		arg.ProfileImage,
+		arg.Role,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Provider,
+		&i.Email,
+		&i.FirstName,
+		&i.LastName,
+		&i.Phone,
+		&i.ProfileImage,
+		&i.BirthDate,
+		&i.Role,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, created_at, updated_at, deleted_at, provider, email, first_name, last_name, phone, profile_image, birth_date, role
+FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Provider,
+		&i.Email,
+		&i.FirstName,
+		&i.LastName,
+		&i.Phone,
+		&i.ProfileImage,
+		&i.BirthDate,
+		&i.Role,
+	)
+	return i, err
+}
+
+const getUserByProviderEmail = `-- name: GetUserByProviderEmail :one
+SELECT id, created_at, updated_at, deleted_at, provider, email, first_name, last_name, phone, profile_image, birth_date, role
+FROM users
+WHERE provider = $1 AND email = $2 AND deleted_at IS NULL
+`
+
+type GetUserByProviderEmailParams struct {
+	Provider string `json:"provider"`
+	Email    string `json:"email"`
+}
+
+func (q *Queries) GetUserByProviderEmail(ctx context.Context, arg GetUserByProviderEmailParams) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByProviderEmail, arg.Provider, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Provider,
 		&i.Email,
 		&i.FirstName,
 		&i.LastName,

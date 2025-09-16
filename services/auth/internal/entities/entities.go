@@ -57,9 +57,11 @@ type Token struct {
 }
 
 type CreateUserInput struct {
-	Provider Provider
-	Email    string
-	Fullname string
-	Phone    string
-	Role     UserRole
+	Provider     Provider
+	Email        string
+	Firstname    string
+	Lastname     string
+	ProfileImage string
+	Phone        string
+	Role         UserRole
 }

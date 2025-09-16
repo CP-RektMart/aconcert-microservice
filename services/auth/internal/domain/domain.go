@@ -56,23 +56,32 @@ func (d *AuthDomainImpl) LoginWithGoogle(ctx context.Context, idToken string) (e
 	if err != nil {
 		return entities.Token{}, entities.User{}, false, errors.Wrap(err, "failed to validate id token")
 	}
-
 	email, ok := payload.Claims["email"].(string)
 	if !ok {
 		return entities.Token{}, entities.User{}, false, errors.New("email not found in id token")
 	}
-	fullname, ok := payload.Claims["name"].(string)
+	firstname, ok := payload.Claims["given_name"].(string)
 	if !ok {
-		return entities.Token{}, entities.User{}, false, errors.New("fullname not found in id token")
+		return entities.Token{}, entities.User{}, false, errors.New("firstname not found in id token")
+	}
+	lastname, ok := payload.Claims["family_name"].(string)
+	if !ok {
+		return entities.Token{}, entities.User{}, false, errors.New("lastname not found in id token")
+	}
+	profileImage, ok := payload.Claims["picture"].(string)
+	if !ok {
+		return entities.Token{}, entities.User{}, false, errors.New("lastname not found in id token")
 	}
 
 	user, err = d.repo.GetUserByProviderEmail(ctx, entities.ProviderGoogle, email)
 	if errors.Is(err, errs.ErrNotFound) {
 		user, err = d.repo.CreateUser(ctx, entities.CreateUserInput{
-			Provider: entities.ProviderGoogle,
-			Email:    email,
-			Fullname: fullname,
-			Role:     entities.UserRoleUser,
+			Provider:     entities.ProviderGoogle,
+			Email:        email,
+			Firstname:    firstname,
+			Lastname:     lastname,
+			ProfileImage: profileImage,
+			Role:         entities.UserRoleUser,
 		})
 		if err != nil {
 			return entities.Token{}, entities.User{}, false, errors.Wrap(err, "failed to create user")
