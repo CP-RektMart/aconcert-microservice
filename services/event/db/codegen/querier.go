@@ -19,8 +19,8 @@ type Querier interface {
 	GetEventByID(ctx context.Context, id pgtype.UUID) (Event, error)
 	// Hard delete an event (for admin use)
 	HardDeleteEvent(ctx context.Context, id pgtype.UUID) (interface{}, error)
-	// List all events
-	ListEvents(ctx context.Context) ([]Event, error)
+	// List events with optional search and pagination
+	ListEvents(ctx context.Context, arg ListEventsParams) ([]Event, error)
 	// Update an existing event
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (pgtype.UUID, error)
 }
