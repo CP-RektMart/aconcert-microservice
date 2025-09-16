@@ -107,13 +107,26 @@ func (q *Queries) HardDeleteEvent(ctx context.Context, id pgtype.UUID) (interfac
 const listEvents = `-- name: ListEvents :many
 SELECT id, created_at, updated_at, deleted_at, name, description, location_id, artist, event_date, thumbnail, images
 FROM events
-WHERE deleted_at IS NULL
-ORDER BY event_date DESC
+WHERE
+  deleted_at IS NULL
+  AND (
+    -- The query parameter is a string. If it's empty, this condition is true for all rows.
+    -- Otherwise, it performs a case-insensitive search on the event name.
+    $1::text = '' OR name ILIKE '%' || $1 || '%'
+  )
+LIMIT $3
+OFFSET $2
 `
 
-// List all events
-func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listEvents)
+type ListEventsParams struct {
+	Query  string `json:"query"`
+	Offset int32  `json:"offset"`
+	Limit  int32  `json:"limit"`
+}
+
+// List events with optional search and pagination
+func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]Event, error) {
+	rows, err := q.db.Query(ctx, listEvents, arg.Query, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

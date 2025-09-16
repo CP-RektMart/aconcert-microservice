@@ -5,12 +5,19 @@ FROM events
 WHERE id = $1
   AND deleted_at IS NULL;
 
--- List all events
+-- List events with optional search and pagination
 -- name: ListEvents :many
 SELECT *
 FROM events
-WHERE deleted_at IS NULL
-ORDER BY event_date DESC;
+WHERE
+  deleted_at IS NULL
+  AND (
+    -- The query parameter is a string. If it's empty, this condition is true for all rows.
+    -- Otherwise, it performs a case-insensitive search on the event name.
+    sqlc.arg('query')::text = '' OR name ILIKE '%' || sqlc.arg('query') || '%'
+  )
+LIMIT sqlc.arg('limit')
+OFFSET sqlc.arg('offset');
 
 -- Insert a new event
 -- name: CreateEvent :one
