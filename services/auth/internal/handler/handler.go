@@ -9,11 +9,11 @@ import (
 )
 
 type handler struct {
-	domain         domain.Domain
+	domain         domain.AuthDomain
 	authMiddleware authentication.AuthMiddleware
 }
 
-func NewHandler(domain domain.Domain, authMiddleware authentication.AuthMiddleware) *handler {
+func NewHandler(domain domain.AuthDomain, authMiddleware authentication.AuthMiddleware) *handler {
 	return &handler{
 		domain:         domain,
 		authMiddleware: authMiddleware,

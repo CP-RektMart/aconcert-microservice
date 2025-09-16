@@ -1,10 +1,12 @@
 package config
 
 import (
+	"github.com/caarlos0/env/v10"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/awss3"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -29,4 +31,15 @@ type AppConfig struct {
 	// JWT          jwt.Config      `envPrefix:"JWT_"`
 	S3   awss3.Config `envPrefix:"S3_"`
 	Cors CorsConfig   `envPrefix:"CORS_"`
+}
+
+func Load() *AppConfig {
+	appConfig := &AppConfig{}
+	_ = godotenv.Load()
+
+	if err := env.Parse(appConfig); err != nil {
+		panic(err)
+	}
+
+	return appConfig
 }
