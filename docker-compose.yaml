@@ -40,25 +40,11 @@ services:
       timeout: 5s
       retries: 5
 
-  # Event Service
-  event-service:
-    build:
-      context: ./services/event
-      dockerfile: Dockerfile
-    container_name: aconcert-event-service
-    environment:
-      DATABASE_URL: postgres://postgres:password@event-db:5432/event-postgres?sslmode=disable
-      REDIS_URL: redis:6379
-      PORT: 8000
+  event-redis:
+    image: redis:latest
+    container_name: event-redis
     ports:
-      - "50051:50051"
-    depends_on:
-      event-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - aconcert-network
+      - "6970:6379"
 
   # Redis (for caching/sessions)
   redis:
