@@ -5,12 +5,9 @@ go 1.25.0
 require (
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cp-rektmart/aconcert-microservice v0.0.0-20250916070158-0dc391f5fc12
-	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/joho/godotenv v1.5.1
-	github.com/lib/pq v1.10.9
-	golang.org/x/net v0.44.0
 	google.golang.org/genproto v0.0.0-20250908214217-97024824d090
 	google.golang.org/grpc v1.75.1
 	google.golang.org/protobuf v1.36.9
@@ -51,6 +48,7 @@ require (
 	github.com/redis/go-redis/v9 v9.14.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
+	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect

@@ -32,3 +32,5 @@ profile.cov
 # .vscode/
 
 data/
+
+.DS_Store

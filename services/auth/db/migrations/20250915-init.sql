@@ -1,3 +1,4 @@
+-- migrate:up
 BEGIN;
 
 CREATE TABLE users (
@@ -17,3 +18,6 @@ CREATE TABLE users (
 );
 
 COMMIT;
+
+-- migrate:down
+DROP TABLE IF EXISTS users;

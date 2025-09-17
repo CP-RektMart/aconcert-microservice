@@ -7,13 +7,13 @@ import (
 	"time"
 
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
-	pb "github.com/cp-rektmart/aconcert-microservice/event/internal/proto"
+	eventproto "github.com/cp-rektmart/aconcert-microservice/event/proto/event"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // ListEvents Lists events with pagination
-func (s *EventServer) ListEvents(ctx context.Context, req *pb.ListEventsRequest) (*pb.ListEventsResponse, error) {
+func (s *EventService) ListEvents(ctx context.Context, req *eventproto.ListEventsRequest) (*eventproto.ListEventsResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -37,7 +37,7 @@ func (s *EventServer) ListEvents(ctx context.Context, req *pb.ListEventsRequest)
 		query = *req.Query
 	}
 
-	events, err := s.store.DB.ListEvents(ctx, db.ListEventsParams{
+	events, err := s.queries.ListEvents(ctx, db.ListEventsParams{
 		Limit:  int32(limit),
 		Offset: int32(page * limit),
 		Query:  fmt.Sprintf("%%%s%%", query),
@@ -46,9 +46,9 @@ func (s *EventServer) ListEvents(ctx context.Context, req *pb.ListEventsRequest)
 		return nil, errors.New("failed to list events")
 	}
 
-	var eventList []*pb.Event
+	var eventList []*eventproto.Event
 	for _, event := range events {
-		eventPb := &pb.Event{
+		eventeventproto := &eventproto.Event{
 			Id:          event.ID.String(),
 			CreatedAt:   event.CreatedAt.Time.Format(time.RFC3339),
 			UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
@@ -60,14 +60,14 @@ func (s *EventServer) ListEvents(ctx context.Context, req *pb.ListEventsRequest)
 			Thumbnail:   event.Thumbnail.String,
 			Images:      event.Images,
 		}
-		eventList = append(eventList, eventPb)
+		eventList = append(eventList, eventeventproto)
 	}
 
-	return &pb.ListEventsResponse{Events: eventList}, nil
+	return &eventproto.ListEventsResponse{Events: eventList}, nil
 }
 
 // GetEvent retrieves an event by ID
-func (s *EventServer) GetEvent(ctx context.Context, req *pb.GetEventRequest) (*pb.GetEventResponse, error) {
+func (s *EventService) GetEvent(ctx context.Context, req *eventproto.GetEventRequest) (*eventproto.GetEventResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -76,12 +76,12 @@ func (s *EventServer) GetEvent(ctx context.Context, req *pb.GetEventRequest) (*p
 		return nil, errors.New("invalid UUID format")
 	}
 
-	event, err := s.store.DB.GetEventByID(ctx, pgtype.UUID{Bytes: uuid.MustParse(req.Id), Valid: true})
+	event, err := s.queries.GetEventByID(ctx, pgtype.UUID{Bytes: uuid.MustParse(req.Id), Valid: true})
 	if err != nil {
 		return nil, errors.New("event not found")
 	}
 
-	eventPb := &pb.Event{
+	eventeventproto := &eventproto.Event{
 		Id:          event.ID.String(),
 		CreatedAt:   event.CreatedAt.Time.Format(time.RFC3339),
 		UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
@@ -94,11 +94,11 @@ func (s *EventServer) GetEvent(ctx context.Context, req *pb.GetEventRequest) (*p
 		Images:      event.Images,
 	}
 
-	return &pb.GetEventResponse{Event: eventPb}, nil
+	return &eventproto.GetEventResponse{Event: eventeventproto}, nil
 }
 
 // CreateEvent creates a new event
-func (s *EventServer) CreateEvent(ctx context.Context, req *pb.CreateEventRequest) (*pb.CreateEventResponse, error) {
+func (s *EventService) CreateEvent(ctx context.Context, req *eventproto.CreateEventRequest) (*eventproto.CreateEventResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -116,7 +116,7 @@ func (s *EventServer) CreateEvent(ctx context.Context, req *pb.CreateEventReques
 		return nil, errors.New("invalid eventDate format")
 	}
 
-	id, err := s.store.DB.CreateEvent(ctx, db.CreateEventParams{
+	id, err := s.queries.CreateEvent(ctx, db.CreateEventParams{
 		ID:          pgtype.UUID{Bytes: newUUID, Valid: true},
 		Name:        req.GetName(),
 		Description: pgtype.Text{String: req.GetDescription(), Valid: true},
@@ -130,11 +130,11 @@ func (s *EventServer) CreateEvent(ctx context.Context, req *pb.CreateEventReques
 		return nil, errors.New("failed to create event")
 	}
 
-	return &pb.CreateEventResponse{Id: id.String()}, nil
+	return &eventproto.CreateEventResponse{Id: id.String()}, nil
 }
 
 // UpdateEvent updates an existing event
-func (s *EventServer) UpdateEvent(ctx context.Context, req *pb.UpdateEventRequest) (*pb.UpdateEventResponse, error) {
+func (s *EventService) UpdateEvent(ctx context.Context, req *eventproto.UpdateEventRequest) (*eventproto.UpdateEventResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -145,7 +145,7 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *pb.UpdateEventReques
 		return nil, errors.New("invalid UUID format")
 	}
 
-	eventData, err := s.store.DB.GetEventByID(ctx, parsedUUID)
+	eventData, err := s.queries.GetEventByID(ctx, parsedUUID)
 	if err != nil {
 		return nil, errors.New("event not found")
 	}
@@ -203,16 +203,16 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *pb.UpdateEventReques
 		Images:      images,
 	}
 
-	_, err = s.store.DB.UpdateEvent(ctx, updateParams)
+	_, err = s.queries.UpdateEvent(ctx, updateParams)
 	if err != nil {
 		return nil, errors.New("failed to update event")
 	}
 
-	return &pb.UpdateEventResponse{Id: parsedUUID.String()}, nil
+	return &eventproto.UpdateEventResponse{Id: parsedUUID.String()}, nil
 }
 
 // DeleteEvent deletes an event
-func (s *EventServer) DeleteEvent(ctx context.Context, req *pb.DeleteEventRequest) (*pb.DeleteEventResponse, error) {
+func (s *EventService) DeleteEvent(ctx context.Context, req *eventproto.DeleteEventRequest) (*eventproto.DeleteEventResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -221,12 +221,12 @@ func (s *EventServer) DeleteEvent(ctx context.Context, req *pb.DeleteEventReques
 		return nil, errors.New("invalid UUID format")
 	}
 
-	_, err = s.store.DB.DeleteEvent(ctx, pgUUID)
+	_, err = s.queries.DeleteEvent(ctx, pgUUID)
 	if err != nil {
 		return nil, errors.New("event not found")
 	}
 
-	return &pb.DeleteEventResponse{Id: pgUUID.String()}, nil
+	return &eventproto.DeleteEventResponse{Id: pgUUID.String()}, nil
 }
 
 func parsedUUID(id string) (pgtype.UUID, error) {
