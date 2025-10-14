@@ -2,13 +2,11 @@ package hub
 
 import (
 	"context"
-	"log/slog"
 	"time"
 
 	"slices"
 
 	"github.com/cp-rektmart/aconcert-microservice/notification/internal/entities"
-	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/google/uuid"
 )
 
@@ -83,39 +81,16 @@ func (h *Hub) run() {
 
 // Register adds a new subscriber.
 func (h *Hub) Register(ctx context.Context, userID uuid.UUID, client Client) {
-	slogAttr := []any{
-		slog.String("user_id", userID.String()),
-	}
-	ctx, span := logger.StartSpanWithLog(ctx, "realtime", "realtime", "handler", "Register", slogAttr...)
-	defer span.End()
-	defer logger.TraceContext(ctx, "end", "realtime", "handler", "Register", slogAttr...)
-
 	h.register <- subscription{userID, client}
 }
 
 // Unregister removes a subscriber.
 func (h *Hub) Unregister(ctx context.Context, userID uuid.UUID, client Client) {
-	slogAttr := []any{
-		slog.String("user_id", userID.String()),
-	}
-	ctx, span := logger.StartSpanWithLog(ctx, "realtime", "realtime", "handler", "Unregister", slogAttr...)
-	defer span.End()
-	defer logger.TraceContext(ctx, "end", "realtime", "handler", "Unregister", slogAttr...)
-
 	h.unregister <- subscription{userID, client}
 }
 
 // Broadcast sends an event to all userID’s clients.
 func (h *Hub) Broadcast(ctx context.Context, userID uuid.UUID, eventType entities.EventType, data string) {
-	slogAttr := []any{
-		slog.String("user_id", userID.String()),
-		slog.String("event_type", string(eventType)),
-		slog.String("data", data),
-	}
-	ctx, span := logger.StartSpanWithLog(ctx, "realtime", "realtime", "hub", "Broadcast", slogAttr...)
-	defer span.End()
-	defer logger.TraceContext(ctx, "end", "realtime", "hub", "Broadcast", slogAttr...)
-
 	h.broadcast <- broadcast{
 		userID: userID,
 		msg: Message{
