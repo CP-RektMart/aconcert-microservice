@@ -12,7 +12,8 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
     volumes:
-      - ./data/postgresql:/var/lib/postgresql/data
+      - auth_db_data:/var/lib/postgresql/data
+  
   auth-redis:
     image: redis:latest
     container_name: auth-redis
@@ -46,6 +47,27 @@ services:
     ports:
       - "6970:6379"
 
+
+  # MongoDB for Location Service
+  location-mongo:
+    image: mongo:6.0
+    container_name: location-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: aconcert
+    volumes:
+      - location_mongo_data:/data/db
+    networks:
+      - aconcert-network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
   # Redis (for caching/sessions)
   redis:
     image: redis:7-alpine
@@ -68,6 +90,8 @@ volumes:
   event_db_data:
     driver: local
   redis_data:
+    driver: local
+  location_mongo_data:
     driver: local
 
 networks:
