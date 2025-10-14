@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"log"
-	"os"
 
 	"github.com/streadway/amqp"
 )
@@ -16,10 +15,9 @@ type RabbitMQ struct {
 }
 
 // FUNCTION TO CREATE A NEW RABBITMQ CONNECTION AND CHANNEL
-func NewRabbitMQConnection() {
-
+func NewRabbitMQConnection(url string) {
 	// CONNECT TO RABBITMQ
-	conn, err := amqp.Dial(os.Getenv("RABBITMQ_CONNECTION_URL"))
+	conn, err := amqp.Dial(url)
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
@@ -72,6 +70,42 @@ func (r *RabbitMQ) ConsumeRabbitMQQueue(queue_name string) (<-chan amqp.Delivery
 	}
 
 	return msgs, nil
+}
+
+func (r *RabbitMQ) PublishToQueue(queue_name string, body []byte) error {
+	// DECLARE QUEUE NAME (IF NOT EXISTS)
+	_, err := r.Channel.QueueDeclare(
+		queue_name, // name of the queue
+		true,       // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
+	)
+
+	if err != nil {
+		log.Printf("Failed to declare a RabbitMQ queue: %s", err)
+		return err
+	}
+
+	// PUBLISH MESSAGE TO QUEUE
+	err = r.Channel.Publish(
+		"",         // exchange
+		queue_name, // routing key (queue name)
+		false,      // mandatory
+		false,      // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+
+	if err != nil {
+		log.Printf("Failed to publish a message to RabbitMQ: %s", err)
+		return err
+	}
+
+	return nil
 }
 
 // FUNCTION TO CLOSE THE RABBITMQ CONNECTION AND CHANNEL

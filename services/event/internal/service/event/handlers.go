@@ -130,6 +130,8 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventproto.CreateEv
 		return nil, errors.New("failed to create event")
 	}
 
+	// err :=
+
 	return &eventproto.CreateEventResponse{Id: id.String()}, nil
 }
 

@@ -71,6 +71,11 @@ services:
       - "15672:15672"
     networks:
       - aconcert-network
+  notification-redis:
+    image: redis:latest
+    container_name: notification-redis
+    ports:
+      - "6971:6379"
 
 volumes:
   auth_db_data:

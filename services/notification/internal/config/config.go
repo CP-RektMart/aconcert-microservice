@@ -4,6 +4,7 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/joho/godotenv"
 )
 
@@ -18,8 +19,8 @@ type CorsConfig struct {
 	AllowCredentials bool   `env:"ALLOW_CREDENTIALS"`
 }
 
-type GoogleConfig struct {
-	ClientID string `env:"CLIENT_ID"`
+type RabbitMQConfig struct {
+	URL string `env:"URL"`
 }
 
 type AppConfig struct {
@@ -30,7 +31,8 @@ type AppConfig struct {
 	Logger       logger.Config   `envPrefix:"LOGGER_"`
 	Postgres     postgres.Config `envPrefix:"POSTGRES_"`
 	Cors         CorsConfig      `envPrefix:"CORS_"`
-	Google       GoogleConfig    `envPrefix:"GOOGLE_"`
+	RabbitMQ     RabbitMQConfig  `envPrefix:"RABBITMQ_"`
+	Redis        redis.Config    `envPrefix:"REDIS_"`
 }
 
 func Load() *AppConfig {
