@@ -62,6 +62,16 @@ services:
       timeout: 5s
       retries: 5
 
+  # RabbitMQ (for messaging)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: aconcert-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - aconcert-network
+
 volumes:
   auth_db_data:
     driver: local
