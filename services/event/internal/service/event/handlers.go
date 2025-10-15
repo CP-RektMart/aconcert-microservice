@@ -2,12 +2,15 @@ package grpcserver
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
+	"github.com/cp-rektmart/aconcert-microservice/event/internal/entities"
 	eventproto "github.com/cp-rektmart/aconcert-microservice/event/proto/event"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -130,7 +133,26 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventproto.CreateEv
 		return nil, errors.New("failed to create event")
 	}
 
-	// err :=
+	fmt.Print("UserID: ")
+	fmt.Println(req.UserId)
+
+	data := entities.EventData{
+		EventID:   newUUID,
+		UserID:    uuid.MustParse(req.UserId),
+		EventType: entities.EventTypeMessageBroadcast,
+		Data:      "New event created: " + newUUID.String(),
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New("failed to marshal event data")
+	}
+
+	fmt.Println(jsonData)
+
+	if err := rabbitmq.RabbitMQClient.PublishToQueue("notifications", jsonData); err != nil {
+		return nil, errors.New("failed to publish event to RabbitMQ")
+	}
 
 	return &eventproto.CreateEventResponse{Id: id.String()}, nil
 }

@@ -6,6 +6,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
+type Config struct {
+	URL string `env:"URL"`
+}
+
 var RabbitMQClient *RabbitMQ
 
 // STRUCT TO STORE RABBITMQ CONNECTION AND CHANNEL

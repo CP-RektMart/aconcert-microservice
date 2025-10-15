@@ -5,6 +5,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/awss3"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/joho/godotenv"
 )
@@ -21,6 +22,7 @@ type AppConfig struct {
 	Postgres    postgres.Config `envPrefix:"POSTGRES_"`
 	Redis       redis.Config    `envPrefix:"REDIS_"`
 	S3          awss3.Config    `envPrefix:"S3_"`
+	RabbitMQ    rabbitmq.Config `envPrefix:"RABBITMQ_"`
 }
 
 func Load() *AppConfig {

@@ -17,6 +17,7 @@ import (
 	eventps "github.com/cp-rektmart/aconcert-microservice/event/proto/event"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"google.golang.org/grpc"
 )
@@ -46,6 +47,11 @@ func main() {
 			logger.ErrorContext(ctx, "failed to close redis connection", slog.Any("error", err))
 		}
 	}()
+
+	// CONNECT TO RABBITMQ
+	rabbitmq.NewRabbitMQConnection(conf.RabbitMQ.URL)
+	// DEFER CLOSE CONNECTION TO RABBITMQ
+	defer rabbitmq.RabbitMQClient.CloseConnection()
 
 	queries := db.New(pgConn)
 

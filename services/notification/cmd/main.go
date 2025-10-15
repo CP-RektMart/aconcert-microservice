@@ -105,6 +105,7 @@ func main() {
 				continue
 			}
 
+			fmt.Println("Received a message: ", eventData)
 			domain.PushMessage(ctx, eventData.UserID, eventData.EventType, eventData.Data)
 		}
 	}()
