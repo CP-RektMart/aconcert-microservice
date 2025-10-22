@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/cp-rektmart/aconcert-microservice/gateway/docs"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/config"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/auth"
@@ -20,8 +21,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
-	"github.com/swaggo/swag/v2"
-	"github.com/swaggo/swag/v2/example/basic/docs"
+	"github.com/swaggo/swag"
 )
 
 // @title						A Concert Gateway
