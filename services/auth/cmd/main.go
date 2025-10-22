@@ -13,7 +13,6 @@ import (
 	db "github.com/cp-rektmart/aconcert-microservice/auth/db/codegen"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/domain"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/handler"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/middlewares/authentication"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/repositories"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
@@ -76,8 +75,7 @@ func main() {
 	repo := repositories.NewRepository(queries, redisConn, &conf.JWT)
 	domain := domain.New(repo, &conf.JWT, &conf.Google)
 
-	authMiddleware := authentication.NewAuthMiddleware(repo, &conf.JWT)
-	handler := handler.NewHandler(domain, authMiddleware)
+	handler := handler.NewHandler(domain)
 
 	v1 := app.Group("/v1")
 	handler.Mount(v1)
