@@ -23,6 +23,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	group.Post("/login", h.Login)
 	group.Post("/refresh", h.RefreshToken)
 	group.Post("/logout", h.authentication.Auth, h.Logout)
+	group.Get("/me", h.authentication.Auth, h.GetProfile)
 }
 
 // @Summary			Login
@@ -101,4 +102,26 @@ func (h *Handler) Logout(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *Handler) GetProfile(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	userID, err := h.authentication.GetUserIDFromContext(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(dto.HttpError{
+			Error: "UNAUTHORIZED",
+		})
+	}
+
+	response, err := h.service.GetProfile(ctx, &dto.GetProfileRequest{
+		UserID: userID,
+	})
+	if err != nil {
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[dto.UserResponse]{
+		Result: response,
+	})
 }

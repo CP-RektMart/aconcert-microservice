@@ -84,3 +84,23 @@ func (s *AuthService) Logout(ctx context.Context, req *dto.LogoutRequest) error 
 
 	return nil
 }
+
+func (s *AuthService) GetProfile(ctx context.Context, req *dto.GetProfileRequest) (dto.UserResponse, error) {
+	marshalPayload, err := json.Marshal(req)
+	if err != nil {
+		return dto.UserResponse{}, errors.Wrap(err, "failed to marshal payload")
+	}
+	response, err := s.client.Get(ctx, "/v1/auth/me", httpclient.RequestOptions{
+		Body: marshalPayload,
+	})
+	if err != nil {
+		return dto.UserResponse{}, errors.Wrap(err, "failed to enqueue task")
+	}
+
+	data := &dto.UserResponse{}
+	if err = json.Unmarshal(response.Body(), data); err != nil {
+		return dto.UserResponse{}, errors.Wrap(err, "failed to unmarshal get space campaigns response")
+	}
+
+	return *data, nil
+}
