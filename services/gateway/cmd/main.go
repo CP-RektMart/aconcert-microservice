@@ -76,7 +76,7 @@ func main() {
 
 	authMiddleware := authentication.NewAuthMiddleware(&conf.JWT, authRedisClient)
 
-	authService := auth.NewService()
+	authService := auth.NewService(conf.AuthClientBaseURL)
 	authHandler := auth.NewHandler(authService, authMiddleware)
 
 	v1 := app.Group("/v1")

@@ -1,23 +1,50 @@
 package httpclient
 
 import (
+	"context"
+	"encoding/json"
+	"log/slog"
 	"net/url"
+	"path"
+	"strings"
+	"time"
+
+	"maps"
 
 	"github.com/cockroachdb/errors"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/valyala/fasthttp"
+	"go.opentelemetry.io/otel"
 )
 
-type Client struct {
-	baseURL string
+type Config struct {
+	// Enable debug mode
+	Debug bool
+
+	// Default headers
+	Headers map[string]string
 }
 
-func New(baseURL string) (*Client, error) {
-	if _, err := url.Parse(baseURL); err != nil {
-		return nil, errors.Wrap(err, "invalid base URL")
-	}
+type Client struct {
+	baseURL *url.URL
+	Config
+}
 
+func New(baseURL string, config ...Config) (*Client, error) {
+	parsedBaseURL, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't parse base url")
+	}
+	var cf Config
+	if len(config) > 0 {
+		cf = config[0]
+	}
+	if len(cf.Headers) == 0 {
+		cf.Headers = make(map[string]string)
+	}
 	return &Client{
-		baseURL: baseURL,
+		baseURL: parsedBaseURL,
+		Config:  cf,
 	}, nil
 }
 
@@ -35,20 +62,48 @@ type HttpResponse struct {
 	fasthttp.Response
 }
 
-func (c *Client) request(reqOptions RequestOptions) (*HttpResponse, error) {
+func (r *HttpResponse) UnmarshalBody(out any) error {
+	body, err := r.BodyUncompressed()
+	if err != nil {
+		return errors.Wrapf(err, "can't uncompress body from %v", r.URL)
+	}
+	switch strings.ToLower(string(r.Header.ContentType())) {
+	case "application/json", "application/json; charset=utf-8":
+		if err := json.Unmarshal(body, out); err != nil {
+			return errors.Wrapf(err, "can't unmarshal json body from %s, %q", r.URL, string(body))
+		}
+		return nil
+	case "text/plain", "text/plain; charset=utf-8":
+		return errors.Errorf("can't unmarshal plain text %q", string(body))
+	default:
+		return errors.Errorf("unsupported content type: %s, contents: %v", r.Header.ContentType(), string(r.Body()))
+	}
+}
+
+func (h *Client) request(ctx context.Context, reqOptions RequestOptions) (*HttpResponse, error) {
+	start := time.Now()
 	req := fasthttp.AcquireRequest()
 	req.Header.SetMethod(reqOptions.method)
+	for k, v := range h.Headers {
+		req.Header.Set(k, v)
+	}
 	for k, v := range reqOptions.Header {
 		req.Header.Set(k, v)
 	}
 
-	url := c.baseURL + reqOptions.path
-	query := reqOptions.Query.Encode()
-	if query != "" {
-		url += "?" + query
-	}
-	req.SetRequestURI(url)
+	carrier := NewFasthttpCarrier(&req.Header)
+	otel.GetTextMapPropagator().Inject(ctx, carrier)
 
+	parsedUrl := h.BaseURL()
+	parsedUrl.Path = path.Join(parsedUrl.Path, reqOptions.path)
+	baseQuery := parsedUrl.Query()
+	maps.Copy(baseQuery, reqOptions.Query)
+	parsedUrl.RawQuery = baseQuery.Encode()
+
+	// remove %20 from url (empty space)
+	url := strings.TrimSuffix(parsedUrl.String(), "%20")
+	url = strings.Replace(url, "%20?", "?", 1)
+	req.SetRequestURI(url)
 	if reqOptions.Body != nil {
 		req.Header.SetContentType("application/json")
 		req.SetBody(reqOptions.Body)
@@ -58,12 +113,25 @@ func (c *Client) request(reqOptions RequestOptions) (*HttpResponse, error) {
 	}
 
 	resp := fasthttp.AcquireResponse()
+	startDo := time.Now()
 
-	defer fasthttp.ReleaseRequest(req)
-	defer fasthttp.ReleaseResponse(resp)
+	defer func() {
+		if h.Debug {
+			logger.InfoContext(ctx, "method", reqOptions.method, "url", url, "duration", time.Since(start), "latency", time.Since(startDo), "req_header_size", len(req.Header.Header()), "req_content_length", req.Header.ContentLength())
+
+			if resp.StatusCode() >= 0 {
+				logger.InfoContext(ctx, "status_code", resp.StatusCode(), "resp_content_type", string(resp.Header.ContentType()), "resp_content_encoding", string(resp.Header.ContentEncoding()), "resp_content_length", len(resp.Body()))
+			}
+
+			logger.InfoContext(ctx, "Finished make request", slog.String("package", "httpclient"))
+		}
+
+		fasthttp.ReleaseResponse(resp)
+		fasthttp.ReleaseRequest(req)
+	}()
 
 	if err := fasthttp.Do(req, resp); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, errors.Wrapf(err, "url: %s", url)
 	}
 
 	httpResponse := HttpResponse{
@@ -74,38 +142,44 @@ func (c *Client) request(reqOptions RequestOptions) (*HttpResponse, error) {
 	return &httpResponse, nil
 }
 
-func (h *Client) Do(method, path string, reqOptions RequestOptions) (*HttpResponse, error) {
+// BaseURL returns the cloned base URL of the client.
+func (h *Client) BaseURL() *url.URL {
+	u := *h.baseURL
+	return &u
+}
+
+func (h *Client) Do(ctx context.Context, method, path string, reqOptions RequestOptions) (*HttpResponse, error) {
 	reqOptions.path = path
 	reqOptions.method = method
-	return h.request(reqOptions)
+	return h.request(ctx, reqOptions)
 }
 
-func (h *Client) Get(path string, reqOptions RequestOptions) (*HttpResponse, error) {
+func (h *Client) Get(ctx context.Context, path string, reqOptions RequestOptions) (*HttpResponse, error) {
 	reqOptions.path = path
 	reqOptions.method = fasthttp.MethodGet
-	return h.request(reqOptions)
+	return h.request(ctx, reqOptions)
 }
 
-func (h *Client) Post(path string, reqOptions RequestOptions) (*HttpResponse, error) {
+func (h *Client) Post(ctx context.Context, path string, reqOptions RequestOptions) (*HttpResponse, error) {
 	reqOptions.path = path
 	reqOptions.method = fasthttp.MethodPost
-	return h.request(reqOptions)
+	return h.request(ctx, reqOptions)
 }
 
-func (h *Client) Put(path string, reqOptions RequestOptions) (*HttpResponse, error) {
+func (h *Client) Put(ctx context.Context, path string, reqOptions RequestOptions) (*HttpResponse, error) {
 	reqOptions.path = path
 	reqOptions.method = fasthttp.MethodPut
-	return h.request(reqOptions)
+	return h.request(ctx, reqOptions)
 }
 
-func (h *Client) Patch(path string, reqOptions RequestOptions) (*HttpResponse, error) {
+func (h *Client) Patch(ctx context.Context, path string, reqOptions RequestOptions) (*HttpResponse, error) {
 	reqOptions.path = path
 	reqOptions.method = fasthttp.MethodPatch
-	return h.request(reqOptions)
+	return h.request(ctx, reqOptions)
 }
 
-func (h *Client) Delete(path string, reqOptions RequestOptions) (*HttpResponse, error) {
+func (h *Client) Delete(ctx context.Context, path string, reqOptions RequestOptions) (*HttpResponse, error) {
 	reqOptions.path = path
 	reqOptions.method = fasthttp.MethodDelete
-	return h.request(reqOptions)
+	return h.request(ctx, reqOptions)
 }
