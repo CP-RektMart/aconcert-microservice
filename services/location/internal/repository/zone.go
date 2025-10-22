@@ -4,18 +4,19 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors/grpc/status"
-	locationproto "github.com/cp-rektmart/aconcert-microservice/location/proto/location"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
 )
-func (r *LocationRepository) AddZone(ctx context.Context, locID primitive.ObjectID, zone *locationproto.Zone) error {
+
+func (r *LocationRepository) AddZone(ctx context.Context, locID primitive.ObjectID, zone *locationpb.Zone) error {
 	collection := r.DB.Collection(r.CollName)
 
 	// 1. Check if location exists
 	var loc struct {
-		Zones []*locationproto.Zone `bson:"zones"`
+		Zones []*locationpb.Zone `bson:"zones"`
 	}
 	err := collection.FindOne(ctx, bson.M{"_id": locID}).Decode(&loc)
 	if err != nil {
@@ -42,7 +43,6 @@ func (r *LocationRepository) AddZone(ctx context.Context, locID primitive.Object
 	return nil
 }
 
-
 func (r *LocationRepository) RemoveZone(ctx context.Context, locID primitive.ObjectID, zoneNumber int32) error {
 	collection := r.DB.Collection(r.CollName)
 	update := bson.M{"$pull": bson.M{"zones": bson.M{"zone_number": zoneNumber}}}
@@ -56,7 +56,7 @@ func (r *LocationRepository) RemoveZone(ctx context.Context, locID primitive.Obj
 	return nil
 }
 
-func (r *LocationRepository) UpdateZone(ctx context.Context, locID primitive.ObjectID, zone *locationproto.Zone) error {
+func (r *LocationRepository) UpdateZone(ctx context.Context, locID primitive.ObjectID, zone *locationpb.Zone) error {
 	if zone == nil {
 		return status.Errorf(codes.InvalidArgument, "zone is nil")
 	}
@@ -94,5 +94,3 @@ func (r *LocationRepository) UpdateZone(ctx context.Context, locID primitive.Obj
 	}
 	return nil
 }
-
-

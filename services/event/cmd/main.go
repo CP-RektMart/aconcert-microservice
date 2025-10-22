@@ -14,9 +14,9 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/event/config"
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
 	eventService "github.com/cp-rektmart/aconcert-microservice/event/internal/service/event"
-	eventps "github.com/cp-rektmart/aconcert-microservice/event/proto/event"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"google.golang.org/grpc"
 )
@@ -57,7 +57,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	eventServ := eventService.NewEventService(queries)
-	eventps.RegisterEventServiceServer(grpcServer, eventServ)
+	eventpb.RegisterEventServiceServer(grpcServer, eventServ)
 
 	logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))
 

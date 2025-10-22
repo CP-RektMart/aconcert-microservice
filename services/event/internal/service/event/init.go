@@ -4,11 +4,11 @@ import (
 	"sync"
 
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
-	eventproto "github.com/cp-rektmart/aconcert-microservice/event/proto/event"
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 )
 
 type EventService struct {
-	eventproto.UnimplementedEventServiceServer
+	eventpb.UnimplementedEventServiceServer
 	mu      sync.Mutex
 	queries *db.Queries
 }
