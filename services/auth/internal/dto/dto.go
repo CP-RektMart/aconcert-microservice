@@ -86,3 +86,49 @@ type RefreshTokenResponse struct {
 	RefreshToken string `json:"refreshToken" validate:"required"`
 	Exp          int64  `json:"exp" validate:"required"`
 }
+
+type LogoutRequest struct {
+	UserID uuid.UUID `json:"userId" validate:"required"`
+}
+
+func (r *LogoutRequest) Parse(c *fiber.Ctx) error {
+	if err := c.BodyParser(r); err != nil {
+		return errors.Wrap(err, "failed to parse request")
+	}
+
+	if err := r.Validate(); err != nil {
+		return errors.Wrap(err, "failed to validate request")
+	}
+
+	return nil
+}
+
+func (r *LogoutRequest) Validate() error {
+	v := validator.New()
+	v.Must(r.UserID != uuid.Nil, "user ID is required")
+
+	return errors.WithStack(v.Error())
+}
+
+type GetProfileRequest struct {
+	UserID uuid.UUID `json:"userId" validate:"required"`
+}
+
+func (r *GetProfileRequest) Parse(c *fiber.Ctx) error {
+	if err := c.BodyParser(r); err != nil {
+		return errors.Wrap(err, "failed to parse request")
+	}
+
+	if err := r.Validate(); err != nil {
+		return errors.Wrap(err, "failed to validate request")
+	}
+
+	return nil
+}
+
+func (r *GetProfileRequest) Validate() error {
+	v := validator.New()
+	v.Must(r.UserID != uuid.Nil, "user ID is required")
+
+	return errors.WithStack(v.Error())
+}

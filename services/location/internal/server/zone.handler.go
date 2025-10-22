@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors/grpc/status"
-	locationproto "github.com/cp-rektmart/aconcert-microservice/location/proto/location"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
 )
 
-func (s *LocationService) AddZone(ctx context.Context, req *locationproto.AddZoneRequest) (*locationproto.LocationIdResponse, error) {
+func (s *LocationService) AddZone(ctx context.Context, req *locationpb.AddZoneRequest) (*locationpb.LocationIdResponse, error) {
 	id, err := primitive.ObjectIDFromHex(req.LocationId)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid location id: %v", err)
@@ -19,10 +19,10 @@ func (s *LocationService) AddZone(ctx context.Context, req *locationproto.AddZon
 		return nil, err
 	}
 
-	return &locationproto.LocationIdResponse{Id: req.LocationId}, nil
+	return &locationpb.LocationIdResponse{Id: req.LocationId}, nil
 }
 
-func (s *LocationService) RemoveZone(ctx context.Context, req *locationproto.RemoveZoneRequest) (*locationproto.LocationIdResponse, error) {
+func (s *LocationService) RemoveZone(ctx context.Context, req *locationpb.RemoveZoneRequest) (*locationpb.LocationIdResponse, error) {
 	id, err := primitive.ObjectIDFromHex(req.LocationId)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid location id: %v", err)
@@ -32,5 +32,5 @@ func (s *LocationService) RemoveZone(ctx context.Context, req *locationproto.Rem
 		return nil, err
 	}
 
-	return &locationproto.LocationIdResponse{Id: req.LocationId}, nil
+	return &locationpb.LocationIdResponse{Id: req.LocationId}, nil
 }

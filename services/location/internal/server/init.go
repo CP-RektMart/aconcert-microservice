@@ -5,17 +5,16 @@ import (
 	"time"
 
 	"github.com/cp-rektmart/aconcert-microservice/location/internal/repository"
-	locationproto "github.com/cp-rektmart/aconcert-microservice/location/proto/location"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
 
-
 type LocationService struct {
-	locationproto.UnimplementedLocationServiceServer
-	locationRepo     *repository.LocationRepository
+	locationpb.UnimplementedLocationServiceServer
+	locationRepo *repository.LocationRepository
 }
 
 func NewLocationService(db *mongo.Database) *LocationService {

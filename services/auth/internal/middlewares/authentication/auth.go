@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/entities"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/jwt"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/repositories"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -17,7 +16,6 @@ var (
 
 type AuthMiddleware interface {
 	Auth(ctx *fiber.Ctx) error
-	AuthAdmin(ctx *fiber.Ctx) error
 	GetUserIDFromContext(ctx context.Context) (uuid.UUID, error)
 }
 
@@ -59,36 +57,6 @@ func (r *authMiddleware) Auth(ctx *fiber.Ctx) error {
 	return ctx.Next()
 }
 
-func (r *authMiddleware) AuthAdmin(ctx *fiber.Ctx) error {
-	tokenByte := ctx.GetReqHeaders()["Authorization"]
-	if len(tokenByte) == 0 {
-		return ErrUnauthorized
-	}
-
-	if len(tokenByte[0]) < 7 {
-		return ErrUnauthorized
-	}
-
-	bearerToken := tokenByte[0][7:]
-	if len(bearerToken) == 0 {
-		return ErrUnauthorized
-	}
-
-	claims, err := r.validateToken(ctx.UserContext(), bearerToken)
-	if err != nil {
-		return ErrUnauthorized
-	}
-
-	userContext := r.withUserID(ctx.UserContext(), claims.ID)
-	ctx.SetUserContext(userContext)
-
-	if claims.Role != entities.UserRoleAdmin {
-		return ErrUnauthorized
-	}
-
-	return ctx.Next()
-}
-
 func (r *authMiddleware) validateToken(ctx context.Context, bearerToken string) (jwt.JWTentity, error) {
 	parsedToken, err := jwt.ParseToken(bearerToken, r.config.AccessTokenSecret)
 	if err != nil {
@@ -111,7 +79,8 @@ func (r *authMiddleware) validateToken(ctx context.Context, bearerToken string) 
 
 type userIDContext struct{}
 
-func (r *authMiddleware) withUserID(ctx context.Context, userID uuid.UUID) context.Context {
+func (r *authMiddleware) withUserID(ctx context.Context,
+	userID uuid.UUID) context.Context {
 	return context.WithValue(ctx, userIDContext{}, userID)
 }
 

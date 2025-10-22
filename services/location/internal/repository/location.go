@@ -5,22 +5,22 @@ import (
 	"errors"
 
 	"github.com/cp-rektmart/aconcert-microservice/location/internal/entity"
-	locationproto "github.com/cp-rektmart/aconcert-microservice/location/proto/location"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type LocationRepository struct {
-	DB        *mongo.Database
-	CollName  string
+	DB       *mongo.Database
+	CollName string
 }
 
 func NewLocationRepository(db *mongo.Database, collName string) *LocationRepository {
 	return &LocationRepository{DB: db, CollName: collName}
 }
 
-func (r *LocationRepository) Insert(ctx context.Context, loc *locationproto.Location) (primitive.ObjectID, error) {
+func (r *LocationRepository) Insert(ctx context.Context, loc *locationpb.Location) (primitive.ObjectID, error) {
 	doc := bson.M{
 		"venue_name":     loc.VenueName,
 		"city":           loc.City,

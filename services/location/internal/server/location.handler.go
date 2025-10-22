@@ -5,13 +5,13 @@ import (
 
 	"github.com/cockroachdb/errors/grpc/status"
 	"github.com/cp-rektmart/aconcert-microservice/location/internal/entity"
-	locationproto "github.com/cp-rektmart/aconcert-microservice/location/proto/location"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
 )
 
-func (s *LocationService) CreateLocation(ctx context.Context, req *locationproto.Location) (*locationproto.LocationIdResponse, error) {
+func (s *LocationService) CreateLocation(ctx context.Context, req *locationpb.Location) (*locationpb.LocationIdResponse, error) {
 	if err := validateZones(req.Zones); err != nil {
 		return nil, err
 	}
@@ -21,10 +21,10 @@ func (s *LocationService) CreateLocation(ctx context.Context, req *locationproto
 		return nil, status.Errorf(codes.Internal, "insert failed: %v", err)
 	}
 
-	return &locationproto.LocationIdResponse{Id: id.Hex()}, nil
+	return &locationpb.LocationIdResponse{Id: id.Hex()}, nil
 }
 
-func (s *LocationService) GetLocation(ctx context.Context, req *locationproto.GetLocationRequest) (*locationproto.Location, error) {
+func (s *LocationService) GetLocation(ctx context.Context, req *locationpb.GetLocationRequest) (*locationpb.Location, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id: %v", err)
@@ -38,7 +38,7 @@ func (s *LocationService) GetLocation(ctx context.Context, req *locationproto.Ge
 	return toProtoLocation(loc), nil
 }
 
-func (s *LocationService) ListLocations(ctx context.Context, _ *locationproto.ListLocationsRequest) (*locationproto.ListLocationsResponse, error) {
+func (s *LocationService) ListLocations(ctx context.Context, _ *locationpb.ListLocationsRequest) (*locationpb.ListLocationsResponse, error) {
 	locs, err := s.locationRepo.List(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to list: %v", err)
@@ -47,7 +47,7 @@ func (s *LocationService) ListLocations(ctx context.Context, _ *locationproto.Li
 	return toProtoList(locs), nil
 }
 
-func (s *LocationService) UpdateLocation(ctx context.Context, req *locationproto.UpdateLocationRequest) (*locationproto.LocationIdResponse, error) {
+func (s *LocationService) UpdateLocation(ctx context.Context, req *locationpb.UpdateLocationRequest) (*locationpb.LocationIdResponse, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id: %v", err)
@@ -62,10 +62,10 @@ func (s *LocationService) UpdateLocation(ctx context.Context, req *locationproto
 		return nil, status.Errorf(codes.Internal, "update failed: %v", err)
 	}
 
-	return &locationproto.LocationIdResponse{Id: req.Id}, nil
+	return &locationpb.LocationIdResponse{Id: req.Id}, nil
 }
 
-func (s *LocationService) DeleteLocation(ctx context.Context, req *locationproto.DeleteLocationRequest) (*locationproto.DeleteLocationResponse, error) {
+func (s *LocationService) DeleteLocation(ctx context.Context, req *locationpb.DeleteLocationRequest) (*locationpb.DeleteLocationResponse, error) {
 	objID, err := primitive.ObjectIDFromHex(req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id: %v", err)
@@ -76,10 +76,10 @@ func (s *LocationService) DeleteLocation(ctx context.Context, req *locationproto
 		return nil, status.Errorf(codes.Internal, "delete failed: %v", err)
 	}
 
-	return &locationproto.DeleteLocationResponse{Success: success}, nil
+	return &locationpb.DeleteLocationResponse{Success: success}, nil
 }
 
-func validateZones(zones []*locationproto.Zone) error {
+func validateZones(zones []*locationpb.Zone) error {
 	seen := map[int32]bool{}
 	for _, z := range zones {
 		if seen[z.ZoneNumber] {
@@ -90,7 +90,7 @@ func validateZones(zones []*locationproto.Zone) error {
 	return nil
 }
 
-func collectUpdateFields(req *locationproto.UpdateLocationRequest) bson.M {
+func collectUpdateFields(req *locationpb.UpdateLocationRequest) bson.M {
 	fields := bson.M{}
 
 	if req.VenueName != "" {
@@ -121,8 +121,8 @@ func collectUpdateFields(req *locationproto.UpdateLocationRequest) bson.M {
 	return fields
 }
 
-func toProtoLocation(loc *entity.LocationEntity) *locationproto.Location {
-	return &locationproto.Location{
+func toProtoLocation(loc *entity.LocationEntity) *locationpb.Location {
+	return &locationpb.Location{
 		Id:            loc.ID.Hex(),
 		VenueName:     loc.VenueName,
 		City:          loc.City,
@@ -134,10 +134,10 @@ func toProtoLocation(loc *entity.LocationEntity) *locationproto.Location {
 	}
 }
 
-func toProtoList(locs []*entity.LocationEntity) *locationproto.ListLocationsResponse {
-	protoLocs := make([]*locationproto.Location, len(locs))
+func toProtoList(locs []*entity.LocationEntity) *locationpb.ListLocationsResponse {
+	protoLocs := make([]*locationpb.Location, len(locs))
 	for i, l := range locs {
 		protoLocs[i] = toProtoLocation(l)
 	}
-	return &locationproto.ListLocationsResponse{Locations: protoLocs}
+	return &locationpb.ListLocationsResponse{Locations: protoLocs}
 }

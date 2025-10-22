@@ -45,11 +45,6 @@ func (u User) String() string {
 	return u.Firstname + " " + u.Lastname
 }
 
-type CachedTokens struct {
-	AccessUID  uuid.UUID
-	RefreshUID uuid.UUID
-}
-
 type Token struct {
 	AccessToken  string
 	RefreshToken string

@@ -1,10 +1,8 @@
-//go:generate protoc --go_out=. --go-grpc_out=. ./services/event/proto/event/event.proto
- 
 syntax = "proto3";
 
 package event;
 
-option go_package = "proto/event;event";
+option go_package = "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event;eventpb";
 
 // Event message
 message Event {

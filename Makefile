@@ -11,3 +11,12 @@ compose-down:
 
 migrate-up:
 	dbmate -d services/event/db/migrations -u ${EVENT_DB} up 
+
+protoc:
+	protoc -I=pkg/proto \
+		--go_out=pkg/proto --go_opt=paths=source_relative \
+		--go-grpc_out=pkg/proto --go-grpc_opt=paths=source_relative \
+		$(shell find pkg/proto -name "*.proto")
+
+generate:
+	go generate ./...

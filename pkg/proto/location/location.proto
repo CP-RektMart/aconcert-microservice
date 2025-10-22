@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package location;
 
-option go_package = "location;location";
+option go_package = "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location;locationpb";
 
 // ------------------ Messages ------------------ //
 message Location {

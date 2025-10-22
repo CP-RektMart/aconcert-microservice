@@ -11,9 +11,9 @@ import (
 
 	"github.com/cp-rektmart/aconcert-microservice/location/config"
 	"github.com/cp-rektmart/aconcert-microservice/location/internal/server"
-	locationproto "github.com/cp-rektmart/aconcert-microservice/location/proto/location"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/mongodb"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"google.golang.org/grpc"
 )
 
@@ -33,7 +33,7 @@ func main() {
 
 	// service startup
 	logger.Info(conf.Name+" starting...", slog.String("environment", conf.Environment))
-	defer logger.Info(conf.Name+" stopped")
+	defer logger.Info(conf.Name + " stopped")
 
 	// Connect to MongoDB
 	logger.Info("Connecting to MongoDB...",
@@ -64,7 +64,7 @@ func main() {
 		grpc.UnaryInterceptor(server.UnaryLoggingInterceptor()),
 	)
 	locationService := server.NewLocationService(mongoClient.DB)
-	locationproto.RegisterLocationServiceServer(grpcServer, locationService)
+	locationpb.RegisterLocationServiceServer(grpcServer, locationService)
 
 	listenAddr := ":" + strconv.Itoa(conf.Port)
 	lis, err := net.Listen("tcp", listenAddr)
