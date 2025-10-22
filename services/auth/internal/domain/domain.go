@@ -7,8 +7,8 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/auth/config"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/errs"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/jwt"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/repositories"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/jwt"
 	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
@@ -35,7 +35,7 @@ func New(repo repositories.AuthRepository, jwtConfig *jwt.Config, googleConfig *
 }
 
 func (d *AuthDomainImpl) generateAuthToken(ctx context.Context, user entities.User) (accessToken, refreshToken string, exp int64, err error) {
-	cachedToken, accessToken, refreshToken, exp, err := jwt.GenerateTokenPair(user, d.jwtConfig.AccessTokenSecret, d.jwtConfig.RefreshTokenSecret, d.jwtConfig.AccessTokenExpire, d.jwtConfig.RefreshTokenExpire)
+	cachedToken, accessToken, refreshToken, exp, err := jwt.GenerateTokenPair(user.ID, d.jwtConfig.AccessTokenSecret, d.jwtConfig.RefreshTokenSecret, d.jwtConfig.AccessTokenExpire, d.jwtConfig.RefreshTokenExpire)
 	if err != nil {
 		return "", "", 0, errors.Wrap(err, "failed to generate token pair")
 	}

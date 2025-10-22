@@ -12,11 +12,16 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/config"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/auth"
+	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/middlewares/authentication"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/requestlogger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/swagger"
+	"github.com/swaggo/swag/v2"
+	"github.com/swaggo/swag/v2/example/basic/docs"
 )
 
 // @title						A Concert Gateway
@@ -36,6 +41,16 @@ func main() {
 	if err := logger.Init(conf.Logger); err != nil {
 		logger.PanicContext(ctx, "failed to initialize logger", slog.Any("error", err))
 	}
+
+	authRedisClient, err := redis.New(ctx, conf.AuthRedis)
+	if err != nil {
+		logger.PanicContext(ctx, "failed to connect to redis", slog.Any("error", err))
+	}
+	defer func() {
+		if err := authRedisClient.Close(); err != nil {
+			logger.ErrorContext(ctx, "failed to close redis connection", slog.Any("error", err))
+		}
+	}()
 
 	app := fiber.New(fiber.Config{
 		AppName:       conf.Name,
@@ -59,16 +74,18 @@ func main() {
 		Use(requestid.New()).
 		Use(requestlogger.New())
 
+	authMiddleware := authentication.NewAuthMiddleware(&conf.JWT, authRedisClient)
+
 	authService := auth.NewService()
-	authHandler := auth.NewHandler(authService, nil)
+	authHandler := auth.NewHandler(authService, authMiddleware)
 
 	v1 := app.Group("/v1")
 	authHandler.Mount(v1)
 
-	// swag.Register(docs.SwaggerInfo.InfoInstanceName, docs.SwaggerInfo)
-	// if conf.Environment != "production" {
-	// 	app.Get("/swagger/*", swagger.HandlerDefault)
-	// }
+	swag.Register(docs.SwaggerInfo.InfoInstanceName, docs.SwaggerInfo)
+	if conf.Environment != "production" {
+		app.Get("/swagger/*", swagger.HandlerDefault)
+	}
 
 	go func() {
 		if err := app.Listen(fmt.Sprintf(":%d", conf.Port)); err != nil {

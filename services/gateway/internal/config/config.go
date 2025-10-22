@@ -2,7 +2,9 @@ package config
 
 import (
 	"github.com/caarlos0/env/v10"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/jwt"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/joho/godotenv"
 )
 
@@ -20,6 +22,8 @@ type AppConfig struct {
 	MaxBodyLimit int           `env:"MAX_BODY_LIMIT"`
 	Cors         CorsConfig    `envPrefix:"CORS_"`
 	Logger       logger.Config `envPrefix:"LOGGER_"`
+	JWT          jwt.Config    `envPrefix:"JWT_"`
+	AuthRedis    redis.Config  `envPrefix:"AUTHREDIS_"`
 }
 
 func Load() *AppConfig {

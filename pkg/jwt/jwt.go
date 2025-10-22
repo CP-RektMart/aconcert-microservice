@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/entities"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -18,19 +17,22 @@ type Config struct {
 }
 
 type JWTentity struct {
-	ID   uuid.UUID         `json:"id"` // User ID
-	UID  uuid.UUID         `json:"uid"`
-	Role entities.UserRole `json:"role"`
+	ID  uuid.UUID `json:"id"` // User ID
+	UID uuid.UUID `json:"uid"`
 	jwt.MapClaims
 }
 
-func CreateToken(userID uuid.UUID, expire int64, secret string, role entities.UserRole) (token string, uid uuid.UUID, exp int64, err error) {
+type CachedTokens struct {
+	AccessUID  uuid.UUID
+	RefreshUID uuid.UUID
+}
+
+func CreateToken(userID uuid.UUID, expire int64, secret string) (token string, uid uuid.UUID, exp int64, err error) {
 	exp = time.Now().Add(time.Second * time.Duration(expire)).Unix()
 	uid = uuid.New()
 	claims := &JWTentity{
-		ID:   userID,
-		UID:  uid,
-		Role: role,
+		ID:  userID,
+		UID: uid,
 		MapClaims: jwt.MapClaims{
 			"exp": exp,
 		},
@@ -45,25 +47,25 @@ func CreateToken(userID uuid.UUID, expire int64, secret string, role entities.Us
 	return token, uid, exp, nil
 }
 
-func GenerateTokenPair(user entities.User, accessTokenSecret, refreshTokenSecret string, accessTokenExpire, refreshTokenExpire int64) (
-	cahcedToken *entities.CachedTokens,
+func GenerateTokenPair(userID uuid.UUID, accessTokenSecret, refreshTokenSecret string, accessTokenExpire, refreshTokenExpire int64) (
+	cahcedToken *CachedTokens,
 	accessToken string,
 	refreshToken string,
 	exp int64,
 	err error,
 ) {
 	var accessUID, refreshUID uuid.UUID
-	accessToken, accessUID, exp, err = CreateToken(user.ID, accessTokenExpire, accessTokenSecret, user.Role)
+	accessToken, accessUID, exp, err = CreateToken(userID, accessTokenExpire, accessTokenSecret)
 	if err != nil {
 		return nil, "", "", 0, errors.Wrap(err, "can't create access token")
 	}
 
-	refreshToken, refreshUID, _, err = CreateToken(user.ID, refreshTokenExpire, refreshTokenSecret, user.Role)
+	refreshToken, refreshUID, _, err = CreateToken(userID, refreshTokenExpire, refreshTokenSecret)
 	if err != nil {
 		return nil, "", "", 0, errors.Wrap(err, "can't create refresh token")
 	}
 
-	cachedToken := &entities.CachedTokens{
+	cachedToken := &CachedTokens{
 		AccessUID:  accessUID,
 		RefreshUID: refreshUID,
 	}
@@ -71,7 +73,7 @@ func GenerateTokenPair(user entities.User, accessTokenSecret, refreshTokenSecret
 	return cachedToken, accessToken, refreshToken, exp, nil
 }
 
-func ValidateToken(cachedToken entities.CachedTokens, token JWTentity, isRefreshToken bool) error {
+func ValidateToken(cachedToken CachedTokens, token JWTentity, isRefreshToken bool) error {
 	var tokenUID uuid.UUID
 	if isRefreshToken {
 		tokenUID = cachedToken.RefreshUID
