@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/google/uuid"
+
 type LoginRequest struct {
 	Provider string `json:"provider"`
 	IdToken  string `json:"idToken"`
@@ -21,4 +23,12 @@ type RefreshTokenResponse struct {
 	AccessToken  string `json:"accessToken" validate:"required"`
 	RefreshToken string `json:"refreshToken" validate:"required"`
 	Exp          int64  `json:"exp" validate:"required"`
+}
+
+type LogoutRequest struct {
+	UserID uuid.UUID `json:"userId" validate:"required"`
+}
+
+type GetProfileRequest struct {
+	UserID uuid.UUID `json:"userId" validate:"required"`
 }

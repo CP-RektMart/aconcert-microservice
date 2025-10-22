@@ -21,7 +21,7 @@ func NewHandler(service *AuthService, authentication authentication.AuthMiddlewa
 func (h *Handler) Mount(r fiber.Router) {
 	group := r.Group("/auth")
 	group.Post("/login", h.Login)
-	group.Post("/refresh-token", h.RefreshToken)
+	group.Post("/refresh", h.RefreshToken)
 	group.Post("/logout", h.authentication.Auth, h.Logout)
 }
 
@@ -94,7 +94,9 @@ func (h *Handler) Logout(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.service.Logout(ctx, userID); err != nil {
+	if err := h.service.Logout(ctx, &dto.LogoutRequest{
+		UserID: userID,
+	}); err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 

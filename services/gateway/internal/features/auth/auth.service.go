@@ -3,12 +3,12 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/httpclient"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
-	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -47,9 +47,40 @@ func (s *AuthService) Login(ctx context.Context, req *dto.LoginRequest) (dto.Log
 }
 
 func (s *AuthService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRequest) (dto.RefreshTokenResponse, error) {
-	panic("unimplemented")
+	marshalPayload, err := json.Marshal(req)
+	if err != nil {
+		return dto.RefreshTokenResponse{}, errors.Wrap(err, "failed to marshal payload")
+	}
+	response, err := s.client.Post(ctx, "/v1/auth/refresh", httpclient.RequestOptions{
+		Body: marshalPayload,
+	})
+	if err != nil {
+		return dto.RefreshTokenResponse{}, errors.Wrap(err, "failed to enqueue task")
+	}
+
+	data := &dto.RefreshTokenResponse{}
+	if err = json.Unmarshal(response.Body(), data); err != nil {
+		return dto.RefreshTokenResponse{}, errors.Wrap(err, "failed to unmarshal get space campaigns response")
+	}
+
+	return *data, nil
 }
 
-func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID) error {
-	panic("unimplemented")
+func (s *AuthService) Logout(ctx context.Context, req *dto.LogoutRequest) error {
+	marshalPayload, err := json.Marshal(req)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal payload")
+	}
+	response, err := s.client.Post(ctx, "/v1/auth/logout", httpclient.RequestOptions{
+		Body: marshalPayload,
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to enqueue task")
+	}
+
+	if response.StatusCode() != http.StatusNoContent {
+		return errors.New("unexpected status code")
+	}
+
+	return nil
 }
