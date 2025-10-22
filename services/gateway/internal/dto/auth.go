@@ -11,21 +11,12 @@ type LoginRequest struct {
 	IdToken  string `json:"idToken"`
 }
 
-type User struct {
-	ID       string `json:"id" validate:"required"`
-	Provider string `json:"provider" validate:"required"`
-	Email    string `json:"email" validate:"required"`
-	Fullname string `json:"fullname" validate:"required"`
-	Phone    string `json:"phone" validate:"required"`
-	Role     string `json:"role" validate:"required"`
-}
-
 type LoginResponse struct {
-	AccessToken  string `json:"accessToken" validate:"required"`
-	RefreshToken string `json:"refreshToken" validate:"required"`
-	Exp          int64  `json:"exp" validate:"required"`
-	User         User   `json:"user" validate:"required"`
-	IsNewUser    bool   `json:"isNewUser" validate:"required"`
+	AccessToken  string       `json:"accessToken" validate:"required"`
+	RefreshToken string       `json:"refreshToken" validate:"required"`
+	Exp          int64        `json:"exp" validate:"required"`
+	User         UserResponse `json:"user" validate:"required"`
+	IsNewUser    bool         `json:"isNewUser" validate:"required"`
 }
 
 type RefreshTokenRequest struct {
