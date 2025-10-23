@@ -23,12 +23,12 @@ func (s *EventService) ListEvents(ctx context.Context, req *eventpb.ListEventsRe
 
 	// Handle optional fields (proto3 optional fields are pointers in Go)
 	limit := DEFAULT_LIMIT
-	if req.Limit != nil {
+	if *req.Limit != 0 {
 		limit = int(*req.Limit)
 	}
 
 	page := DEFAULT_PAGE
-	if req.Page != nil {
+	if *req.Page != 0 {
 		page = int(*req.Page)
 	}
 

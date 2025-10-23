@@ -13,8 +13,10 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/config"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/auth"
+	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/event"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/middlewares/authentication"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/requestlogger"
 	"github.com/gofiber/fiber/v2"
@@ -22,6 +24,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 	"github.com/swaggo/swag"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // @title						A Concert Gateway
@@ -79,8 +83,17 @@ func main() {
 	authService := auth.NewService(conf.AuthClientBaseURL)
 	authHandler := auth.NewHandler(authService, authMiddleware)
 
+	eventConn, err := grpc.NewClient(conf.EventClientBaseURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.PanicContext(ctx, "failed to connect to event service", slog.Any("error", err))
+	}
+	eventClient := eventpb.NewEventServiceClient(eventConn)
+	eventService := event.NewService(eventClient)
+	eventHandler := event.NewHandler(eventService, authMiddleware)
+
 	v1 := app.Group("/v1")
 	authHandler.Mount(v1)
+	eventHandler.Mount(v1)
 
 	swag.Register(docs.SwaggerInfo.InfoInstanceName, docs.SwaggerInfo)
 	if conf.Environment != "production" {

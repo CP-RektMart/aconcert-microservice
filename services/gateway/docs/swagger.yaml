@@ -1,11 +1,120 @@
 components:
   schemas:
+    dto.CreateEventRequest:
+      properties:
+        artist:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        description:
+          type: string
+        eventDate:
+          type: string
+        images:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        locationId:
+          type: string
+        name:
+          type: string
+        thumbnail:
+          type: string
+      required:
+      - artist
+      - description
+      - eventDate
+      - images
+      - locationId
+      - name
+      - thumbnail
+      type: object
+    dto.CreateEventResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
+    dto.EventListResponse:
+      properties:
+        list:
+          items:
+            $ref: '#/components/schemas/dto.EventResponse'
+          type: array
+          uniqueItems: false
+      required:
+      - list
+      type: object
+    dto.EventResponse:
+      properties:
+        artist:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        createdAt:
+          type: string
+        description:
+          type: string
+        eventDate:
+          type: string
+        id:
+          type: string
+        images:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        locationId:
+          type: string
+        name:
+          type: string
+        thumbnail:
+          type: string
+        updatedAt:
+          type: string
+      required:
+      - artist
+      - createdAt
+      - description
+      - eventDate
+      - id
+      - images
+      - locationId
+      - name
+      - thumbnail
+      - updatedAt
+      type: object
     dto.HttpError:
       properties:
         error:
           type: string
       required:
       - error
+      type: object
+    dto.HttpResponse-dto_CreateEventResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.CreateEventResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_EventListResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.EventListResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_EventResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.EventResponse'
+      required:
+      - result
       type: object
     dto.HttpResponse-dto_LoginResponse:
       properties:
@@ -18,6 +127,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.RefreshTokenResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_UpdateEventResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.UpdateEventResponse'
       required:
       - result
       type: object
@@ -39,7 +155,7 @@ components:
         refreshToken:
           type: string
         user:
-          $ref: '#/components/schemas/dto.User'
+          $ref: '#/components/schemas/dto.UserResponse'
       required:
       - accessToken
       - exp
@@ -67,27 +183,74 @@ components:
       - exp
       - refreshToken
       type: object
-    dto.User:
+    dto.UpdateEventRequest:
       properties:
+        artist:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        description:
+          type: string
+        eventDate:
+          type: string
+        images:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        locationId:
+          type: string
+        name:
+          type: string
+        thumbnail:
+          type: string
+      type: object
+    dto.UpdateEventResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
+    dto.UserResponse:
+      properties:
+        birthdate:
+          type: string
+        createdAt:
+          type: string
+        deletedAt:
+          type: string
         email:
           type: string
-        fullname:
+        firstname:
           type: string
         id:
           type: string
+        lastname:
+          type: string
         phone:
+          type: string
+        profileImage:
           type: string
         provider:
           type: string
         role:
           type: string
+        updatedAt:
+          type: string
       required:
+      - birthdate
+      - createdAt
       - email
-      - fullname
+      - firstname
       - id
+      - lastname
       - phone
+      - profileImage
       - provider
       - role
+      - updatedAt
       type: object
   securitySchemes:
     ApiKeyAuth:
@@ -184,3 +347,182 @@ paths:
       summary: Refresh Token
       tags:
       - auth
+  /v1/events:
+    get:
+      description: List Events
+      parameters:
+      - description: query
+        in: query
+        name: query
+        schema:
+          type: integer
+      - description: sortBy
+        in: query
+        name: sortBy
+        schema:
+          type: integer
+      - description: order
+        in: query
+        name: order
+        schema:
+          type: string
+      - description: page
+        in: query
+        name: page
+        schema:
+          type: string
+      - description: limit
+        in: query
+        name: limit
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_EventListResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: List Events
+      tags:
+      - events
+    post:
+      description: Create Event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.CreateEventRequest'
+        description: Create event request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_CreateEventResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Create Event
+      tags:
+      - events
+  /v1/events/{id}:
+    delete:
+      description: Delete Event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Delete Event
+      tags:
+      - events
+    get:
+      description: Get Event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_EventResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Get Event
+      tags:
+      - events
+    put:
+      description: Update Event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdateEventRequest'
+        description: Update event request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_UpdateEventResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Update Event
+      tags:
+      - events
