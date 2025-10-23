@@ -90,7 +90,7 @@ func (h *Handler) GetEvent(c *fiber.Ctx) error {
 // @Tags			events
 // @Router			/v1/events [POST]
 // @Param			body	body		dto.CreateEvent	true	"Create event request"
-// @Success			200 {object}	dto.HttpResponse[string]
+// @Success			200 {object}	dto.HttpResponse[dto.CreateEventResponse]
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError
 func (h *Handler) CreateEvent(c *fiber.Ctx) error {
@@ -106,8 +106,10 @@ func (h *Handler) CreateEvent(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[string]{
-		Result: id,
+	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[dto.CreateEventResponse]{
+		Result: dto.CreateEventResponse{
+			ID: id,
+		},
 	})
 }
 
@@ -117,7 +119,7 @@ func (h *Handler) CreateEvent(c *fiber.Ctx) error {
 // @Router			/v1/events/{id} [PUT]
 // @Param			id	path		string	true	"Event ID"
 // @Param			body	body		dto.UpdateEvent	true	"Update event request"
-// @Success			200 {object}	dto.HttpResponse[string]
+// @Success			200 {object}	dto.HttpResponse[dto.UpdateEventResponse]
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError
 func (h *Handler) UpdateEvent(c *fiber.Ctx) error {
@@ -136,8 +138,10 @@ func (h *Handler) UpdateEvent(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[string]{
-		Result: id,
+	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[dto.UpdateEventResponse]{
+		Result: dto.UpdateEventResponse{
+			ID: id,
+		},
 	})
 }
 

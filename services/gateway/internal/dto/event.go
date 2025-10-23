@@ -22,6 +22,10 @@ type CreateEvent struct {
 	Images      []string `json:"images" validate:"required"`
 }
 
+type CreateEventResponse struct {
+	ID string `json:"id" validate:"required"`
+}
+
 type UpdateEvent struct {
 	ID          string   `params:"id" swaggerignore:"true"`
 	Name        string   `json:"name"`
@@ -31,6 +35,10 @@ type UpdateEvent struct {
 	EventDate   string   `json:"eventDate"`
 	Thumbnail   string   `json:"thumbnail"`
 	Images      []string `json:"images"`
+}
+
+type UpdateEventResponse struct {
+	ID string `json:"id" validate:"required"`
 }
 
 type DeleteEvent struct {

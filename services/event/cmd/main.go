@@ -59,9 +59,19 @@ func main() {
 	eventServ := eventService.NewEventService(queries)
 	eventpb.RegisterEventServiceServer(grpcServer, eventServ)
 
-	logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))
+	go func() {
+		logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))
+		if err := grpcServer.Serve(lis); err != nil {
+			logger.PanicContext(ctx, "failed to serve", slog.Any("error", err))
+			stop() // stop context if server fails
+		}
+	}()
 
-	if err := grpcServer.Serve(lis); err != nil {
-		logger.PanicContext(ctx, "failed to serve: %v", slog.Any("error", err))
-	}
+	// Wait for interrupt signal
+	<-ctx.Done()
+	logger.InfoContext(ctx, "shutting down gRPC server gracefully")
+
+	// Gracefully stop gRPC
+	grpcServer.GracefulStop()
+	logger.InfoContext(ctx, "gRPC server stopped cleanly")
 }
