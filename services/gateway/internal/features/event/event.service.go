@@ -33,7 +33,7 @@ func (s *EventService) TransformEventResponse(event *eventpb.Event) dto.EventRes
 	}
 }
 
-func (s *EventService) ListEvents(ctx context.Context, req *dto.ListEvents) ([]dto.EventResponse, error) {
+func (s *EventService) ListEvents(ctx context.Context, req *dto.ListEventsRequest) ([]dto.EventResponse, error) {
 	page := int32(req.Page)
 	limit := int32(req.Limit)
 
@@ -56,7 +56,7 @@ func (s *EventService) ListEvents(ctx context.Context, req *dto.ListEvents) ([]d
 	return events, nil
 }
 
-func (s *EventService) GetEvent(ctx context.Context, req *dto.GetEvent) (dto.EventResponse, error) {
+func (s *EventService) GetEvent(ctx context.Context, req *dto.GetEventRequest) (dto.EventResponse, error) {
 	response, err := s.client.GetEvent(ctx, &eventpb.GetEventRequest{
 		Id: req.ID,
 	})
@@ -67,7 +67,7 @@ func (s *EventService) GetEvent(ctx context.Context, req *dto.GetEvent) (dto.Eve
 	return s.TransformEventResponse(response.Event), nil
 }
 
-func (s *EventService) CreateEvent(ctx context.Context, req *dto.CreateEvent) (string, error) {
+func (s *EventService) CreateEvent(ctx context.Context, req *dto.CreateEventRequest) (string, error) {
 	response, err := s.client.CreateEvent(ctx, &eventpb.CreateEventRequest{
 		Name:        req.Name,
 		Description: req.Description,
@@ -84,7 +84,7 @@ func (s *EventService) CreateEvent(ctx context.Context, req *dto.CreateEvent) (s
 	return response.Id, nil
 }
 
-func (s *EventService) UpdateEvent(ctx context.Context, req *dto.UpdateEvent) (string, error) {
+func (s *EventService) UpdateEvent(ctx context.Context, req *dto.UpdateEventRequest) (string, error) {
 	response, err := s.client.UpdateEvent(ctx, &eventpb.UpdateEventRequest{
 		Id:          req.ID,
 		Name:        &req.Name,
@@ -102,7 +102,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *dto.UpdateEvent) (s
 	return response.Id, nil
 }
 
-func (s *EventService) DeleteEvent(ctx context.Context, req *dto.DeleteEvent) error {
+func (s *EventService) DeleteEvent(ctx context.Context, req *dto.DeleteEventRequest) error {
 	_, err := s.client.DeleteEvent(ctx, &eventpb.DeleteEventRequest{
 		Id: req.ID,
 	})

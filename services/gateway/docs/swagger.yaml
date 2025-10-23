@@ -1,6 +1,6 @@
 components:
   schemas:
-    dto.CreateEvent:
+    dto.CreateEventRequest:
       properties:
         artist:
           items:
@@ -183,7 +183,7 @@ components:
       - exp
       - refreshToken
       type: object
-    dto.UpdateEvent:
+    dto.UpdateEventRequest:
       properties:
         artist:
           items:
@@ -404,7 +404,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/dto.CreateEvent'
+              $ref: '#/components/schemas/dto.CreateEventRequest'
         description: Create event request
         required: true
       responses:
@@ -501,7 +501,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/dto.UpdateEvent'
+              $ref: '#/components/schemas/dto.UpdateEventRequest'
         description: Update event request
         required: true
       responses:

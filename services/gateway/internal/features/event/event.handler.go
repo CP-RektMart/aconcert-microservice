@@ -42,7 +42,7 @@ func (h *Handler) Mount(r fiber.Router) {
 func (h *Handler) ListEvents(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var req dto.ListEvents
+	var req dto.ListEventsRequest
 	if err := c.QueryParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
@@ -70,7 +70,7 @@ func (h *Handler) ListEvents(c *fiber.Ctx) error {
 func (h *Handler) GetEvent(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var req dto.GetEvent
+	var req dto.GetEventRequest
 	if err := c.ParamsParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
@@ -89,14 +89,14 @@ func (h *Handler) GetEvent(c *fiber.Ctx) error {
 // @Description  	Create Event
 // @Tags			events
 // @Router			/v1/events [POST]
-// @Param			body	body		dto.CreateEvent	true	"Create event request"
+// @Param			body	body		dto.CreateEventRequest	true	"Create event request"
 // @Success			200 {object}	dto.HttpResponse[dto.CreateEventResponse]
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError
 func (h *Handler) CreateEvent(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var req dto.CreateEvent
+	var req dto.CreateEventRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
@@ -118,14 +118,14 @@ func (h *Handler) CreateEvent(c *fiber.Ctx) error {
 // @Tags			events
 // @Router			/v1/events/{id} [PUT]
 // @Param			id	path		string	true	"Event ID"
-// @Param			body	body		dto.UpdateEvent	true	"Update event request"
+// @Param			body	body		dto.UpdateEventRequest	true	"Update event request"
 // @Success			200 {object}	dto.HttpResponse[dto.UpdateEventResponse]
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError
 func (h *Handler) UpdateEvent(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var req dto.UpdateEvent
+	var req dto.UpdateEventRequest
 	if err := c.ParamsParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
@@ -156,7 +156,7 @@ func (h *Handler) UpdateEvent(c *fiber.Ctx) error {
 func (h *Handler) DeleteEvent(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var req dto.DeleteEvent
+	var req dto.DeleteEventRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}

@@ -1,6 +1,6 @@
 package dto
 
-type ListEvents struct {
+type ListEventsRequest struct {
 	Query  string `query:"query"`
 	SortBy string `query:"sortBy"`
 	Order  string `query:"order"`
@@ -8,11 +8,11 @@ type ListEvents struct {
 	Limit  int    `query:"limit"`
 }
 
-type GetEvent struct {
+type GetEventRequest struct {
 	ID string `params:"id"`
 }
 
-type CreateEvent struct {
+type CreateEventRequest struct {
 	Name        string   `json:"name" validate:"required"`
 	Description string   `json:"description" validate:"required"`
 	LocationID  string   `json:"locationId" validate:"required"`
@@ -26,7 +26,7 @@ type CreateEventResponse struct {
 	ID string `json:"id" validate:"required"`
 }
 
-type UpdateEvent struct {
+type UpdateEventRequest struct {
 	ID          string   `params:"id" swaggerignore:"true"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
@@ -41,7 +41,7 @@ type UpdateEventResponse struct {
 	ID string `json:"id" validate:"required"`
 }
 
-type DeleteEvent struct {
+type DeleteEventRequest struct {
 	ID string `json:"id" validate:"required"`
 }
 
