@@ -14,6 +14,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/event/config"
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
 	eventService "github.com/cp-rektmart/aconcert-microservice/event/internal/service/event"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/grpclogger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
 	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
@@ -54,7 +55,9 @@ func main() {
 		logger.PanicContext(ctx, "failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
+	)
 
 	eventServ := eventService.NewEventService(queries)
 	eventpb.RegisterEventServiceServer(grpcServer, eventServ)
