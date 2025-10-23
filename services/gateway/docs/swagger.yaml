@@ -44,8 +44,6 @@ components:
           type: string
         country:
           type: string
-        id:
-          type: string
         latitude:
           type: number
         longitude:
@@ -62,7 +60,6 @@ components:
       required:
       - city
       - country
-      - id
       - latitude
       - longitude
       - stateProvince

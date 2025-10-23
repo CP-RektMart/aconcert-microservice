@@ -88,7 +88,6 @@ func (s *LocationService) CreateLocation(ctx context.Context, req *dto.CreateLoc
 	}
 
 	response, err := s.client.CreateLocation(ctx, &locationpb.Location{
-		Id:            req.ID,
 		VenueName:     req.VenueName,
 		City:          req.City,
 		StateProvince: req.StateProvince,

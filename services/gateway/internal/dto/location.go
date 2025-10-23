@@ -10,7 +10,6 @@ type CreateLocationZoneRequest struct {
 }
 
 type CreateLocationRequest struct {
-	ID            string                      `json:"id" validate:"required"`
 	VenueName     string                      `json:"venueName" validate:"required"`
 	City          string                      `json:"city" validate:"required"`
 	StateProvince string                      `json:"stateProvince" validate:"required"`
