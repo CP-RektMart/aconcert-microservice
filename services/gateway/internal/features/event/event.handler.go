@@ -89,6 +89,7 @@ func (h *Handler) GetEvent(c *fiber.Ctx) error {
 // @Description  	Create Event
 // @Tags			events
 // @Router			/v1/events [POST]
+// @Security		ApiKeyAuth
 // @Param			body	body		dto.CreateEventRequest	true	"Create event request"
 // @Success			200 {object}	dto.HttpResponse[dto.CreateEventResponse]
 // @Failure			400	{object}	dto.HttpError
@@ -117,6 +118,7 @@ func (h *Handler) CreateEvent(c *fiber.Ctx) error {
 // @Description  	Update Event
 // @Tags			events
 // @Router			/v1/events/{id} [PUT]
+// @Security		ApiKeyAuth
 // @Param			id	path		string	true	"Event ID"
 // @Param			body	body		dto.UpdateEventRequest	true	"Update event request"
 // @Success			200 {object}	dto.HttpResponse[dto.UpdateEventResponse]
@@ -149,6 +151,7 @@ func (h *Handler) UpdateEvent(c *fiber.Ctx) error {
 // @Description  	Delete Event
 // @Tags			events
 // @Router			/v1/events/{id} [DELETE]
+// @Security		ApiKeyAuth
 // @Param			id	path		string	true	"Event ID"
 // @Success			204
 // @Failure			400	{object}	dto.HttpError
