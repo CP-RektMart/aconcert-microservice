@@ -14,9 +14,11 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/auth"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/event"
+	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/features/location"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/middlewares/authentication"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
+	locationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/location"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/requestlogger"
 	"github.com/gofiber/fiber/v2"
@@ -91,9 +93,18 @@ func main() {
 	eventService := event.NewService(eventClient)
 	eventHandler := event.NewHandler(eventService, authMiddleware)
 
+	locationConn, err := grpc.NewClient(conf.LocationClientBaseURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.PanicContext(ctx, "failed to connect to location service", slog.Any("error", err))
+	}
+	locationClient := locationpb.NewLocationServiceClient(locationConn)
+	locationService := location.NewService(locationClient)
+	locationHandler := location.NewHandler(locationService, authMiddleware)
+
 	v1 := app.Group("/v1")
 	authHandler.Mount(v1)
 	eventHandler.Mount(v1)
+	locationHandler.Mount(v1)
 
 	swag.Register(docs.SwaggerInfo.InfoInstanceName, docs.SwaggerInfo)
 	if conf.Environment != "production" {
