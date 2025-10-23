@@ -11,13 +11,12 @@ const (
 	DefaultENVPath = "./.env"
 )
 
-
 type AppConfig struct {
-	Name        string        `env:"NAME" envDefault:"aconcert-location-service"`
-	Port        int           `env:"PORT" envDefault:"8082"`
-	Environment string        `env:"ENVIRONMENT" envDefault:"development"`
-	Logger      logger.Config `envPrefix:"LOGGER_"`
-	Mongo       mongodb.Config
+	Name        string         `env:"NAME" envDefault:"aconcert-location-service"`
+	Port        int            `env:"PORT" envDefault:"8082"`
+	Environment string         `env:"ENVIRONMENT" envDefault:"development"`
+	Logger      logger.Config  `envPrefix:"LOGGER_"`
+	Mongo       mongodb.Config `envPrefix:"MONGO_"`
 }
 
 func Load() *AppConfig {

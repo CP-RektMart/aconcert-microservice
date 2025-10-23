@@ -10,11 +10,11 @@ import (
 )
 
 type Config struct {
-	Host     string `env:"MONGO_HOST" envDefault:"localhost"`
-	Port     int    `env:"MONGO_PORT" envDefault:"27017"`
-	User     string `env:"MONGO_USER" envDefault:"root"`
-	Password string `env:"MONGO_PASSWORD" envDefault:"password"`
-	Database string `env:"MONGO_DB" envDefault:"aconcert"`
+	Host     string `env:"HOST" envDefault:"localhost"`
+	Port     int    `env:"PORT" envDefault:"27017"`
+	User     string `env:"USER" envDefault:"root"`
+	Password string `env:"PASSWORD" envDefault:"password"`
+	Database string `env:"DB" envDefault:"aconcert"`
 }
 
 type Mongo struct {
