@@ -326,7 +326,7 @@ paths:
       summary: Refresh Token
       tags:
       - auth
-  /v2/events:
+  /v1/events:
     get:
       description: List Events
       parameters:
@@ -408,7 +408,7 @@ paths:
       summary: Create Event
       tags:
       - events
-  /v2/events/{id}:
+  /v1/events/{id}:
     delete:
       description: Delete Event
       parameters:

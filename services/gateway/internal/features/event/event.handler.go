@@ -30,7 +30,7 @@ func (h *Handler) Mount(r fiber.Router) {
 // @Summary      	List Events
 // @Description  	List Events
 // @Tags			events
-// @Router			/v2/events [GET]
+// @Router			/v1/events [GET]
 // @Param			query		query		int			false	"query"
 // @Param			sortBy		query		int			false	"sortBy"
 // @Param			order		query		string		false	"order"
@@ -62,7 +62,7 @@ func (h *Handler) ListEvents(c *fiber.Ctx) error {
 // @Summary      	Get Event
 // @Description  	Get Event
 // @Tags			events
-// @Router			/v2/events/{id} [GET]
+// @Router			/v1/events/{id} [GET]
 // @Param			id	path		string	true	"Event ID"
 // @Success			200 {object}	dto.HttpResponse[dto.EventResponse]
 // @Failure			400	{object}	dto.HttpError
@@ -88,7 +88,7 @@ func (h *Handler) GetEvent(c *fiber.Ctx) error {
 // @Summary      	Create Event
 // @Description  	Create Event
 // @Tags			events
-// @Router			/v2/events [POST]
+// @Router			/v1/events [POST]
 // @Param			body	body		dto.CreateEvent	true	"Create event request"
 // @Success			200 {object}	dto.HttpResponse[string]
 // @Failure			400	{object}	dto.HttpError
@@ -114,7 +114,7 @@ func (h *Handler) CreateEvent(c *fiber.Ctx) error {
 // @Summary      	Update Event
 // @Description  	Update Event
 // @Tags			events
-// @Router			/v2/events/{id} [PUT]
+// @Router			/v1/events/{id} [PUT]
 // @Param			id	path		string	true	"Event ID"
 // @Param			body	body		dto.UpdateEvent	true	"Update event request"
 // @Success			200 {object}	dto.HttpResponse[string]
@@ -144,7 +144,7 @@ func (h *Handler) UpdateEvent(c *fiber.Ctx) error {
 // @Summary      	Delete Event
 // @Description  	Delete Event
 // @Tags			events
-// @Router			/v2/events/{id} [DELETE]
+// @Router			/v1/events/{id} [DELETE]
 // @Param			id	path		string	true	"Event ID"
 // @Success			204
 // @Failure			400	{object}	dto.HttpError
