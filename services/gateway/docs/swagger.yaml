@@ -31,6 +31,13 @@ components:
       - name
       - thumbnail
       type: object
+    dto.CreateEventResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
     dto.EventListResponse:
       properties:
         list:
@@ -88,6 +95,13 @@ components:
       required:
       - error
       type: object
+    dto.HttpResponse-dto_CreateEventResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.CreateEventResponse'
+      required:
+      - result
+      type: object
     dto.HttpResponse-dto_EventListResponse:
       properties:
         result:
@@ -116,10 +130,10 @@ components:
       required:
       - result
       type: object
-    dto.HttpResponse-string:
+    dto.HttpResponse-dto_UpdateEventResponse:
       properties:
         result:
-          type: string
+          $ref: '#/components/schemas/dto.UpdateEventResponse'
       required:
       - result
       type: object
@@ -191,6 +205,13 @@ components:
           type: string
         thumbnail:
           type: string
+      type: object
+    dto.UpdateEventResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
       type: object
     dto.UserResponse:
       properties:
@@ -391,7 +412,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dto.HttpResponse-string'
+                $ref: '#/components/schemas/dto.HttpResponse-dto_CreateEventResponse'
           description: OK
         "400":
           content:
@@ -488,7 +509,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dto.HttpResponse-string'
+                $ref: '#/components/schemas/dto.HttpResponse-dto_UpdateEventResponse'
           description: OK
         "400":
           content:
