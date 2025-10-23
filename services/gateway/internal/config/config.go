@@ -16,18 +16,17 @@ type CorsConfig struct {
 }
 
 type AppConfig struct {
-	Name         string        `env:"NAME"`
-	Port         int           `env:"PORT"`
-	Environment  string        `env:"ENVIRONMENT"`
-	MaxBodyLimit int           `env:"MAX_BODY_LIMIT"`
-	Cors         CorsConfig    `envPrefix:"CORS_"`
-	Logger       logger.Config `envPrefix:"LOGGER_"`
-	JWT          jwt.Config    `envPrefix:"JWT_"`
-
-	AuthRedis         redis.Config `envPrefix:"AUTHREDIS_"`
-	AuthClientBaseURL string       `env:"AUTH_CLIENT_BASE_URL"`
-
-	EventClientBaseURL string `env:"EVENT_CLIENT_BASE_URL"`
+	Name                  string        `env:"NAME"`
+	Port                  int           `env:"PORT"`
+	Environment           string        `env:"ENVIRONMENT"`
+	MaxBodyLimit          int           `env:"MAX_BODY_LIMIT"`
+	Cors                  CorsConfig    `envPrefix:"CORS_"`
+	Logger                logger.Config `envPrefix:"LOGGER_"`
+	JWT                   jwt.Config    `envPrefix:"JWT_"`
+	AuthRedis             redis.Config  `envPrefix:"AUTHREDIS_"`
+	AuthClientBaseURL     string        `env:"AUTH_CLIENT_BASE_URL"`
+	EventClientBaseURL    string        `env:"EVENT_CLIENT_BASE_URL"`
+	LocationClientBaseURL string        `env:"LOCATION_CLIENT_BASE_URL"`
 }
 
 func Load() *AppConfig {
