@@ -42,7 +42,7 @@ type UpdateEventResponse struct {
 }
 
 type DeleteEventRequest struct {
-	ID string `json:"id" validate:"required"`
+	ID string `params:"id" swaggerignore:"true"`
 }
 
 type EventResponse struct {

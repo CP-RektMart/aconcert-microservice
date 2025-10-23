@@ -23,8 +23,8 @@ func (h *Handler) Mount(r fiber.Router) {
 	group.Get("/", h.ListEvents)
 	group.Get("/:id", h.GetEvent)
 	group.Post("/", h.authentication.Auth, h.CreateEvent)
-	group.Put("/", h.authentication.Auth, h.UpdateEvent)
-	group.Delete("/", h.authentication.Auth, h.DeleteEvent)
+	group.Put("/:id", h.authentication.Auth, h.UpdateEvent)
+	group.Delete("/:id", h.authentication.Auth, h.DeleteEvent)
 }
 
 // @Summary      	List Events
@@ -157,7 +157,7 @@ func (h *Handler) DeleteEvent(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	var req dto.DeleteEventRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.ParamsParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
