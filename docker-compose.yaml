@@ -3,7 +3,7 @@ name: aconcert
 services:
     # Auth Database - Postgres
     auth-postgres:
-        image: postgres:latest
+        image: postgres:15-alpine
         container_name: auth-postgres
         ports:
             - "${AUTH_POSTGRES_PORT}:5432"
@@ -24,7 +24,7 @@ services:
     # Event Database - Postgres
     event-postgres:
         image: postgres:15-alpine
-        container_name: aconcert-event-db
+        container_name: event-postgres
         environment:
             POSTGRES_DB: event-postgres
             POSTGRES_USER: postgres
@@ -75,7 +75,7 @@ services:
             context: .
             dockerfile: ./services/auth/Dockerfile
         container_name: auth-service
-        env_file: .env.port
+        env_file: ./services/auth/.env
         depends_on:
             - auth-postgres
             - auth-redis
@@ -88,7 +88,7 @@ services:
             context: .
             dockerfile: ./services/event/Dockerfile
         container_name: event-service
-        env_file: .env.port
+        env_file: ./services/event/.env
         depends_on:
             - event-postgres
             - event-redis
@@ -101,7 +101,7 @@ services:
             context: .
             dockerfile: ./services/location/Dockerfile
         container_name: location-service
-        env_file: .env.port
+        env_file: ./services/location/.env
         depends_on:
             - location-mongo
         ports:
@@ -113,7 +113,7 @@ services:
             context: .
             dockerfile: ./services/gateway/Dockerfile
         container_name: gateway
-        env_file: .env.port
+        env_file: ./services/gateway/.env
         depends_on:
             - auth-service
             - event-service
