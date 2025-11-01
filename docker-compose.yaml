@@ -81,6 +81,8 @@ services:
             - auth-redis
         ports:
             - "${AUTH_SERVICE_PORT}:8000"
+        networks:
+            - aconcert-network
 
     # Event Service
     event-service:
@@ -94,6 +96,8 @@ services:
             - event-redis
         ports:
             - "${EVENT_SERVICE_PORT}:8000"
+        networks:
+            - aconcert-network
 
     # Location Service
     location-service:
@@ -106,6 +110,8 @@ services:
             - location-mongo
         ports:
             - "${LOCATION_SERVICE_PORT}:8000"
+        networks:
+            - aconcert-network
 
     # Gateway Service
     gateway:
@@ -120,6 +126,8 @@ services:
             - location-service
         ports:
             - "${GATEWAY_PORT}:8000"
+        networks:
+            - aconcert-network
 
 volumes:
     auth_db_data:

@@ -1,5 +1,5 @@
-AUTH_DB=postgres://postgres:password@localhost:5432/postgres?sslmode=disable
-EVENT_DB=postgres://postgres:password@localhost:5433/postgres?sslmode=disable
+AUTH_DB=postgres://postgres:password@localhost:5432/auth?sslmode=disable
+EVENT_DB=postgres://postgres:password@localhost:5433/event?sslmode=disable
 
 migrate-up:
 	dbmate -d services/auth/db/migrations -u ${AUTH_DB} up
