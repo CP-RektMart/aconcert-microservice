@@ -1,3 +1,14 @@
+AUTH_DB=postgres://postgres:password@localhost:5432/postgres?sslmode=disable
+EVENT_DB=postgres://postgres:password@localhost:5433/postgres?sslmode=disable
+
+migrate-up:
+	dbmate -d services/auth/db/migrations -u ${AUTH_DB} up
+	dbmate -d services/event/db/migrations -u ${EVENT_DB} up
+
+migrate-down:
+	dbmate -d services/auth/db/migrations -u ${AUTH_DB} down
+	dbmate -d services/event/db/migrations -u ${EVENT_DB} down
+
 sqlc:
 	sqlc generate
 

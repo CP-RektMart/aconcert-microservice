@@ -8,9 +8,9 @@ services:
         ports:
             - "${AUTH_POSTGRES_PORT}:5432"
         environment:
+            POSTGRES_DB: auth
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: password
-            POSTGRES_DB: postgres
         volumes:
             - auth_db_data:/var/lib/postgresql/data
 
@@ -26,7 +26,7 @@ services:
         image: postgres:15-alpine
         container_name: event-postgres
         environment:
-            POSTGRES_DB: event-postgres
+            POSTGRES_DB: event
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: password
         ports:
