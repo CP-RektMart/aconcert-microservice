@@ -33,27 +33,27 @@ func NewAuthMiddleware(config *jwt.Config, authRedisClient *redis.Client) AuthMi
 }
 
 func (r *authMiddleware) Auth(ctx *fiber.Ctx) error {
-	tokenByte := ctx.GetReqHeaders()["Authorization"]
-	if len(tokenByte) == 0 {
-		return ErrUnauthorized
-	}
+	// tokenByte := ctx.GetReqHeaders()["Authorization"]
+	// if len(tokenByte) == 0 {
+	// 	return ErrUnauthorized
+	// }
 
-	if len(tokenByte[0]) < 7 {
-		return ErrUnauthorized
-	}
+	// if len(tokenByte[0]) < 7 {
+	// 	return ErrUnauthorized
+	// }
 
-	bearerToken := tokenByte[0][7:]
-	if len(bearerToken) == 0 {
-		return ErrUnauthorized
-	}
+	// bearerToken := tokenByte[0][7:]
+	// if len(bearerToken) == 0 {
+	// 	return ErrUnauthorized
+	// }
 
-	claims, err := r.validateToken(ctx.UserContext(), bearerToken)
-	if err != nil {
-		return ErrUnauthorized
-	}
+	// claims, err := r.validateToken(ctx.UserContext(), bearerToken)
+	// if err != nil {
+	// 	return ErrUnauthorized
+	// }
 
-	userContext := r.withUserID(ctx.UserContext(), claims.ID)
-	ctx.SetUserContext(userContext)
+	// userContext := r.withUserID(ctx.UserContext(), claims.ID)
+	// ctx.SetUserContext(userContext)
 
 	return ctx.Next()
 }

@@ -69,65 +69,87 @@ services:
             timeout: 5s
             retries: 5
 
-    # Auth Service
-    auth-service:
-        build:
-            context: .
-            dockerfile: ./services/auth/Dockerfile
-        container_name: auth-service
-        env_file: ./services/auth/.env
-        depends_on:
-            - auth-postgres
-            - auth-redis
-        ports:
-            - "${AUTH_SERVICE_PORT}:8000"
-        networks:
-            - aconcert-network
+    # # Auth Service
+    # auth-service:
+    #     build:
+    #         context: .
+    #         dockerfile: ./services/auth/Dockerfile
+    #     container_name: auth-service
+    #     env_file: ./services/auth/.env
+    #     depends_on:
+    #         - auth-postgres
+    #         - auth-redis
+    #     ports:
+    #         - "${AUTH_SERVICE_PORT}:8000"
+    #     networks:
+    #         - aconcert-network
 
-    # Event Service
-    event-service:
-        build:
-            context: .
-            dockerfile: ./services/event/Dockerfile
-        container_name: event-service
-        env_file: ./services/event/.env
-        depends_on:
-            - event-postgres
-            - event-redis
-        ports:
-            - "${EVENT_SERVICE_PORT}:8000"
-        networks:
-            - aconcert-network
+    # # Event Service
+    # event-service:
+    #     build:
+    #         context: .
+    #         dockerfile: ./services/event/Dockerfile
+    #     container_name: event-service
+    #     env_file: ./services/event/.env
+    #     depends_on:
+    #         - event-postgres
+    #         - event-redis
+    #         - minio
+    #     ports:
+    #         - "${EVENT_SERVICE_PORT}:8000"
+    #     networks:
+    #         - aconcert-network
 
-    # Location Service
-    location-service:
-        build:
-            context: .
-            dockerfile: ./services/location/Dockerfile
-        container_name: location-service
-        env_file: ./services/location/.env
-        depends_on:
-            - location-mongo
-        ports:
-            - "${LOCATION_SERVICE_PORT}:8000"
-        networks:
-            - aconcert-network
+    # # Location Service
+    # location-service:
+    #     build:
+    #         context: .
+    #         dockerfile: ./services/location/Dockerfile
+    #     container_name: location-service
+    #     env_file: ./services/location/.env
+    #     depends_on:
+    #         - location-mongo
+    #     ports:
+    #         - "${LOCATION_SERVICE_PORT}:8000"
+    #     networks:
+    #         - aconcert-network
 
-    # Gateway Service
-    gateway:
-        build:
-            context: .
-            dockerfile: ./services/gateway/Dockerfile
-        container_name: gateway
-        env_file: ./services/gateway/.env
-        depends_on:
-            - auth-service
-            - event-service
-            - location-service
+    # # Gateway Service
+    # gateway:
+    #     build:
+    #         context: .
+    #         dockerfile: ./services/gateway/Dockerfile
+    #     container_name: gateway
+    #     env_file: ./services/gateway/.env
+    #     depends_on:
+    #         - auth-service
+    #         - event-service
+    #         - location-service
+    #     ports:
+    #         - "${GATEWAY_PORT}:8000"
+    #     networks:
+    #         - aconcert-network
+
+    # 🟢 MinIO - S3-compatible Object Storage
+    minio:
+        image: quay.io/minio/minio
+        container_name: minio
         ports:
-            - "${GATEWAY_PORT}:8000"
+            - "9000:9000"  # S3 API
+            - "9001:9001"  # Web Console
+        environment:
+            MINIO_ROOT_USER: admin
+            MINIO_ROOT_PASSWORD: admin123
+        command: server /data --console-address ":9001"
+        volumes:
+            - minio_data:/data
         networks:
             - aconcert-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
 volumes:
     auth_db_data:
@@ -135,6 +157,8 @@ volumes:
     event_db_data:
         driver: local
     location_mongo_data:
+        driver: local
+    minio_data:
         driver: local
 
 networks:

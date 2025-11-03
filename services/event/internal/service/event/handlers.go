@@ -7,6 +7,7 @@ import (
 	"time"
 
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -42,7 +43,9 @@ func (s *EventService) ListEvents(ctx context.Context, req *eventpb.ListEventsRe
 		Offset: int32(page * limit),
 		Query:  fmt.Sprintf("%%%s%%", query),
 	})
+
 	if err != nil {
+		logger.ErrorContext(ctx, err.Error())
 		return nil, errors.New("failed to list events")
 	}
 
@@ -54,7 +57,7 @@ func (s *EventService) ListEvents(ctx context.Context, req *eventpb.ListEventsRe
 			UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
 			Name:        event.Name,
 			Description: event.Description.String,
-			LocationId:  event.LocationID.String(),
+			LocationId:  event.LocationID.String,
 			Artist:      event.Artist,
 			EventDate:   event.EventDate.Time.Format(time.RFC3339),
 			Thumbnail:   event.Thumbnail.String,
@@ -87,7 +90,7 @@ func (s *EventService) GetEvent(ctx context.Context, req *eventpb.GetEventReques
 		UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
 		Name:        event.Name,
 		Description: event.Description.String,
-		LocationId:  event.LocationID.String(),
+		LocationId:  event.LocationID.String,
 		Artist:      event.Artist,
 		EventDate:   event.EventDate.Time.Format(time.RFC3339),
 		Thumbnail:   event.Thumbnail.String,
@@ -104,15 +107,15 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 
 	newUUID := uuid.New()
 
-	// Parse locationId from request
-	locationUUID, err := uuid.Parse(req.GetLocationId())
-	if err != nil {
+	location := req.GetLocationId()
+	if location == "" {
 		return nil, errors.New("invalid locationId format")
 	}
 
 	// Parse eventDate from request
 	eventDate, err := time.Parse(time.RFC3339, req.GetEventDate())
 	if err != nil {
+		logger.ErrorContext(ctx, err.Error())
 		return nil, errors.New("invalid eventDate format")
 	}
 
@@ -120,13 +123,14 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 		ID:          pgtype.UUID{Bytes: newUUID, Valid: true},
 		Name:        req.GetName(),
 		Description: pgtype.Text{String: req.GetDescription(), Valid: true},
-		LocationID:  pgtype.UUID{Bytes: locationUUID, Valid: true},
+		LocationID:  pgtype.Text{String: location, Valid: true},
 		Artist:      req.GetArtist(),
 		EventDate:   pgtype.Timestamptz{Time: eventDate, Valid: true},
 		Thumbnail:   pgtype.Text{String: req.GetThumbnail(), Valid: true},
 		Images:      req.GetImages(),
 	})
 	if err != nil {
+		logger.ErrorContext(ctx, err.Error())
 		return nil, errors.New("failed to create event")
 	}
 
@@ -163,9 +167,8 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *eventpb.UpdateEvent
 
 	locationID := eventData.LocationID
 	if req.LocationId != nil && *req.LocationId != "" {
-		parsedLoc, err := uuid.Parse(req.GetLocationId())
 		if err == nil {
-			locationID = pgtype.UUID{Bytes: parsedLoc, Valid: true}
+			locationID = pgtype.Text{String: req.GetLocationId(), Valid: true}
 		}
 	}
 

@@ -7,7 +7,7 @@ CREATE TABLE events (
 
     name TEXT NOT NULL,
     description TEXT,
-    location_id UUID NOT NULL,
+    location_id TEXT NOT NULL,
     artist TEXT[] NOT NULL,
     event_date TIMESTAMPTZ NOT NULL,
     thumbnail TEXT,

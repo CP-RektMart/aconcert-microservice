@@ -3,6 +3,7 @@ package event
 import (
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/middlewares/authentication"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -49,6 +50,7 @@ func (h *Handler) ListEvents(c *fiber.Ctx) error {
 
 	events, err := h.service.ListEvents(ctx, &req)
 	if err != nil {
+		logger.ErrorContext(ctx,err.Error())
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 

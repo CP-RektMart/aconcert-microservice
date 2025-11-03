@@ -24,7 +24,7 @@ type CreateEventParams struct {
 	ID          pgtype.UUID        `json:"id"`
 	Name        string             `json:"name"`
 	Description pgtype.Text        `json:"description"`
-	LocationID  pgtype.UUID        `json:"location_id"`
+	LocationID  pgtype.Text        `json:"location_id"`
 	Artist      []string           `json:"artist"`
 	EventDate   pgtype.Timestamptz `json:"event_date"`
 	Thumbnail   pgtype.Text        `json:"thumbnail"`
@@ -177,7 +177,7 @@ type UpdateEventParams struct {
 	ID          pgtype.UUID        `json:"id"`
 	Name        string             `json:"name"`
 	Description pgtype.Text        `json:"description"`
-	LocationID  pgtype.UUID        `json:"location_id"`
+	LocationID  pgtype.Text        `json:"location_id"`
 	Artist      []string           `json:"artist"`
 	EventDate   pgtype.Timestamptz `json:"event_date"`
 	Thumbnail   pgtype.Text        `json:"thumbnail"`
