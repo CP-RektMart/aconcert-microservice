@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package reservation;
+
+option go_package = "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation;reservationpb";
+
+// ------------------ Messages ------------------ //
+message Seat {
+    int32 zone_number = 1;
+    string zone_name = 2;
+    double price = 3;
+    repeated string exclusive = 4;
+    int32 row = 5;
+    int32 column = 6;
+}
+
+message Reservation {
+    string userId = 1;
+    string eventId = 2;
+    double totalPrice = 4;
+    repeated Seat seats = 3;
+}
+
+// ------------------ CRUD ------------------ //
+
+message CreateReservationRequest {
+    Reservation reservation = 1;
+}
+
+message DeleteReservationRequest {
+    string id = 1;
+}
+
+message ListReservationRequest {
+    string userId = 1;
+}
+
+message GetReservationRequest {
+    string id = 1;
+}
+
+message CreateReservationResponse {
+    string id = 1;
+}
+
+message DeleteReservationResponse {
+    string id = 1;
+}
+
+message ListReservationResponse {
+    repeated Reservation reservation = 1;
+}
+
+message GetReservationResponse {
+    string id = 1;
+    string userId = 2;
+    string eventId = 3;
+    double totalPrice = 4;
+    repeated Seat seats = 5;
+}
+
+// ------------------ Service ------------------ //
+service ReservationService {
+    // reservation operations
+    rpc CreateReservation(Reservation) returns (CreateReservationResponse) {}
+    rpc DeleteReservation(DeleteReservationRequest) returns (DeleteReservationResponse) {}
+    rpc ListReservation(ListReservationRequest) returns (ListReservationResponse) {}
+    rpc GetReservation(GetReservationRequest) returns (GetReservationResponse) {}
+}

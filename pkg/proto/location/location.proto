@@ -6,7 +6,7 @@ option go_package = "github.com/cp-rektmart/aconcert-microservice/pkg/proto/loca
 
 // ------------------ Messages ------------------ //
 message Location {
-    string id = 1;            
+    string id = 1;
     string venue_name = 2;
     string city = 3;
     string state_province = 4;
