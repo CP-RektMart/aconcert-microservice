@@ -12,8 +12,10 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/grpclogger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/config"
+	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/domains"
 	"google.golang.org/grpc"
 )
 
@@ -52,6 +54,12 @@ func main() {
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
 	)
+	
+	// cache repo
+	// db repo
+
+	reservationServer := domains.New()
+	reservationpb.RegisterReservationServiceServer(grpcServer, reservationServer)
 
 	go func() {
 		logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))

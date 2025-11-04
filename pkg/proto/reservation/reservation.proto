@@ -9,7 +9,6 @@ message Seat {
     int32 zone_number = 1;
     string zone_name = 2;
     double price = 3;
-    repeated string exclusive = 4;
     int32 row = 5;
     int32 column = 6;
 }
