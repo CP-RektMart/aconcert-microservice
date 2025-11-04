@@ -1,142 +1,148 @@
 name: aconcert
 
 services:
-    # Auth Database - Postgres
-    auth-postgres:
-        image: postgres:15-alpine
-        container_name: auth-postgres
-        ports:
-            - "${AUTH_POSTGRES_PORT}:5432"
-        environment:
-            POSTGRES_DB: auth
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: password
-        volumes:
-            - auth_db_data:/var/lib/postgresql/data
+  # Auth Database - Postgres
+  auth-postgres:
+    image: postgres:15-alpine
+    container_name: auth-postgres
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - aconcert-network
 
-    # Auth Database - Redis
-    auth-redis:
-        image: redis:latest
-        container_name: auth-redis
-        ports:
-            - "${AUTH_REDIS_PORT}:6379"
+  # Auth Database - Redis
+  auth-redis:
+    image: redis:latest
+    container_name: auth-redis
+    ports:
+      - "6969:6379"
+    networks:
+      - aconcert-network
 
-    # Event Database - Postgres
-    event-postgres:
-        image: postgres:15-alpine
-        container_name: event-postgres
-        environment:
-            POSTGRES_DB: event
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: password
-        ports:
-            - "${EVENT_POSTGRES_PORT}:5432"
-        volumes:
-            - event_db_data:/var/lib/postgresql/data
-            - ../services/event/db/migrations:/docker-entrypoint-initdb.d
-        networks:
-            - aconcert-network
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U postgres -d event-postgres"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
+  # Event Database - Postgres
+  event-postgres:
+    image: postgres:15-alpine
+    container_name: event-postgres
+    environment:
+      POSTGRES_DB: event
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - event_db_data:/var/lib/postgresql/data
+      - ../services/event/db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - aconcert-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d event-postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-    # Event Database - Redis
-    event-redis:
-        image: redis:latest
-        container_name: event-redis
-        ports:
-            - "${EVENT_REDIS_PORT}:6379"
+  # Event Database - Redis
+  event-redis:
+    image: redis:latest
+    container_name: event-redis
+    ports:
+      - "6970:6379"
+    networks:
+      - aconcert-network
 
-    # Location Database - Mongo
-    location-mongo:
-        image: mongo:6.0
-        container_name: location-mongo
-        ports:
-            - "${LOCATION_MONGO_PORT}:27017"
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: password
-            MONGO_INITDB_DATABASE: aconcert
-        volumes:
-            - location_mongo_data:/data/db
-        networks:
-            - aconcert-network
-        healthcheck:
-            test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
+  # Location Database - Mongo
+  location-mongo:
+    image: mongo:6.0
+    container_name: location-mongo
+    ports:
+      - "20007:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: aconcert
+    volumes:
+      - location_mongo_data:/data/db
+    networks:
+      - aconcert-network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-    # Auth Service
-    auth-service:
-        build:
-            context: .
-            dockerfile: ./services/auth/Dockerfile
-        container_name: auth-service
-        env_file: ./services/auth/.env
-        depends_on:
-            - auth-postgres
-            - auth-redis
-        ports:
-            - "${AUTH_SERVICE_PORT}:8000"
-        networks:
-            - aconcert-network
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./services/auth/Dockerfile
+    container_name: auth-service
+    env_file: ./services/auth/.env
+    depends_on:
+      - auth-postgres
+      - auth-redis
+    ports:
+      - "8001:8000"
+    networks:
+      - aconcert-network
 
-    # Event Service
-    event-service:
-        build:
-            context: .
-            dockerfile: ./services/event/Dockerfile
-        container_name: event-service
-        env_file: ./services/event/.env
-        depends_on:
-            - event-postgres
-            - event-redis
-        ports:
-            - "${EVENT_SERVICE_PORT}:8000"
-        networks:
-            - aconcert-network
+  # Event Service
+  event-service:
+    build:
+      context: .
+      dockerfile: ./services/event/Dockerfile
+    container_name: event-service
+    env_file: ./services/event/.env
+    depends_on:
+      - event-postgres
+      - event-redis
+    ports:
+      - "8002:8000"
+    networks:
+      - aconcert-network
 
-    # Location Service
-    location-service:
-        build:
-            context: .
-            dockerfile: ./services/location/Dockerfile
-        container_name: location-service
-        env_file: ./services/location/.env
-        depends_on:
-            - location-mongo
-        ports:
-            - "${LOCATION_SERVICE_PORT}:8000"
-        networks:
-            - aconcert-network
+  # Location Service
+  location-service:
+    build:
+      context: .
+      dockerfile: ./services/location/Dockerfile
+    container_name: location-service
+    env_file: ./services/location/.env
+    depends_on:
+      - location-mongo
+    ports:
+      - "8003:8000"
+    networks:
+      - aconcert-network
 
-    # Gateway Service
-    gateway:
-        build:
-            context: .
-            dockerfile: ./services/gateway/Dockerfile
-        container_name: gateway
-        env_file: ./services/gateway/.env
-        depends_on:
-            - auth-service
-            - event-service
-            - location-service
-        ports:
-            - "${GATEWAY_PORT}:8000"
-        networks:
-            - aconcert-network
+  # Gateway Service
+  gateway:
+    build:
+      context: .
+      dockerfile: ./services/gateway/Dockerfile
+    container_name: gateway
+    env_file: ./services/gateway/.env
+    depends_on:
+      - auth-service
+      - event-service
+      - location-service
+    ports:
+      - "8000:8000"
+    networks:
+      - aconcert-network
 
 volumes:
-    auth_db_data:
-        driver: local
-    event_db_data:
-        driver: local
-    location_mongo_data:
-        driver: local
+  auth_db_data:
+    driver: local
+  event_db_data:
+    driver: local
+  location_mongo_data:
+    driver: local
 
 networks:
-    aconcert-network:
-        driver: bridge
+  aconcert-network:
+    driver: bridge
