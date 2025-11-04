@@ -4,9 +4,8 @@ type CreateLocationZoneRequest struct {
 	ZoneNumber int      `json:"zoneNumber" validate:"required"`
 	ZoneName   string   `json:"zoneName" validate:"required"`
 	Capacity   int      `json:"capacity" validate:"required"`
-	Reserved   bool     `json:"reserved" validate:"required"`
-	Price      float64  `json:"price" validate:"required"`
-	Exclusive  []string `json:"exclusive" validate:"required"`
+	SeatsPerRow  int32  `json:"seatsPerRow"`
+	NumberOfRows int32  `json:"numberOfRows"`
 }
 
 type CreateLocationRequest struct {
@@ -37,9 +36,8 @@ type UpdateLocationZoneRequest struct {
 	ZoneNumber int      `json:"zoneNumber" validate:"required"`
 	ZoneName   string   `json:"zoneName" validate:"required"`
 	Capacity   int      `json:"capacity" validate:"required"`
-	Reserved   bool     `json:"reserved" validate:"required"`
-	Price      float64  `json:"price" validate:"required"`
-	Exclusive  []string `json:"exclusive" validate:"required"`
+	SeatsPerRow  int32  `json:"seatsPerRow"`
+	NumberOfRows int32  `json:"numberOfRows"`
 }
 
 type UpdateLocationRequest struct {
@@ -73,10 +71,9 @@ type LocationResponse struct {
 }
 
 type ZoneResponse struct {
-	ZoneNumber int      `json:"zoneNumber"`
-	ZoneName   string   `json:"zoneName"`
-	Capacity   int      `json:"capacity"`
-	Reserved   bool     `json:"reserved"`
-	Price      float64  `json:"price"`
-	Exclusive  []string `json:"exclusive"`
+	ZoneNumber   int32  `json:"zoneNumber"`
+	ZoneName     string `json:"zoneName"`
+	Capacity     int32  `json:"capacity"`
+	SeatsPerRow  int32  `json:"seatsPerRow"`
+	NumberOfRows int32  `json:"numberOfRows"`
 }

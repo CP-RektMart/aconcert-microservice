@@ -20,12 +20,11 @@ func NewService(client locationpb.LocationServiceClient) *LocationService {
 
 func (s *LocationService) TransformZoneResponses(zone *locationpb.Zone) dto.ZoneResponse {
 	return dto.ZoneResponse{
-		ZoneNumber: int(zone.ZoneNumber),
+		ZoneNumber: zone.ZoneNumber,
 		ZoneName:   zone.ZoneName,
-		Capacity:   int(zone.Capacity),
-		Reserved:   zone.Reserved,
-		Price:      zone.Price,
-		Exclusive:  zone.Exclusive,
+		Capacity:   zone.Capacity,
+		SeatsPerRow: zone.SeatsPerRow,
+		NumberOfRows: zone.Capacity,
 	}
 }
 
@@ -81,9 +80,8 @@ func (s *LocationService) CreateLocation(ctx context.Context, req *dto.CreateLoc
 			ZoneNumber: int32(zoneReq.ZoneNumber),
 			ZoneName:   zoneReq.ZoneName,
 			Capacity:   int32(zoneReq.Capacity),
-			Reserved:   zoneReq.Reserved,
-			Price:      zoneReq.Price,
-			Exclusive:  zoneReq.Exclusive,
+			SeatsPerRow: zoneReq.SeatsPerRow,
+			NumberOfRows: zoneReq.NumberOfRows,
 		})
 	}
 
@@ -112,9 +110,8 @@ func (s *LocationService) UpdateLocation(ctx context.Context, req *dto.UpdateLoc
 			ZoneNumber: int32(zoneReq.ZoneNumber),
 			ZoneName:   zoneReq.ZoneName,
 			Capacity:   int32(zoneReq.Capacity),
-			Reserved:   zoneReq.Reserved,
-			Price:      zoneReq.Price,
-			Exclusive:  zoneReq.Exclusive,
+			SeatsPerRow: zoneReq.SeatsPerRow,
+			NumberOfRows: zoneReq.NumberOfRows,
 		})
 	}
 
