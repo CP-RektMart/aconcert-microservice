@@ -25,16 +25,16 @@ const (
 type Event struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt     string                 `protobuf:"bytes,4,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
-	LocationId    string                 `protobuf:"bytes,7,opt,name=location_id,json=locationId,proto3" json:"location_id,omitempty"`
-	Artist        []string               `protobuf:"bytes,8,rep,name=artist,proto3" json:"artist,omitempty"`
-	EventDate     string                 `protobuf:"bytes,9,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
-	Thumbnail     string                 `protobuf:"bytes,10,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
-	Images        []string               `protobuf:"bytes,11,rep,name=images,proto3" json:"images,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	LocationId    string                 `protobuf:"bytes,4,opt,name=location_id,json=locationId,proto3" json:"location_id,omitempty"`
+	Artist        []string               `protobuf:"bytes,5,rep,name=artist,proto3" json:"artist,omitempty"`
+	EventDate     string                 `protobuf:"bytes,6,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
+	Thumbnail     string                 `protobuf:"bytes,7,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
+	Images        []string               `protobuf:"bytes,8,rep,name=images,proto3" json:"images,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt     string                 `protobuf:"bytes,11,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -72,27 +72,6 @@ func (*Event) Descriptor() ([]byte, []int) {
 func (x *Event) GetId() string {
 	if x != nil {
 		return x.Id
-	}
-	return ""
-}
-
-func (x *Event) GetCreatedAt() string {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return ""
-}
-
-func (x *Event) GetUpdatedAt() string {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return ""
-}
-
-func (x *Event) GetDeletedAt() string {
-	if x != nil {
-		return x.DeletedAt
 	}
 	return ""
 }
@@ -144,6 +123,27 @@ func (x *Event) GetImages() []string {
 		return x.Images
 	}
 	return nil
+}
+
+func (x *Event) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *Event) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+func (x *Event) GetDeletedAt() string {
+	if x != nil {
+		return x.DeletedAt
+	}
+	return ""
 }
 
 // CreateEvent
@@ -818,23 +818,23 @@ const file_event_event_proto_rawDesc = "" +
 	"\n" +
 	"\x11event/event.proto\x12\x05event\"\xb8\x02\n" +
 	"\x05Event\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
-	"\n" +
-	"created_at\x18\x02 \x01(\tR\tcreatedAt\x12\x1d\n" +
-	"\n" +
-	"updated_at\x18\x03 \x01(\tR\tupdatedAt\x12\x1d\n" +
-	"\n" +
-	"deleted_at\x18\x04 \x01(\tR\tdeletedAt\x12\x12\n" +
-	"\x04name\x18\x05 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1f\n" +
-	"\vlocation_id\x18\a \x01(\tR\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vlocation_id\x18\x04 \x01(\tR\n" +
 	"locationId\x12\x16\n" +
-	"\x06artist\x18\b \x03(\tR\x06artist\x12\x1d\n" +
+	"\x06artist\x18\x05 \x03(\tR\x06artist\x12\x1d\n" +
 	"\n" +
-	"event_date\x18\t \x01(\tR\teventDate\x12\x1c\n" +
-	"\tthumbnail\x18\n" +
-	" \x01(\tR\tthumbnail\x12\x16\n" +
-	"\x06images\x18\v \x03(\tR\x06images\"\xd8\x01\n" +
+	"event_date\x18\x06 \x01(\tR\teventDate\x12\x1c\n" +
+	"\tthumbnail\x18\a \x01(\tR\tthumbnail\x12\x16\n" +
+	"\x06images\x18\b \x03(\tR\x06images\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\t \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\n" +
+	" \x01(\tR\tupdatedAt\x12\x1d\n" +
+	"\n" +
+	"deleted_at\x18\v \x01(\tR\tdeletedAt\"\xd8\x01\n" +
 	"\x12CreateEventRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1f\n" +

@@ -67,14 +67,11 @@ func (r *LocationRepository) UpdateZone(ctx context.Context, locID primitive.Obj
 	if zone.Capacity != 0 {
 		updateFields["zones.$.capacity"] = zone.Capacity
 	}
-	if zone.Price != 0 {
-		updateFields["zones.$.price"] = zone.Price
+	if zone.SeatsPerRow != 0 {
+		updateFields["zones.$.seats_per_row"] = zone.SeatsPerRow
 	}
-	if zone.Reserved {
-		updateFields["zones.$.reserved"] = zone.Reserved
-	}
-	if len(zone.Exclusive) > 0 {
-		updateFields["zones.$.exclusive"] = zone.Exclusive
+	if zone.NumberOfRows != 0 {
+		updateFields["zones.$.number_of_rows"] = zone.NumberOfRows
 	}
 
 	if len(updateFields) == 0 {

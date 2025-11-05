@@ -1,12 +1,11 @@
 package dto
 
 type CreateLocationZoneRequest struct {
-	ZoneNumber int      `json:"zoneNumber" validate:"required"`
-	ZoneName   string   `json:"zoneName" validate:"required"`
-	Capacity   int      `json:"capacity" validate:"required"`
-	Reserved   bool     `json:"reserved" validate:"required"`
-	Price      float64  `json:"price" validate:"required"`
-	Exclusive  []string `json:"exclusive" validate:"required"`
+	ZoneNumber   int    `json:"zoneNumber" validate:"required"`
+	ZoneName     string `json:"zoneName" validate:"required"`
+	Capacity     int    `json:"capacity" validate:"required"`
+	SeatsPerRow  int    `json:"seatsPerRow" validate:"required"`
+	NumberOfRows int    `json:"numberOfRows" validate:"required"`
 }
 
 type CreateLocationRequest struct {
@@ -34,12 +33,11 @@ type ListLocationsResponse struct {
 }
 
 type UpdateLocationZoneRequest struct {
-	ZoneNumber int      `json:"zoneNumber" validate:"required"`
-	ZoneName   string   `json:"zoneName" validate:"required"`
-	Capacity   int      `json:"capacity" validate:"required"`
-	Reserved   bool     `json:"reserved" validate:"required"`
-	Price      float64  `json:"price" validate:"required"`
-	Exclusive  []string `json:"exclusive" validate:"required"`
+	ZoneNumber   int    `json:"zoneNumber" validate:"required"`
+	ZoneName     string `json:"zoneName" validate:"required"`
+	Capacity     int    `json:"capacity" validate:"required"`
+	SeatsPerRow  int    `json:"seatsPerRow" validate:"required"`
+	NumberOfRows int    `json:"numberOfRows" validate:"required"`
 }
 
 type UpdateLocationRequest struct {
@@ -62,21 +60,20 @@ type DeleteLocationRequest struct {
 }
 
 type LocationResponse struct {
-	ID            string         `json:"id"`
-	VenueName     string         `json:"venueName"`
-	City          string         `json:"city"`
-	StateProvince string         `json:"stateProvince"`
-	Country       string         `json:"country"`
-	Latitude      float64        `json:"latitude"`
-	Longitude     float64        `json:"longitude"`
-	Zones         []ZoneResponse `json:"zones"`
+	ID            string         `json:"id" validate:"required"`
+	VenueName     string         `json:"venueName" validate:"required"`
+	City          string         `json:"city" validate:"required"`
+	StateProvince string         `json:"stateProvince" validate:"required"`
+	Country       string         `json:"country" validate:"required"`
+	Latitude      float64        `json:"latitude" validate:"required"`
+	Longitude     float64        `json:"longitude" validate:"required"`
+	Zones         []ZoneResponse `json:"zones" validate:"required"`
 }
 
 type ZoneResponse struct {
-	ZoneNumber int      `json:"zoneNumber"`
-	ZoneName   string   `json:"zoneName"`
-	Capacity   int      `json:"capacity"`
-	Reserved   bool     `json:"reserved"`
-	Price      float64  `json:"price"`
-	Exclusive  []string `json:"exclusive"`
+	ZoneNumber   int    `json:"zoneNumber" validate:"required"`
+	ZoneName     string `json:"zoneName" validate:"required"`
+	Capacity     int    `json:"capacity" validate:"required"`
+	SeatsPerRow  int    `json:"seatsPerRow" validate:"required"`
+	NumberOfRows int    `json:"numberOfRows" validate:"required"`
 }
