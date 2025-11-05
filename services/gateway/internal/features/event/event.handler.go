@@ -180,7 +180,7 @@ func (h *Handler) DeleteEvent(c *fiber.Ctx) error {
 // @Description  	Get Event Zones by Event ID
 // @Tags			event-zones
 // @Router			/v1/events/{id}/event-zones [GET]
-// @Param			eventId	path		string	true	"Event ID"
+// @Param			id	path		string	true	"Event ID"
 // @Success			200 {object}	dto.HttpResponse[dto.EventZoneListResponse]
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError

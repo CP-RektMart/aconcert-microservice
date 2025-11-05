@@ -848,7 +848,7 @@ paths:
       parameters:
       - description: Event ID
         in: path
-        name: eventId
+        name: id
         required: true
         schema:
           type: string

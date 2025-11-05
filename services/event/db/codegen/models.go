@@ -15,7 +15,7 @@ type Event struct {
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
 	Name        string             `json:"name"`
 	Description pgtype.Text        `json:"description"`
-	LocationID  pgtype.UUID        `json:"location_id"`
+	LocationID  string             `json:"location_id"`
 	Artist      []string           `json:"artist"`
 	EventDate   pgtype.Timestamptz `json:"event_date"`
 	Thumbnail   pgtype.Text        `json:"thumbnail"`

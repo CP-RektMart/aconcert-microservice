@@ -55,7 +55,7 @@ func (s *EventService) ListEvents(ctx context.Context, req *eventpb.ListEventsRe
 			UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
 			Name:        event.Name,
 			Description: event.Description.String,
-			LocationId:  event.LocationID.String(),
+			LocationId:  event.LocationID,
 			Artist:      event.Artist,
 			EventDate:   event.EventDate.Time.Format(time.RFC3339),
 			Thumbnail:   event.Thumbnail.String,
@@ -88,7 +88,7 @@ func (s *EventService) GetEvent(ctx context.Context, req *eventpb.GetEventReques
 		UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
 		Name:        event.Name,
 		Description: event.Description.String,
-		LocationId:  event.LocationID.String(),
+		LocationId:  event.LocationID,
 		Artist:      event.Artist,
 		EventDate:   event.EventDate.Time.Format(time.RFC3339),
 		Thumbnail:   event.Thumbnail.String,
@@ -105,12 +105,6 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 
 	newUUID := uuid.New()
 
-	// Parse locationId from request
-	locationUUID, err := uuid.Parse(req.GetLocationId())
-	if err != nil {
-		return nil, errors.New("invalid locationId format")
-	}
-
 	// Parse eventDate from request
 	eventDate, err := time.Parse(time.RFC3339, req.GetEventDate())
 	if err != nil {
@@ -121,7 +115,7 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 		ID:          pgtype.UUID{Bytes: newUUID, Valid: true},
 		Name:        req.GetName(),
 		Description: pgtype.Text{String: req.GetDescription(), Valid: true},
-		LocationID:  pgtype.UUID{Bytes: locationUUID, Valid: true},
+		LocationID:  req.LocationId,
 		Artist:      req.GetArtist(),
 		EventDate:   pgtype.Timestamptz{Time: eventDate, Valid: true},
 		Thumbnail:   pgtype.Text{String: req.GetThumbnail(), Valid: true},
@@ -159,10 +153,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *eventpb.UpdateEvent
 
 	locationID := eventData.LocationID
 	if req.LocationId != nil && *req.LocationId != "" {
-		parsedLoc, err := uuid.Parse(req.GetLocationId())
-		if err == nil {
-			locationID = pgtype.UUID{Bytes: parsedLoc, Valid: true}
-		}
+		locationID = *req.LocationId
 	}
 
 	artist := eventData.Artist
