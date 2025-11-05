@@ -8,7 +8,10 @@ CREATE TABLE event_zones (
     color VARCHAR NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
-    is_sold_out BOOLEAN NOT NULL DEFAULT FALSE
+    is_sold_out BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
 
 -- migrate:down

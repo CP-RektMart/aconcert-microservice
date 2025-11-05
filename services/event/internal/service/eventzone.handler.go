@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
@@ -13,6 +14,7 @@ import (
 func (s *EventService) GetEventZoneByEventId(ctx context.Context, req *eventpb.GetEventZoneByEventIdRequest) (*eventpb.GetEventZoneByEventIdResponse, error) {
 	eventZones, err := s.queries.GetEventZonesByEventID(ctx, utils.ParsedUUID(req.EventId))
 	if err != nil {
+		fmt.Println("Error fetching event zones:", err)
 		return nil, errors.Wrap(err, "failed to get event zones by event ID")
 	}
 

@@ -44,7 +44,7 @@ components:
           type: string
         description:
           type: string
-        eventId:
+        eventID:
           type: string
         locationId:
           type: string
@@ -57,7 +57,7 @@ components:
       required:
       - color
       - description
-      - eventId
+      - eventID
       - locationId
       - name
       - price
@@ -657,142 +657,6 @@ paths:
       summary: Refresh Token
       tags:
       - auth
-  /v1/event-zones:
-    post:
-      description: Create Event Zone
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/dto.CreateEventZoneRequest'
-        description: Create event zone request
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpResponse-dto_CreateEventZoneResponse'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Bad Request
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Internal Server Error
-      security:
-      - ApiKeyAuth: []
-      summary: Create Event Zone
-      tags:
-      - event-zones
-  /v1/event-zones/{id}:
-    delete:
-      description: Delete Event Zone
-      parameters:
-      - description: Event Zone ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Bad Request
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Internal Server Error
-      security:
-      - ApiKeyAuth: []
-      summary: Delete Event Zone
-      tags:
-      - event-zones
-    put:
-      description: Update Event Zone
-      parameters:
-      - description: Event Zone ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/dto.UpdateEventZoneRequest'
-        description: Update event zone request
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpResponse-dto_UpdateEventZoneResponse'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Bad Request
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Internal Server Error
-      security:
-      - ApiKeyAuth: []
-      summary: Update Event Zone
-      tags:
-      - event-zones
-  /v1/event-zones/event/{eventId}:
-    get:
-      description: Get Event Zones by Event ID
-      parameters:
-      - description: Event ID
-        in: path
-        name: eventId
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpResponse-dto_EventZoneListResponse'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Bad Request
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/dto.HttpError'
-          description: Internal Server Error
-      summary: Get Event Zones by Event ID
-      tags:
-      - event-zones
   /v1/events:
     get:
       description: List Events
@@ -978,6 +842,141 @@ paths:
       summary: Update Event
       tags:
       - events
+  /v1/events/{id}/event-zones:
+    get:
+      description: Get Event Zones by Event ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_EventZoneListResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Get Event Zones by Event ID
+      tags:
+      - event-zones
+    post:
+      description: Create Event Zone
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.CreateEventZoneRequest'
+        description: Create event zone request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_CreateEventZoneResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Create Event Zone
+      tags:
+      - event-zones
+  /v1/events/event-zones/{id}:
+    delete:
+      description: Delete Event Zone
+      parameters:
+      - description: Event Zone ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Event Zone
+      tags:
+      - event-zones
+    put:
+      description: Update Event Zone
+      parameters:
+      - description: Event Zone ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdateEventZoneRequest'
+        description: Update event zone request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_UpdateEventZoneResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Update Event Zone
+      tags:
+      - event-zones
   /v1/locations:
     get:
       description: List Locations

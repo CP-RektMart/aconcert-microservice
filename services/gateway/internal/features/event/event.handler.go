@@ -28,8 +28,8 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	group.Get("/:id/event-zones", h.GetEventZoneByEventID)
 	group.Post("/:id/event-zones", h.authentication.Auth, h.CreateEventZone)
-	group.Put("/:id/event-zones/:zoneId", h.authentication.Auth, h.UpdateEventZone)
-	group.Delete("/:id/event-zones/:zoneId", h.authentication.Auth, h.DeleteEventZone)
+	group.Put("/event-zones/:id", h.authentication.Auth, h.UpdateEventZone)
+	group.Delete("/event-zones/:id", h.authentication.Auth, h.DeleteEventZone)
 }
 
 // @Summary      	List Events
@@ -179,7 +179,7 @@ func (h *Handler) DeleteEvent(c *fiber.Ctx) error {
 // @Summary      	Get Event Zones by Event ID
 // @Description  	Get Event Zones by Event ID
 // @Tags			event-zones
-// @Router			/v1/event-zones/event/{eventId} [GET]
+// @Router			/v1/events/{id}/event-zones [GET]
 // @Param			eventId	path		string	true	"Event ID"
 // @Success			200 {object}	dto.HttpResponse[dto.EventZoneListResponse]
 // @Failure			400	{object}	dto.HttpError
@@ -207,7 +207,7 @@ func (h *Handler) GetEventZoneByEventID(c *fiber.Ctx) error {
 // @Summary      	Create Event Zone
 // @Description  	Create Event Zone
 // @Tags			event-zones
-// @Router			/v1/event-zones [POST]
+// @Router			/v1/events/{id}/event-zones [POST]
 // @Security		ApiKeyAuth
 // @Param			body	body		dto.CreateEventZoneRequest	true	"Create event zone request"
 // @Success			200 {object}	dto.HttpResponse[dto.CreateEventZoneResponse]
@@ -217,6 +217,10 @@ func (h *Handler) CreateEventZone(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	var req dto.CreateEventZoneRequest
+	if err := c.ParamsParser(&req); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
 	if err := c.BodyParser(&req); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
@@ -236,7 +240,7 @@ func (h *Handler) CreateEventZone(c *fiber.Ctx) error {
 // @Summary      	Update Event Zone
 // @Description  	Update Event Zone
 // @Tags			event-zones
-// @Router			/v1/event-zones/{id} [PUT]
+// @Router			/v1/events/event-zones/{id} [PUT]
 // @Security		ApiKeyAuth
 // @Param			id	path		string	true	"Event Zone ID"
 // @Param			body	body		dto.UpdateEventZoneRequest	true	"Update event zone request"
@@ -269,9 +273,9 @@ func (h *Handler) UpdateEventZone(c *fiber.Ctx) error {
 // @Summary      	Delete Event Zone
 // @Description  	Delete Event Zone
 // @Tags			event-zones
-// @Router			/v1/event-zones/{id} [DELETE]
+// @Router			/v1/events/event-zones/{id} [DELETE]
 // @Security		ApiKeyAuth
-// @Param			id	path		string	true	"Event Zone ID"
+// @Param			id		path		string	true	"Event Zone ID"
 // @Success			204
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError

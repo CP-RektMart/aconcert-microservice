@@ -75,7 +75,7 @@ type EventZoneResponse struct {
 }
 
 type GetEventZoneByEventIDRequest struct {
-	EventID string `params:"eventId" swaggerignore:"true"`
+	EventID string `params:"id" swaggerignore:"true"`
 }
 
 type EventZoneListResponse struct {
@@ -83,7 +83,7 @@ type EventZoneListResponse struct {
 }
 
 type CreateEventZoneRequest struct {
-	EventID     string  `json:"eventId" validate:"required"`
+	EventID     string  `params:"id" validate:"required"`
 	LocationID  string  `json:"locationId" validate:"required"`
 	ZoneNumber  int     `json:"zoneNumber" validate:"required"`
 	Price       float64 `json:"price" validate:"required"`

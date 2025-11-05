@@ -138,7 +138,7 @@ func (q *Queries) GetEventByID(ctx context.Context, id pgtype.UUID) (Event, erro
 }
 
 const getEventZoneByID = `-- name: GetEventZoneByID :one
-SELECT id, event_id, location_id, zone_number, price, color, name, description, is_sold_out
+SELECT id, event_id, location_id, zone_number, price, color, name, description, is_sold_out, created_at, updated_at, deleted_at
 FROM event_zones
 WHERE id = $1
   AND deleted_at IS NULL
@@ -157,12 +157,15 @@ func (q *Queries) GetEventZoneByID(ctx context.Context, id pgtype.UUID) (EventZo
 		&i.Name,
 		&i.Description,
 		&i.IsSoldOut,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getEventZonesByEventID = `-- name: GetEventZonesByEventID :many
-SELECT id, event_id, location_id, zone_number, price, color, name, description, is_sold_out
+SELECT id, event_id, location_id, zone_number, price, color, name, description, is_sold_out, created_at, updated_at, deleted_at
 FROM event_zones
 WHERE event_id = $1
   AND deleted_at IS NULL
@@ -187,6 +190,9 @@ func (q *Queries) GetEventZonesByEventID(ctx context.Context, eventID pgtype.UUI
 			&i.Name,
 			&i.Description,
 			&i.IsSoldOut,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
