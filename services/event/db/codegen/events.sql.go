@@ -48,6 +48,39 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (pgtyp
 	return id, err
 }
 
+const createEventZone = `-- name: CreateEventZone :one
+INSERT INTO event_zones (
+    event_id, location_id, zone_number, price, color, name, description
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING event_id
+`
+
+type CreateEventZoneParams struct {
+	EventID     pgtype.UUID `json:"event_id"`
+	LocationID  string      `json:"location_id"`
+	ZoneNumber  int32       `json:"zone_number"`
+	Price       float64     `json:"price"`
+	Color       string      `json:"color"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+}
+
+func (q *Queries) CreateEventZone(ctx context.Context, arg CreateEventZoneParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createEventZone,
+		arg.EventID,
+		arg.LocationID,
+		arg.ZoneNumber,
+		arg.Price,
+		arg.Color,
+		arg.Name,
+		arg.Description,
+	)
+	var event_id pgtype.UUID
+	err := row.Scan(&event_id)
+	return event_id, err
+}
+
 const deleteEvent = `-- name: DeleteEvent :one
 UPDATE events
 SET deleted_at = NOW()
@@ -58,6 +91,20 @@ RETURNING $1
 // Soft delete an event
 func (q *Queries) DeleteEvent(ctx context.Context, id pgtype.UUID) (interface{}, error) {
 	row := q.db.QueryRow(ctx, deleteEvent, id)
+	var column_1 interface{}
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const deleteEventZone = `-- name: DeleteEventZone :one
+UPDATE event_zones
+SET deleted_at = NOW()
+WHERE id = $1
+RETURNING $1
+`
+
+func (q *Queries) DeleteEventZone(ctx context.Context, id pgtype.UUID) (interface{}, error) {
+	row := q.db.QueryRow(ctx, deleteEventZone, id)
 	var column_1 interface{}
 	err := row.Scan(&column_1)
 	return column_1, err
@@ -88,6 +135,73 @@ func (q *Queries) GetEventByID(ctx context.Context, id pgtype.UUID) (Event, erro
 		&i.Images,
 	)
 	return i, err
+}
+
+const getEventZoneByID = `-- name: GetEventZoneByID :one
+SELECT id, event_id, location_id, zone_number, price, color, name, description, is_sold_out, created_at, updated_at, deleted_at
+FROM event_zones
+WHERE id = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetEventZoneByID(ctx context.Context, id pgtype.UUID) (EventZone, error) {
+	row := q.db.QueryRow(ctx, getEventZoneByID, id)
+	var i EventZone
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.LocationID,
+		&i.ZoneNumber,
+		&i.Price,
+		&i.Color,
+		&i.Name,
+		&i.Description,
+		&i.IsSoldOut,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getEventZonesByEventID = `-- name: GetEventZonesByEventID :many
+SELECT id, event_id, location_id, zone_number, price, color, name, description, is_sold_out, created_at, updated_at, deleted_at
+FROM event_zones
+WHERE event_id = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetEventZonesByEventID(ctx context.Context, eventID pgtype.UUID) ([]EventZone, error) {
+	rows, err := q.db.Query(ctx, getEventZonesByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EventZone
+	for rows.Next() {
+		var i EventZone
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.LocationID,
+			&i.ZoneNumber,
+			&i.Price,
+			&i.Color,
+			&i.Name,
+			&i.Description,
+			&i.IsSoldOut,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const hardDeleteEvent = `-- name: HardDeleteEvent :one
@@ -199,4 +313,50 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (pgtyp
 	var id pgtype.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const updateEventZone = `-- name: UpdateEventZone :one
+UPDATE event_zones
+SET
+    event_id = $1,
+    location_id = $2,
+    zone_number = $3,
+    price = $4,
+    color = $5,
+    name = $6,
+    description = $7,
+    is_sold_out = $8,
+    updated_at = NOW()
+WHERE id = $9
+  AND deleted_at IS NULL
+RETURNING event_id
+`
+
+type UpdateEventZoneParams struct {
+	EventID     pgtype.UUID `json:"event_id"`
+	LocationID  string      `json:"location_id"`
+	ZoneNumber  int32       `json:"zone_number"`
+	Price       float64     `json:"price"`
+	Color       string      `json:"color"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	IsSoldOut   bool        `json:"is_sold_out"`
+	ID          pgtype.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateEventZone(ctx context.Context, arg UpdateEventZoneParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, updateEventZone,
+		arg.EventID,
+		arg.LocationID,
+		arg.ZoneNumber,
+		arg.Price,
+		arg.Color,
+		arg.Name,
+		arg.Description,
+		arg.IsSoldOut,
+		arg.ID,
+	)
+	var event_id pgtype.UUID
+	err := row.Scan(&event_id)
+	return event_id, err
 }

@@ -20,9 +20,8 @@ message Zone {
     int32 zone_number = 1;
     string zone_name = 2;
     int32 capacity = 3;
-    bool reserved = 4;
-    double price = 5;
-    repeated string exclusive = 6;
+    int32 seatsPerRow = 4;
+    int32 numberOfRows = 5;
 }
 
 message LocationIdResponse {

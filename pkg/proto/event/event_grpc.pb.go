@@ -19,11 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EventService_CreateEvent_FullMethodName = "/event.EventService/CreateEvent"
-	EventService_GetEvent_FullMethodName    = "/event.EventService/GetEvent"
-	EventService_UpdateEvent_FullMethodName = "/event.EventService/UpdateEvent"
-	EventService_DeleteEvent_FullMethodName = "/event.EventService/DeleteEvent"
-	EventService_ListEvents_FullMethodName  = "/event.EventService/ListEvents"
+	EventService_CreateEvent_FullMethodName           = "/event.EventService/CreateEvent"
+	EventService_GetEvent_FullMethodName              = "/event.EventService/GetEvent"
+	EventService_UpdateEvent_FullMethodName           = "/event.EventService/UpdateEvent"
+	EventService_DeleteEvent_FullMethodName           = "/event.EventService/DeleteEvent"
+	EventService_ListEvents_FullMethodName            = "/event.EventService/ListEvents"
+	EventService_CreateEventZone_FullMethodName       = "/event.EventService/CreateEventZone"
+	EventService_GetEventZoneByEventId_FullMethodName = "/event.EventService/GetEventZoneByEventId"
+	EventService_UpdateEventZone_FullMethodName       = "/event.EventService/UpdateEventZone"
+	EventService_DeleteEventZone_FullMethodName       = "/event.EventService/DeleteEventZone"
 )
 
 // EventServiceClient is the client API for EventService service.
@@ -35,8 +39,12 @@ type EventServiceClient interface {
 	CreateEvent(ctx context.Context, in *CreateEventRequest, opts ...grpc.CallOption) (*CreateEventResponse, error)
 	GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*GetEventResponse, error)
 	UpdateEvent(ctx context.Context, in *UpdateEventRequest, opts ...grpc.CallOption) (*UpdateEventResponse, error)
-	DeleteEvent(ctx context.Context, in *DeleteEventRequest, opts ...grpc.CallOption) (*DeleteEventResponse, error)
+	DeleteEvent(ctx context.Context, in *DeleteEventRequest, opts ...grpc.CallOption) (*Empty, error)
 	ListEvents(ctx context.Context, in *ListEventsRequest, opts ...grpc.CallOption) (*ListEventsResponse, error)
+	CreateEventZone(ctx context.Context, in *CreateEventZoneRequest, opts ...grpc.CallOption) (*CreateEventZoneResponse, error)
+	GetEventZoneByEventId(ctx context.Context, in *GetEventZoneByEventIdRequest, opts ...grpc.CallOption) (*GetEventZoneByEventIdResponse, error)
+	UpdateEventZone(ctx context.Context, in *UpdateEventZoneRequest, opts ...grpc.CallOption) (*UpdateEventZoneResponse, error)
+	DeleteEventZone(ctx context.Context, in *DeleteEventZoneRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type eventServiceClient struct {
@@ -77,9 +85,9 @@ func (c *eventServiceClient) UpdateEvent(ctx context.Context, in *UpdateEventReq
 	return out, nil
 }
 
-func (c *eventServiceClient) DeleteEvent(ctx context.Context, in *DeleteEventRequest, opts ...grpc.CallOption) (*DeleteEventResponse, error) {
+func (c *eventServiceClient) DeleteEvent(ctx context.Context, in *DeleteEventRequest, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteEventResponse)
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, EventService_DeleteEvent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -97,6 +105,46 @@ func (c *eventServiceClient) ListEvents(ctx context.Context, in *ListEventsReque
 	return out, nil
 }
 
+func (c *eventServiceClient) CreateEventZone(ctx context.Context, in *CreateEventZoneRequest, opts ...grpc.CallOption) (*CreateEventZoneResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateEventZoneResponse)
+	err := c.cc.Invoke(ctx, EventService_CreateEventZone_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventServiceClient) GetEventZoneByEventId(ctx context.Context, in *GetEventZoneByEventIdRequest, opts ...grpc.CallOption) (*GetEventZoneByEventIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEventZoneByEventIdResponse)
+	err := c.cc.Invoke(ctx, EventService_GetEventZoneByEventId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventServiceClient) UpdateEventZone(ctx context.Context, in *UpdateEventZoneRequest, opts ...grpc.CallOption) (*UpdateEventZoneResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateEventZoneResponse)
+	err := c.cc.Invoke(ctx, EventService_UpdateEventZone_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventServiceClient) DeleteEventZone(ctx context.Context, in *DeleteEventZoneRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, EventService_DeleteEventZone_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventServiceServer is the server API for EventService service.
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility.
@@ -106,8 +154,12 @@ type EventServiceServer interface {
 	CreateEvent(context.Context, *CreateEventRequest) (*CreateEventResponse, error)
 	GetEvent(context.Context, *GetEventRequest) (*GetEventResponse, error)
 	UpdateEvent(context.Context, *UpdateEventRequest) (*UpdateEventResponse, error)
-	DeleteEvent(context.Context, *DeleteEventRequest) (*DeleteEventResponse, error)
+	DeleteEvent(context.Context, *DeleteEventRequest) (*Empty, error)
 	ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error)
+	CreateEventZone(context.Context, *CreateEventZoneRequest) (*CreateEventZoneResponse, error)
+	GetEventZoneByEventId(context.Context, *GetEventZoneByEventIdRequest) (*GetEventZoneByEventIdResponse, error)
+	UpdateEventZone(context.Context, *UpdateEventZoneRequest) (*UpdateEventZoneResponse, error)
+	DeleteEventZone(context.Context, *DeleteEventZoneRequest) (*Empty, error)
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -127,11 +179,23 @@ func (UnimplementedEventServiceServer) GetEvent(context.Context, *GetEventReques
 func (UnimplementedEventServiceServer) UpdateEvent(context.Context, *UpdateEventRequest) (*UpdateEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateEvent not implemented")
 }
-func (UnimplementedEventServiceServer) DeleteEvent(context.Context, *DeleteEventRequest) (*DeleteEventResponse, error) {
+func (UnimplementedEventServiceServer) DeleteEvent(context.Context, *DeleteEventRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEvent not implemented")
 }
 func (UnimplementedEventServiceServer) ListEvents(context.Context, *ListEventsRequest) (*ListEventsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEvents not implemented")
+}
+func (UnimplementedEventServiceServer) CreateEventZone(context.Context, *CreateEventZoneRequest) (*CreateEventZoneResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateEventZone not implemented")
+}
+func (UnimplementedEventServiceServer) GetEventZoneByEventId(context.Context, *GetEventZoneByEventIdRequest) (*GetEventZoneByEventIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEventZoneByEventId not implemented")
+}
+func (UnimplementedEventServiceServer) UpdateEventZone(context.Context, *UpdateEventZoneRequest) (*UpdateEventZoneResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateEventZone not implemented")
+}
+func (UnimplementedEventServiceServer) DeleteEventZone(context.Context, *DeleteEventZoneRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteEventZone not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 func (UnimplementedEventServiceServer) testEmbeddedByValue()                      {}
@@ -244,6 +308,78 @@ func _EventService_ListEvents_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventService_CreateEventZone_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateEventZoneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).CreateEventZone(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_CreateEventZone_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).CreateEventZone(ctx, req.(*CreateEventZoneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventService_GetEventZoneByEventId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEventZoneByEventIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).GetEventZoneByEventId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_GetEventZoneByEventId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).GetEventZoneByEventId(ctx, req.(*GetEventZoneByEventIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventService_UpdateEventZone_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateEventZoneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).UpdateEventZone(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_UpdateEventZone_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).UpdateEventZone(ctx, req.(*UpdateEventZoneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventService_DeleteEventZone_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteEventZoneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventServiceServer).DeleteEventZone(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EventService_DeleteEventZone_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventServiceServer).DeleteEventZone(ctx, req.(*DeleteEventZoneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EventService_ServiceDesc is the grpc.ServiceDesc for EventService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -270,6 +406,22 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListEvents",
 			Handler:    _EventService_ListEvents_Handler,
+		},
+		{
+			MethodName: "CreateEventZone",
+			Handler:    _EventService_CreateEventZone_Handler,
+		},
+		{
+			MethodName: "GetEventZoneByEventId",
+			Handler:    _EventService_GetEventZoneByEventId_Handler,
+		},
+		{
+			MethodName: "UpdateEventZone",
+			Handler:    _EventService_UpdateEventZone_Handler,
+		},
+		{
+			MethodName: "DeleteEventZone",
+			Handler:    _EventService_DeleteEventZone_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
