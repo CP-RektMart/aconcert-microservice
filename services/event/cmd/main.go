@@ -11,9 +11,9 @@ import (
 
 	_ "google.golang.org/genproto/protobuf/ptype"
 
-	"github.com/cp-rektmart/aconcert-microservice/event/config"
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
-	eventService "github.com/cp-rektmart/aconcert-microservice/event/internal/service/event"
+	"github.com/cp-rektmart/aconcert-microservice/event/internal/config"
+	eventService "github.com/cp-rektmart/aconcert-microservice/event/internal/service"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/grpclogger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"

@@ -812,6 +812,571 @@ func (x *ListEventsResponse) GetPagination() *Pagination {
 	return nil
 }
 
+type Empty struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	mi := &file_event_event_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{12}
+}
+
+// EventZone message
+type EventZone struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	EventId       string                 `protobuf:"bytes,2,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	LocationId    string                 `protobuf:"bytes,3,opt,name=location_id,json=locationId,proto3" json:"location_id,omitempty"`
+	ZoneNumber    int32                  `protobuf:"varint,4,opt,name=zone_number,json=zoneNumber,proto3" json:"zone_number,omitempty"`
+	Price         float64                `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
+	Color         string                 `protobuf:"bytes,6,opt,name=color,proto3" json:"color,omitempty"`
+	Name          string                 `protobuf:"bytes,7,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
+	IsSoldOut     bool                   `protobuf:"varint,9,opt,name=is_sold_out,json=isSoldOut,proto3" json:"is_sold_out,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EventZone) Reset() {
+	*x = EventZone{}
+	mi := &file_event_event_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EventZone) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventZone) ProtoMessage() {}
+
+func (x *EventZone) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EventZone.ProtoReflect.Descriptor instead.
+func (*EventZone) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *EventZone) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *EventZone) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *EventZone) GetLocationId() string {
+	if x != nil {
+		return x.LocationId
+	}
+	return ""
+}
+
+func (x *EventZone) GetZoneNumber() int32 {
+	if x != nil {
+		return x.ZoneNumber
+	}
+	return 0
+}
+
+func (x *EventZone) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *EventZone) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
+func (x *EventZone) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *EventZone) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *EventZone) GetIsSoldOut() bool {
+	if x != nil {
+		return x.IsSoldOut
+	}
+	return false
+}
+
+type CreateEventZoneRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	LocationId    string                 `protobuf:"bytes,2,opt,name=location_id,json=locationId,proto3" json:"location_id,omitempty"`
+	ZoneNumber    int32                  `protobuf:"varint,3,opt,name=zone_number,json=zoneNumber,proto3" json:"zone_number,omitempty"`
+	Price         float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
+	Color         string                 `protobuf:"bytes,5,opt,name=color,proto3" json:"color,omitempty"`
+	Name          string                 `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateEventZoneRequest) Reset() {
+	*x = CreateEventZoneRequest{}
+	mi := &file_event_event_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateEventZoneRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateEventZoneRequest) ProtoMessage() {}
+
+func (x *CreateEventZoneRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateEventZoneRequest.ProtoReflect.Descriptor instead.
+func (*CreateEventZoneRequest) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CreateEventZoneRequest) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *CreateEventZoneRequest) GetLocationId() string {
+	if x != nil {
+		return x.LocationId
+	}
+	return ""
+}
+
+func (x *CreateEventZoneRequest) GetZoneNumber() int32 {
+	if x != nil {
+		return x.ZoneNumber
+	}
+	return 0
+}
+
+func (x *CreateEventZoneRequest) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *CreateEventZoneRequest) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
+func (x *CreateEventZoneRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateEventZoneRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type CreateEventZoneResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateEventZoneResponse) Reset() {
+	*x = CreateEventZoneResponse{}
+	mi := &file_event_event_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateEventZoneResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateEventZoneResponse) ProtoMessage() {}
+
+func (x *CreateEventZoneResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateEventZoneResponse.ProtoReflect.Descriptor instead.
+func (*CreateEventZoneResponse) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CreateEventZoneResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetEventZoneByEventIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEventZoneByEventIdRequest) Reset() {
+	*x = GetEventZoneByEventIdRequest{}
+	mi := &file_event_event_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEventZoneByEventIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEventZoneByEventIdRequest) ProtoMessage() {}
+
+func (x *GetEventZoneByEventIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEventZoneByEventIdRequest.ProtoReflect.Descriptor instead.
+func (*GetEventZoneByEventIdRequest) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetEventZoneByEventIdRequest) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+type GetEventZoneByEventIdResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          []*EventZone           `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEventZoneByEventIdResponse) Reset() {
+	*x = GetEventZoneByEventIdResponse{}
+	mi := &file_event_event_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEventZoneByEventIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEventZoneByEventIdResponse) ProtoMessage() {}
+
+func (x *GetEventZoneByEventIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEventZoneByEventIdResponse.ProtoReflect.Descriptor instead.
+func (*GetEventZoneByEventIdResponse) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetEventZoneByEventIdResponse) GetList() []*EventZone {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+type UpdateEventZoneRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	EventId       *string                `protobuf:"bytes,2,opt,name=event_id,json=eventId,proto3,oneof" json:"event_id,omitempty"`
+	LocationId    *string                `protobuf:"bytes,3,opt,name=location_id,json=locationId,proto3,oneof" json:"location_id,omitempty"`
+	ZoneNumber    *int32                 `protobuf:"varint,4,opt,name=zone_number,json=zoneNumber,proto3,oneof" json:"zone_number,omitempty"`
+	Price         *float64               `protobuf:"fixed64,5,opt,name=price,proto3,oneof" json:"price,omitempty"`
+	Color         *string                `protobuf:"bytes,6,opt,name=color,proto3,oneof" json:"color,omitempty"`
+	Name          *string                `protobuf:"bytes,7,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description   *string                `protobuf:"bytes,8,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	IsSoldOut     *bool                  `protobuf:"varint,9,opt,name=is_sold_out,json=isSoldOut,proto3,oneof" json:"is_sold_out,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateEventZoneRequest) Reset() {
+	*x = UpdateEventZoneRequest{}
+	mi := &file_event_event_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateEventZoneRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateEventZoneRequest) ProtoMessage() {}
+
+func (x *UpdateEventZoneRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateEventZoneRequest.ProtoReflect.Descriptor instead.
+func (*UpdateEventZoneRequest) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UpdateEventZoneRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateEventZoneRequest) GetEventId() string {
+	if x != nil && x.EventId != nil {
+		return *x.EventId
+	}
+	return ""
+}
+
+func (x *UpdateEventZoneRequest) GetLocationId() string {
+	if x != nil && x.LocationId != nil {
+		return *x.LocationId
+	}
+	return ""
+}
+
+func (x *UpdateEventZoneRequest) GetZoneNumber() int32 {
+	if x != nil && x.ZoneNumber != nil {
+		return *x.ZoneNumber
+	}
+	return 0
+}
+
+func (x *UpdateEventZoneRequest) GetPrice() float64 {
+	if x != nil && x.Price != nil {
+		return *x.Price
+	}
+	return 0
+}
+
+func (x *UpdateEventZoneRequest) GetColor() string {
+	if x != nil && x.Color != nil {
+		return *x.Color
+	}
+	return ""
+}
+
+func (x *UpdateEventZoneRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *UpdateEventZoneRequest) GetDescription() string {
+	if x != nil && x.Description != nil {
+		return *x.Description
+	}
+	return ""
+}
+
+func (x *UpdateEventZoneRequest) GetIsSoldOut() bool {
+	if x != nil && x.IsSoldOut != nil {
+		return *x.IsSoldOut
+	}
+	return false
+}
+
+type UpdateEventZoneResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateEventZoneResponse) Reset() {
+	*x = UpdateEventZoneResponse{}
+	mi := &file_event_event_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateEventZoneResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateEventZoneResponse) ProtoMessage() {}
+
+func (x *UpdateEventZoneResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateEventZoneResponse.ProtoReflect.Descriptor instead.
+func (*UpdateEventZoneResponse) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *UpdateEventZoneResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteEventZoneRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEventZoneRequest) Reset() {
+	*x = DeleteEventZoneRequest{}
+	mi := &file_event_event_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEventZoneRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEventZoneRequest) ProtoMessage() {}
+
+func (x *DeleteEventZoneRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_event_event_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEventZoneRequest.ProtoReflect.Descriptor instead.
+func (*DeleteEventZoneRequest) Descriptor() ([]byte, []int) {
+	return file_event_event_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *DeleteEventZoneRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 var File_event_event_proto protoreflect.FileDescriptor
 
 const file_event_event_proto_rawDesc = "" +
@@ -898,14 +1463,71 @@ const file_event_event_proto_rawDesc = "" +
 	"\x06events\x18\x01 \x03(\v2\f.event.EventR\x06events\x121\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x11.event.PaginationR\n" +
-	"pagination2\xe0\x02\n" +
+	"pagination\"\a\n" +
+	"\x05Empty\"\xfa\x01\n" +
+	"\tEventZone\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
+	"\bevent_id\x18\x02 \x01(\tR\aeventId\x12\x1f\n" +
+	"\vlocation_id\x18\x03 \x01(\tR\n" +
+	"locationId\x12\x1f\n" +
+	"\vzone_number\x18\x04 \x01(\x05R\n" +
+	"zoneNumber\x12\x14\n" +
+	"\x05price\x18\x05 \x01(\x01R\x05price\x12\x14\n" +
+	"\x05color\x18\x06 \x01(\tR\x05color\x12\x12\n" +
+	"\x04name\x18\a \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x12\x1e\n" +
+	"\vis_sold_out\x18\t \x01(\bR\tisSoldOut\"\xd7\x01\n" +
+	"\x16CreateEventZoneRequest\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12\x1f\n" +
+	"\vlocation_id\x18\x02 \x01(\tR\n" +
+	"locationId\x12\x1f\n" +
+	"\vzone_number\x18\x03 \x01(\x05R\n" +
+	"zoneNumber\x12\x14\n" +
+	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x14\n" +
+	"\x05color\x18\x05 \x01(\tR\x05color\x12\x12\n" +
+	"\x04name\x18\x06 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\")\n" +
+	"\x17CreateEventZoneResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"9\n" +
+	"\x1cGetEventZoneByEventIdRequest\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\"E\n" +
+	"\x1dGetEventZoneByEventIdResponse\x12$\n" +
+	"\x04list\x18\x01 \x03(\v2\x10.event.EventZoneR\x04list\"\x99\x03\n" +
+	"\x16UpdateEventZoneRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
+	"\bevent_id\x18\x02 \x01(\tH\x00R\aeventId\x88\x01\x01\x12$\n" +
+	"\vlocation_id\x18\x03 \x01(\tH\x01R\n" +
+	"locationId\x88\x01\x01\x12$\n" +
+	"\vzone_number\x18\x04 \x01(\x05H\x02R\n" +
+	"zoneNumber\x88\x01\x01\x12\x19\n" +
+	"\x05price\x18\x05 \x01(\x01H\x03R\x05price\x88\x01\x01\x12\x19\n" +
+	"\x05color\x18\x06 \x01(\tH\x04R\x05color\x88\x01\x01\x12\x17\n" +
+	"\x04name\x18\a \x01(\tH\x05R\x04name\x88\x01\x01\x12%\n" +
+	"\vdescription\x18\b \x01(\tH\x06R\vdescription\x88\x01\x01\x12#\n" +
+	"\vis_sold_out\x18\t \x01(\bH\aR\tisSoldOut\x88\x01\x01B\v\n" +
+	"\t_event_idB\x0e\n" +
+	"\f_location_idB\x0e\n" +
+	"\f_zone_numberB\b\n" +
+	"\x06_priceB\b\n" +
+	"\x06_colorB\a\n" +
+	"\x05_nameB\x0e\n" +
+	"\f_descriptionB\x0e\n" +
+	"\f_is_sold_out\")\n" +
+	"\x17UpdateEventZoneResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"(\n" +
+	"\x16DeleteEventZoneRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id2\x9a\x05\n" +
 	"\fEventService\x12D\n" +
 	"\vCreateEvent\x12\x19.event.CreateEventRequest\x1a\x1a.event.CreateEventResponse\x12;\n" +
 	"\bGetEvent\x12\x16.event.GetEventRequest\x1a\x17.event.GetEventResponse\x12D\n" +
-	"\vUpdateEvent\x12\x19.event.UpdateEventRequest\x1a\x1a.event.UpdateEventResponse\x12D\n" +
-	"\vDeleteEvent\x12\x19.event.DeleteEventRequest\x1a\x1a.event.DeleteEventResponse\x12A\n" +
+	"\vUpdateEvent\x12\x19.event.UpdateEventRequest\x1a\x1a.event.UpdateEventResponse\x126\n" +
+	"\vDeleteEvent\x12\x19.event.DeleteEventRequest\x1a\f.event.Empty\x12A\n" +
 	"\n" +
-	"ListEvents\x12\x18.event.ListEventsRequest\x1a\x19.event.ListEventsResponseBFZDgithub.com/cp-rektmart/aconcert-microservice/pkg/proto/event;eventpbb\x06proto3"
+	"ListEvents\x12\x18.event.ListEventsRequest\x1a\x19.event.ListEventsResponse\x12P\n" +
+	"\x0fCreateEventZone\x12\x1d.event.CreateEventZoneRequest\x1a\x1e.event.CreateEventZoneResponse\x12b\n" +
+	"\x15GetEventZoneByEventId\x12#.event.GetEventZoneByEventIdRequest\x1a$.event.GetEventZoneByEventIdResponse\x12P\n" +
+	"\x0fUpdateEventZone\x12\x1d.event.UpdateEventZoneRequest\x1a\x1e.event.UpdateEventZoneResponse\x12>\n" +
+	"\x0fDeleteEventZone\x12\x1d.event.DeleteEventZoneRequest\x1a\f.event.EmptyBFZDgithub.com/cp-rektmart/aconcert-microservice/pkg/proto/event;eventpbb\x06proto3"
 
 var (
 	file_event_event_proto_rawDescOnce sync.Once
@@ -919,40 +1541,58 @@ func file_event_event_proto_rawDescGZIP() []byte {
 	return file_event_event_proto_rawDescData
 }
 
-var file_event_event_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_event_event_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_event_event_proto_goTypes = []any{
-	(*Event)(nil),               // 0: event.Event
-	(*CreateEventRequest)(nil),  // 1: event.CreateEventRequest
-	(*CreateEventResponse)(nil), // 2: event.CreateEventResponse
-	(*GetEventRequest)(nil),     // 3: event.GetEventRequest
-	(*GetEventResponse)(nil),    // 4: event.GetEventResponse
-	(*UpdateEventRequest)(nil),  // 5: event.UpdateEventRequest
-	(*UpdateEventResponse)(nil), // 6: event.UpdateEventResponse
-	(*DeleteEventRequest)(nil),  // 7: event.DeleteEventRequest
-	(*DeleteEventResponse)(nil), // 8: event.DeleteEventResponse
-	(*Pagination)(nil),          // 9: event.Pagination
-	(*ListEventsRequest)(nil),   // 10: event.ListEventsRequest
-	(*ListEventsResponse)(nil),  // 11: event.ListEventsResponse
+	(*Event)(nil),                         // 0: event.Event
+	(*CreateEventRequest)(nil),            // 1: event.CreateEventRequest
+	(*CreateEventResponse)(nil),           // 2: event.CreateEventResponse
+	(*GetEventRequest)(nil),               // 3: event.GetEventRequest
+	(*GetEventResponse)(nil),              // 4: event.GetEventResponse
+	(*UpdateEventRequest)(nil),            // 5: event.UpdateEventRequest
+	(*UpdateEventResponse)(nil),           // 6: event.UpdateEventResponse
+	(*DeleteEventRequest)(nil),            // 7: event.DeleteEventRequest
+	(*DeleteEventResponse)(nil),           // 8: event.DeleteEventResponse
+	(*Pagination)(nil),                    // 9: event.Pagination
+	(*ListEventsRequest)(nil),             // 10: event.ListEventsRequest
+	(*ListEventsResponse)(nil),            // 11: event.ListEventsResponse
+	(*Empty)(nil),                         // 12: event.Empty
+	(*EventZone)(nil),                     // 13: event.EventZone
+	(*CreateEventZoneRequest)(nil),        // 14: event.CreateEventZoneRequest
+	(*CreateEventZoneResponse)(nil),       // 15: event.CreateEventZoneResponse
+	(*GetEventZoneByEventIdRequest)(nil),  // 16: event.GetEventZoneByEventIdRequest
+	(*GetEventZoneByEventIdResponse)(nil), // 17: event.GetEventZoneByEventIdResponse
+	(*UpdateEventZoneRequest)(nil),        // 18: event.UpdateEventZoneRequest
+	(*UpdateEventZoneResponse)(nil),       // 19: event.UpdateEventZoneResponse
+	(*DeleteEventZoneRequest)(nil),        // 20: event.DeleteEventZoneRequest
 }
 var file_event_event_proto_depIdxs = []int32{
 	0,  // 0: event.GetEventResponse.event:type_name -> event.Event
 	0,  // 1: event.ListEventsResponse.events:type_name -> event.Event
 	9,  // 2: event.ListEventsResponse.pagination:type_name -> event.Pagination
-	1,  // 3: event.EventService.CreateEvent:input_type -> event.CreateEventRequest
-	3,  // 4: event.EventService.GetEvent:input_type -> event.GetEventRequest
-	5,  // 5: event.EventService.UpdateEvent:input_type -> event.UpdateEventRequest
-	7,  // 6: event.EventService.DeleteEvent:input_type -> event.DeleteEventRequest
-	10, // 7: event.EventService.ListEvents:input_type -> event.ListEventsRequest
-	2,  // 8: event.EventService.CreateEvent:output_type -> event.CreateEventResponse
-	4,  // 9: event.EventService.GetEvent:output_type -> event.GetEventResponse
-	6,  // 10: event.EventService.UpdateEvent:output_type -> event.UpdateEventResponse
-	8,  // 11: event.EventService.DeleteEvent:output_type -> event.DeleteEventResponse
-	11, // 12: event.EventService.ListEvents:output_type -> event.ListEventsResponse
-	8,  // [8:13] is the sub-list for method output_type
-	3,  // [3:8] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	13, // 3: event.GetEventZoneByEventIdResponse.list:type_name -> event.EventZone
+	1,  // 4: event.EventService.CreateEvent:input_type -> event.CreateEventRequest
+	3,  // 5: event.EventService.GetEvent:input_type -> event.GetEventRequest
+	5,  // 6: event.EventService.UpdateEvent:input_type -> event.UpdateEventRequest
+	7,  // 7: event.EventService.DeleteEvent:input_type -> event.DeleteEventRequest
+	10, // 8: event.EventService.ListEvents:input_type -> event.ListEventsRequest
+	14, // 9: event.EventService.CreateEventZone:input_type -> event.CreateEventZoneRequest
+	16, // 10: event.EventService.GetEventZoneByEventId:input_type -> event.GetEventZoneByEventIdRequest
+	18, // 11: event.EventService.UpdateEventZone:input_type -> event.UpdateEventZoneRequest
+	20, // 12: event.EventService.DeleteEventZone:input_type -> event.DeleteEventZoneRequest
+	2,  // 13: event.EventService.CreateEvent:output_type -> event.CreateEventResponse
+	4,  // 14: event.EventService.GetEvent:output_type -> event.GetEventResponse
+	6,  // 15: event.EventService.UpdateEvent:output_type -> event.UpdateEventResponse
+	12, // 16: event.EventService.DeleteEvent:output_type -> event.Empty
+	11, // 17: event.EventService.ListEvents:output_type -> event.ListEventsResponse
+	15, // 18: event.EventService.CreateEventZone:output_type -> event.CreateEventZoneResponse
+	17, // 19: event.EventService.GetEventZoneByEventId:output_type -> event.GetEventZoneByEventIdResponse
+	19, // 20: event.EventService.UpdateEventZone:output_type -> event.UpdateEventZoneResponse
+	12, // 21: event.EventService.DeleteEventZone:output_type -> event.Empty
+	13, // [13:22] is the sub-list for method output_type
+	4,  // [4:13] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_event_event_proto_init() }
@@ -962,13 +1602,14 @@ func file_event_event_proto_init() {
 	}
 	file_event_event_proto_msgTypes[5].OneofWrappers = []any{}
 	file_event_event_proto_msgTypes[10].OneofWrappers = []any{}
+	file_event_event_proto_msgTypes[18].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_event_event_proto_rawDesc), len(file_event_event_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

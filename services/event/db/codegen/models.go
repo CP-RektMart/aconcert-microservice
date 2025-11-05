@@ -21,3 +21,15 @@ type Event struct {
 	Thumbnail   pgtype.Text        `json:"thumbnail"`
 	Images      []string           `json:"images"`
 }
+
+type EventZone struct {
+	ID          pgtype.UUID `json:"id"`
+	EventID     pgtype.UUID `json:"event_id"`
+	LocationID  string      `json:"location_id"`
+	ZoneNumber  int32       `json:"zone_number"`
+	Price       float64     `json:"price"`
+	Color       string      `json:"color"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	IsSoldOut   bool        `json:"is_sold_out"`
+}

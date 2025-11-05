@@ -57,3 +57,43 @@ DELETE FROM events
 WHERE id = $1
 RETURNING $1;
 
+-- name: GetEventZonesByEventID :many
+SELECT *
+FROM event_zones
+WHERE event_id = $1
+  AND deleted_at IS NULL;
+
+-- name: CreateEventZone :one
+INSERT INTO event_zones (
+    event_id, location_id, zone_number, price, color, name, description
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING event_id;
+
+-- name: UpdateEventZone :one
+UPDATE event_zones
+SET
+    event_id = $1,
+    location_id = $2,
+    zone_number = $3,
+    price = $4,
+    color = $5,
+    name = $6,
+    description = $7,
+    is_sold_out = $8,
+    updated_at = NOW()
+WHERE id = $9
+  AND deleted_at IS NULL
+RETURNING event_id;
+
+-- name: DeleteEventZone :one
+UPDATE event_zones
+SET deleted_at = NOW()
+WHERE id = $1
+RETURNING $1;
+
+-- name: GetEventZoneByID :one
+SELECT *
+FROM event_zones
+WHERE id = $1
+  AND deleted_at IS NULL;
