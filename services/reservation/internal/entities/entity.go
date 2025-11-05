@@ -22,11 +22,11 @@ type Ticket struct {
 }
 
 type Event struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Date      time.Time `json:"date"`
-	Location  string    `json:"location"`
-	Capacity  int       `json:"capacity"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	Date       time.Time `json:"date"`
+	LocationID string    `json:"location_id"`
+	Capacity   int       `json:"capacity"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }

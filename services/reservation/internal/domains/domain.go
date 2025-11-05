@@ -1,18 +1,22 @@
 package domains
 
-import reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
+import (
+	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
+	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
+)
 
-type ReserveDomain interface{
+type ReserveDomain interface {
 	Reserve() error
 	Confirm() error
 }
 
 type ReserveDomainImpl struct {
 	reservationpb.UnimplementedReservationServiceServer
-	// cache
-	// db
+	repo repositories.ReservationRepository
 }
 
-func New() *ReserveDomainImpl {
-	return &ReserveDomainImpl{}
+func New(repo repositories.ReservationRepository) *ReserveDomainImpl {
+	return &ReserveDomainImpl{
+		repo: repo,
+	}
 }

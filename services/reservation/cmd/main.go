@@ -15,7 +15,9 @@ import (
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/config"
+	db "github.com/cp-rektmart/aconcert-microservice/reservation/db/codegen"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/domains"
+	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
 	"google.golang.org/grpc"
 )
 
@@ -51,14 +53,14 @@ func main() {
 		logger.PanicContext(ctx, "failed to listen: %v", err)
 	}
 
+	queries := db.New(pgConn)
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
 	)
-	
-	// cache repo
-	// db repo
 
-	reservationServer := domains.New()
+	reservationRepo := repositories.NewReservationRepository(queries, redisConn)
+
+	reservationServer := domains.New(reservationRepo)
 	reservationpb.RegisterReservationServiceServer(grpcServer, reservationServer)
 
 	go func() {

@@ -112,65 +112,65 @@ services:
       timeout: 5s
       retries: 5
 
-  # # Auth Service
-  # auth-service:
-  #   build:
-  #     context: .
-  #     dockerfile: ./services/auth/Dockerfile
-  #   container_name: auth-service
-  #   env_file: ./services/auth/.env
-  #   depends_on:
-  #     - auth-postgres
-  #     - auth-redis
-  #   ports:
-  #     - "${AUTH_SERVICE_PORT}:8000"
-  #   networks:
-  #     - aconcert-network
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./services/auth/Dockerfile
+    container_name: auth-service
+    env_file: ./services/auth/.env
+    depends_on:
+      - auth-postgres
+      - auth-redis
+    ports:
+      - "${AUTH_SERVICE_PORT}:8000"
+    networks:
+      - aconcert-network
 
-  # # Event Service
-  # event-service:
-  #   build:
-  #     context: .
-  #     dockerfile: ./services/event/Dockerfile
-  #   container_name: event-service
-  #   env_file: ./services/event/.env
-  #   depends_on:
-  #     - event-postgres
-  #     - event-redis
-  #   ports:
-  #     - "${EVENT_SERVICE_PORT}:8000"
-  #   networks:
-  #     - aconcert-network
+  # Event Service
+  event-service:
+    build:
+      context: .
+      dockerfile: ./services/event/Dockerfile
+    container_name: event-service
+    env_file: ./services/event/.env
+    depends_on:
+      - event-postgres
+      - event-redis
+    ports:
+      - "${EVENT_SERVICE_PORT}:8000"
+    networks:
+      - aconcert-network
 
-  # # Location Service
-  # location-service:
-  #   build:
-  #     context: .
-  #     dockerfile: ./services/location/Dockerfile
-  #   container_name: location-service
-  #   env_file: ./services/location/.env
-  #   depends_on:
-  #     - location-mongo
-  #   ports:
-  #     - "${LOCATION_SERVICE_PORT}:8000"
-  #   networks:
-  #     - aconcert-network
+  # Location Service
+  location-service:
+    build:
+      context: .
+      dockerfile: ./services/location/Dockerfile
+    container_name: location-service
+    env_file: ./services/location/.env
+    depends_on:
+      - location-mongo
+    ports:
+      - "${LOCATION_SERVICE_PORT}:8000"
+    networks:
+      - aconcert-network
 
-  # # Gateway Service
-  # gateway:
-  #   build:
-  #     context: .
-  #     dockerfile: ./services/gateway/Dockerfile
-  #   container_name: gateway
-  #   env_file: ./services/gateway/.env
-  #   depends_on:
-  #     - auth-service
-  #     - event-service
-  #     - location-service
-  #   ports:
-  #     - "${GATEWAY_PORT}:8000"
-  #   networks:
-  #     - aconcert-network
+  # Gateway Service
+  gateway:
+    build:
+      context: .
+      dockerfile: ./services/gateway/Dockerfile
+    container_name: gateway
+    env_file: ./services/gateway/.env
+    depends_on:
+      - auth-service
+      - event-service
+      - location-service
+    ports:
+      - "${GATEWAY_PORT}:8000"
+    networks:
+      - aconcert-network
 
 volumes:
   auth_db_data:
