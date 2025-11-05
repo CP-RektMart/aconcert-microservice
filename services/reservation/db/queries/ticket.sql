@@ -3,9 +3,10 @@ INSERT INTO Ticket (
     reservation_id,
     zone_number,
     row_number,
-    col_number
+    col_number,
+    event_id
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetTicket :one
@@ -87,3 +88,36 @@ SELECT EXISTS(
         AND col_number = $3
         AND deleted_at IS NULL
 ) AS is_taken;
+
+-- name: CheckSeatAvailabilityForEvent :one
+SELECT EXISTS(
+    SELECT 1 FROM Ticket
+    WHERE event_id = $1
+        AND zone_number = $2
+        AND row_number = $3
+        AND col_number = $4
+        AND deleted_at IS NULL
+) AS is_taken;
+
+-- name: CreateTicketWithAvailabilityCheck :one
+WITH seat_check AS (
+    SELECT EXISTS(
+        SELECT 1 FROM Ticket
+        WHERE event_id = $1
+            AND zone_number = $2
+            AND row_number = $3
+            AND col_number = $4
+            AND deleted_at IS NULL
+    ) AS is_taken
+)
+INSERT INTO Ticket (
+    reservation_id,
+    zone_number,
+    row_number,
+    col_number,
+    event_id
+)
+SELECT $5, $2, $3, $4, $1
+FROM seat_check
+WHERE NOT is_taken
+RETURNING *;

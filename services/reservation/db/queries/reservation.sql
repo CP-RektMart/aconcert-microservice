@@ -1,10 +1,11 @@
 -- name: CreateReservation :one
 INSERT INTO Reservation (
+    id,
     user_id,
     event_id,
     status
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4
 ) RETURNING *;
 
 -- name: GetReservation :one

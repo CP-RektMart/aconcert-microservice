@@ -34,6 +34,36 @@ func (q *Queries) CheckSeatAvailability(ctx context.Context, arg CheckSeatAvaila
 	return is_taken, err
 }
 
+const checkSeatAvailabilityForEvent = `-- name: CheckSeatAvailabilityForEvent :one
+SELECT EXISTS(
+    SELECT 1 FROM Ticket
+    WHERE event_id = $1
+        AND zone_number = $2
+        AND row_number = $3
+        AND col_number = $4
+        AND deleted_at IS NULL
+) AS is_taken
+`
+
+type CheckSeatAvailabilityForEventParams struct {
+	EventID    pgtype.UUID `json:"event_id"`
+	ZoneNumber int32       `json:"zone_number"`
+	RowNumber  int32       `json:"row_number"`
+	ColNumber  int32       `json:"col_number"`
+}
+
+func (q *Queries) CheckSeatAvailabilityForEvent(ctx context.Context, arg CheckSeatAvailabilityForEventParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkSeatAvailabilityForEvent,
+		arg.EventID,
+		arg.ZoneNumber,
+		arg.RowNumber,
+		arg.ColNumber,
+	)
+	var is_taken bool
+	err := row.Scan(&is_taken)
+	return is_taken, err
+}
+
 const countTicketsByReservationID = `-- name: CountTicketsByReservationID :one
 SELECT COUNT(*) FROM Ticket
 WHERE reservation_id = $1 AND deleted_at IS NULL
@@ -51,10 +81,11 @@ INSERT INTO Ticket (
     reservation_id,
     zone_number,
     row_number,
-    col_number
+    col_number,
+    event_id
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number
+    $1, $2, $3, $4, $5
+) RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id
 `
 
 type CreateTicketParams struct {
@@ -62,6 +93,7 @@ type CreateTicketParams struct {
 	ZoneNumber    int32       `json:"zone_number"`
 	RowNumber     int32       `json:"row_number"`
 	ColNumber     int32       `json:"col_number"`
+	EventID       pgtype.UUID `json:"event_id"`
 }
 
 func (q *Queries) CreateTicket(ctx context.Context, arg CreateTicketParams) (Ticket, error) {
@@ -70,6 +102,7 @@ func (q *Queries) CreateTicket(ctx context.Context, arg CreateTicketParams) (Tic
 		arg.ZoneNumber,
 		arg.RowNumber,
 		arg.ColNumber,
+		arg.EventID,
 	)
 	var i Ticket
 	err := row.Scan(
@@ -81,6 +114,62 @@ func (q *Queries) CreateTicket(ctx context.Context, arg CreateTicketParams) (Tic
 		&i.ZoneNumber,
 		&i.RowNumber,
 		&i.ColNumber,
+		&i.EventID,
+	)
+	return i, err
+}
+
+const createTicketWithAvailabilityCheck = `-- name: CreateTicketWithAvailabilityCheck :one
+WITH seat_check AS (
+    SELECT EXISTS(
+        SELECT 1 FROM Ticket
+        WHERE event_id = $1
+            AND zone_number = $2
+            AND row_number = $3
+            AND col_number = $4
+            AND deleted_at IS NULL
+    ) AS is_taken
+)
+INSERT INTO Ticket (
+    reservation_id,
+    zone_number,
+    row_number,
+    col_number,
+    event_id
+)
+SELECT $5, $2, $3, $4, $1
+FROM seat_check
+WHERE NOT is_taken
+RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id
+`
+
+type CreateTicketWithAvailabilityCheckParams struct {
+	EventID       pgtype.UUID `json:"event_id"`
+	ZoneNumber    int32       `json:"zone_number"`
+	RowNumber     int32       `json:"row_number"`
+	ColNumber     int32       `json:"col_number"`
+	ReservationID pgtype.UUID `json:"reservation_id"`
+}
+
+func (q *Queries) CreateTicketWithAvailabilityCheck(ctx context.Context, arg CreateTicketWithAvailabilityCheckParams) (Ticket, error) {
+	row := q.db.QueryRow(ctx, createTicketWithAvailabilityCheck,
+		arg.EventID,
+		arg.ZoneNumber,
+		arg.RowNumber,
+		arg.ColNumber,
+		arg.ReservationID,
+	)
+	var i Ticket
+	err := row.Scan(
+		&i.ID,
+		&i.ReservationID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.ZoneNumber,
+		&i.RowNumber,
+		&i.ColNumber,
+		&i.EventID,
 	)
 	return i, err
 }
@@ -108,7 +197,7 @@ func (q *Queries) DeleteTicketsByReservationID(ctx context.Context, reservationI
 }
 
 const getTicket = `-- name: GetTicket :one
-SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number FROM Ticket
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1
 `
@@ -125,12 +214,13 @@ func (q *Queries) GetTicket(ctx context.Context, id pgtype.UUID) (Ticket, error)
 		&i.ZoneNumber,
 		&i.RowNumber,
 		&i.ColNumber,
+		&i.EventID,
 	)
 	return i, err
 }
 
 const getTicketByID = `-- name: GetTicketByID :one
-SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number FROM Ticket
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE id = $1
 LIMIT 1
 `
@@ -147,12 +237,13 @@ func (q *Queries) GetTicketByID(ctx context.Context, id pgtype.UUID) (Ticket, er
 		&i.ZoneNumber,
 		&i.RowNumber,
 		&i.ColNumber,
+		&i.EventID,
 	)
 	return i, err
 }
 
 const getTicketBySeat = `-- name: GetTicketBySeat :one
-SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number FROM Ticket
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE zone_number = $1
     AND row_number = $2
     AND col_number = $3
@@ -178,6 +269,7 @@ func (q *Queries) GetTicketBySeat(ctx context.Context, arg GetTicketBySeatParams
 		&i.ZoneNumber,
 		&i.RowNumber,
 		&i.ColNumber,
+		&i.EventID,
 	)
 	return i, err
 }
@@ -193,7 +285,7 @@ func (q *Queries) HardDeleteTicket(ctx context.Context, id pgtype.UUID) error {
 }
 
 const listTickets = `-- name: ListTickets :many
-SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number FROM Ticket
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
 `
@@ -216,6 +308,7 @@ func (q *Queries) ListTickets(ctx context.Context) ([]Ticket, error) {
 			&i.ZoneNumber,
 			&i.RowNumber,
 			&i.ColNumber,
+			&i.EventID,
 		); err != nil {
 			return nil, err
 		}
@@ -228,7 +321,7 @@ func (q *Queries) ListTickets(ctx context.Context) ([]Ticket, error) {
 }
 
 const listTicketsByReservationID = `-- name: ListTicketsByReservationID :many
-SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number FROM Ticket
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE reservation_id = $1 AND deleted_at IS NULL
 ORDER BY zone_number, row_number, col_number
 `
@@ -251,6 +344,7 @@ func (q *Queries) ListTicketsByReservationID(ctx context.Context, reservationID 
 			&i.ZoneNumber,
 			&i.RowNumber,
 			&i.ColNumber,
+			&i.EventID,
 		); err != nil {
 			return nil, err
 		}
@@ -263,7 +357,7 @@ func (q *Queries) ListTicketsByReservationID(ctx context.Context, reservationID 
 }
 
 const listTicketsBySeat = `-- name: ListTicketsBySeat :many
-SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number FROM Ticket
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE zone_number = $1
     AND row_number = $2
     AND col_number = $3
@@ -295,6 +389,7 @@ func (q *Queries) ListTicketsBySeat(ctx context.Context, arg ListTicketsBySeatPa
 			&i.ZoneNumber,
 			&i.RowNumber,
 			&i.ColNumber,
+			&i.EventID,
 		); err != nil {
 			return nil, err
 		}
@@ -315,7 +410,7 @@ SET
     col_number = COALESCE($4, col_number),
     updated_at = NOW()
 WHERE id = $5 AND deleted_at IS NULL
-RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number
+RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id
 `
 
 type UpdateTicketParams struct {
@@ -344,6 +439,7 @@ func (q *Queries) UpdateTicket(ctx context.Context, arg UpdateTicketParams) (Tic
 		&i.ZoneNumber,
 		&i.RowNumber,
 		&i.ColNumber,
+		&i.EventID,
 	)
 	return i, err
 }
@@ -352,7 +448,7 @@ const updateTicketReservation = `-- name: UpdateTicketReservation :one
 UPDATE Ticket
 SET reservation_id = $2, updated_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number
+RETURNING id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id
 `
 
 type UpdateTicketReservationParams struct {
@@ -372,6 +468,7 @@ func (q *Queries) UpdateTicketReservation(ctx context.Context, arg UpdateTicketR
 		&i.ZoneNumber,
 		&i.RowNumber,
 		&i.ColNumber,
+		&i.EventID,
 	)
 	return i, err
 }

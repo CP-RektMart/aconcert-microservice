@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ReservationService_CreateReservation_FullMethodName = "/reservation.ReservationService/CreateReservation"
-	ReservationService_DeleteReservation_FullMethodName = "/reservation.ReservationService/DeleteReservation"
-	ReservationService_ListReservation_FullMethodName   = "/reservation.ReservationService/ListReservation"
-	ReservationService_GetReservation_FullMethodName    = "/reservation.ReservationService/GetReservation"
+	ReservationService_CreateReservation_FullMethodName  = "/reservation.ReservationService/CreateReservation"
+	ReservationService_DeleteReservation_FullMethodName  = "/reservation.ReservationService/DeleteReservation"
+	ReservationService_ListReservation_FullMethodName    = "/reservation.ReservationService/ListReservation"
+	ReservationService_GetReservation_FullMethodName     = "/reservation.ReservationService/GetReservation"
+	ReservationService_ConfirmReservation_FullMethodName = "/reservation.ReservationService/ConfirmReservation"
 )
 
 // ReservationServiceClient is the client API for ReservationService service.
@@ -32,10 +33,11 @@ const (
 // ------------------ Service ------------------ //
 type ReservationServiceClient interface {
 	// reservation operations
-	CreateReservation(ctx context.Context, in *Reservation, opts ...grpc.CallOption) (*CreateReservationResponse, error)
+	CreateReservation(ctx context.Context, in *CreateReservationRequest, opts ...grpc.CallOption) (*CreateReservationResponse, error)
 	DeleteReservation(ctx context.Context, in *DeleteReservationRequest, opts ...grpc.CallOption) (*DeleteReservationResponse, error)
 	ListReservation(ctx context.Context, in *ListReservationRequest, opts ...grpc.CallOption) (*ListReservationResponse, error)
 	GetReservation(ctx context.Context, in *GetReservationRequest, opts ...grpc.CallOption) (*GetReservationResponse, error)
+	ConfirmReservation(ctx context.Context, in *ConfirmReservationRequest, opts ...grpc.CallOption) (*ConfirmReservationResponse, error)
 }
 
 type reservationServiceClient struct {
@@ -46,7 +48,7 @@ func NewReservationServiceClient(cc grpc.ClientConnInterface) ReservationService
 	return &reservationServiceClient{cc}
 }
 
-func (c *reservationServiceClient) CreateReservation(ctx context.Context, in *Reservation, opts ...grpc.CallOption) (*CreateReservationResponse, error) {
+func (c *reservationServiceClient) CreateReservation(ctx context.Context, in *CreateReservationRequest, opts ...grpc.CallOption) (*CreateReservationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateReservationResponse)
 	err := c.cc.Invoke(ctx, ReservationService_CreateReservation_FullMethodName, in, out, cOpts...)
@@ -86,6 +88,16 @@ func (c *reservationServiceClient) GetReservation(ctx context.Context, in *GetRe
 	return out, nil
 }
 
+func (c *reservationServiceClient) ConfirmReservation(ctx context.Context, in *ConfirmReservationRequest, opts ...grpc.CallOption) (*ConfirmReservationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConfirmReservationResponse)
+	err := c.cc.Invoke(ctx, ReservationService_ConfirmReservation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReservationServiceServer is the server API for ReservationService service.
 // All implementations must embed UnimplementedReservationServiceServer
 // for forward compatibility.
@@ -93,10 +105,11 @@ func (c *reservationServiceClient) GetReservation(ctx context.Context, in *GetRe
 // ------------------ Service ------------------ //
 type ReservationServiceServer interface {
 	// reservation operations
-	CreateReservation(context.Context, *Reservation) (*CreateReservationResponse, error)
+	CreateReservation(context.Context, *CreateReservationRequest) (*CreateReservationResponse, error)
 	DeleteReservation(context.Context, *DeleteReservationRequest) (*DeleteReservationResponse, error)
 	ListReservation(context.Context, *ListReservationRequest) (*ListReservationResponse, error)
 	GetReservation(context.Context, *GetReservationRequest) (*GetReservationResponse, error)
+	ConfirmReservation(context.Context, *ConfirmReservationRequest) (*ConfirmReservationResponse, error)
 	mustEmbedUnimplementedReservationServiceServer()
 }
 
@@ -107,7 +120,7 @@ type ReservationServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedReservationServiceServer struct{}
 
-func (UnimplementedReservationServiceServer) CreateReservation(context.Context, *Reservation) (*CreateReservationResponse, error) {
+func (UnimplementedReservationServiceServer) CreateReservation(context.Context, *CreateReservationRequest) (*CreateReservationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateReservation not implemented")
 }
 func (UnimplementedReservationServiceServer) DeleteReservation(context.Context, *DeleteReservationRequest) (*DeleteReservationResponse, error) {
@@ -118,6 +131,9 @@ func (UnimplementedReservationServiceServer) ListReservation(context.Context, *L
 }
 func (UnimplementedReservationServiceServer) GetReservation(context.Context, *GetReservationRequest) (*GetReservationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReservation not implemented")
+}
+func (UnimplementedReservationServiceServer) ConfirmReservation(context.Context, *ConfirmReservationRequest) (*ConfirmReservationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmReservation not implemented")
 }
 func (UnimplementedReservationServiceServer) mustEmbedUnimplementedReservationServiceServer() {}
 func (UnimplementedReservationServiceServer) testEmbeddedByValue()                            {}
@@ -141,7 +157,7 @@ func RegisterReservationServiceServer(s grpc.ServiceRegistrar, srv ReservationSe
 }
 
 func _ReservationService_CreateReservation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Reservation)
+	in := new(CreateReservationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -153,7 +169,7 @@ func _ReservationService_CreateReservation_Handler(srv interface{}, ctx context.
 		FullMethod: ReservationService_CreateReservation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ReservationServiceServer).CreateReservation(ctx, req.(*Reservation))
+		return srv.(ReservationServiceServer).CreateReservation(ctx, req.(*CreateReservationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -212,6 +228,24 @@ func _ReservationService_GetReservation_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReservationService_ConfirmReservation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmReservationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReservationServiceServer).ConfirmReservation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReservationService_ConfirmReservation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReservationServiceServer).ConfirmReservation(ctx, req.(*ConfirmReservationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ReservationService_ServiceDesc is the grpc.ServiceDesc for ReservationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -234,6 +268,10 @@ var ReservationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReservation",
 			Handler:    _ReservationService_GetReservation_Handler,
+		},
+		{
+			MethodName: "ConfirmReservation",
+			Handler:    _ReservationService_ConfirmReservation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

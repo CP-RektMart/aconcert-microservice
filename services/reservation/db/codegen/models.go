@@ -32,4 +32,5 @@ type Ticket struct {
 	ZoneNumber    int32              `json:"zone_number"`
 	RowNumber     int32              `json:"row_number"`
 	ColNumber     int32              `json:"col_number"`
+	EventID       pgtype.UUID        `json:"event_id"`
 }

@@ -37,22 +37,29 @@ func (q *Queries) CountReservationsByUserID(ctx context.Context, userID pgtype.U
 
 const createReservation = `-- name: CreateReservation :one
 INSERT INTO Reservation (
+    id,
     user_id,
     event_id,
     status
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4
 ) RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status
 `
 
 type CreateReservationParams struct {
+	ID      pgtype.UUID `json:"id"`
 	UserID  pgtype.UUID `json:"user_id"`
 	EventID pgtype.UUID `json:"event_id"`
 	Status  string      `json:"status"`
 }
 
 func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error) {
-	row := q.db.QueryRow(ctx, createReservation, arg.UserID, arg.EventID, arg.Status)
+	row := q.db.QueryRow(ctx, createReservation,
+		arg.ID,
+		arg.UserID,
+		arg.EventID,
+		arg.Status,
+	)
 	var i Reservation
 	err := row.Scan(
 		&i.ID,

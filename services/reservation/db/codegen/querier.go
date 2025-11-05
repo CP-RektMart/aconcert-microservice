@@ -14,6 +14,7 @@ type Querier interface {
 	BulkCreateReservationTickets(ctx context.Context, arg []BulkCreateReservationTicketsParams) (int64, error)
 	CheckReservationTicketExists(ctx context.Context, arg CheckReservationTicketExistsParams) (bool, error)
 	CheckSeatAvailability(ctx context.Context, arg CheckSeatAvailabilityParams) (bool, error)
+	CheckSeatAvailabilityForEvent(ctx context.Context, arg CheckSeatAvailabilityForEventParams) (bool, error)
 	CountReservationsByEventID(ctx context.Context, eventID pgtype.UUID) (int64, error)
 	CountReservationsByUserID(ctx context.Context, userID pgtype.UUID) (int64, error)
 	CountReservationsForTicket(ctx context.Context, ticketID pgtype.UUID) (int64, error)
@@ -22,6 +23,7 @@ type Querier interface {
 	CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error)
 	CreateReservationTicket(ctx context.Context, arg CreateReservationTicketParams) error
 	CreateTicket(ctx context.Context, arg CreateTicketParams) (Ticket, error)
+	CreateTicketWithAvailabilityCheck(ctx context.Context, arg CreateTicketWithAvailabilityCheckParams) (Ticket, error)
 	DeleteReservation(ctx context.Context, id pgtype.UUID) error
 	DeleteReservationTicket(ctx context.Context, arg DeleteReservationTicketParams) error
 	DeleteReservationTicketsByReservationID(ctx context.Context, reservationID pgtype.UUID) error

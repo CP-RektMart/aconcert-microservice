@@ -33,6 +33,13 @@ func (r *ReservationImpl) CheckSeatAvailable(ctx context.Context, eventID string
 
 func (r *ReservationImpl) SetSeatReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error {
 	key := fmt.Sprintf("seat:%s:%d:%d:%d", eventID, seat.ZoneNumber, seat.RowNumber, seat.ColNumber)
+	//FYI: Cache the seat for 15 days
+	return r.redisClient.Set(ctx, key, reservationID, ttl*24).Err()
+}
+
+func (r *ReservationImpl) SetSeatTempReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error {
+	key := fmt.Sprintf("seat:%s:%d:%d:%d", eventID, seat.ZoneNumber, seat.RowNumber, seat.ColNumber)
+	//FYI: Cache the seat for 15 days
 	return r.redisClient.Set(ctx, key, reservationID, ttl).Err()
 }
 

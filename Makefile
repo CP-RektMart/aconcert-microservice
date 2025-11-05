@@ -4,6 +4,8 @@ RESERVATION_DB=postgres://postgres:password@localhost:5434/reservation?sslmode=d
 
 migrate-up:
 	dbmate -d services/event/db/migrations -u ${EVENT_DB} up
+	dbmate -d services/event/db/migrations -u ${EVENT_DB} up
+	dbmate -d services/reservation/db/migrations -u ${RESERVATION_DB} up
 
 migrate-down:
 	dbmate -d services/auth/db/migrations -u ${AUTH_DB} down

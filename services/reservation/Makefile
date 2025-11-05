@@ -1,2 +1,2 @@
 sqlc:
-    sqlc generate
+	sqlc generate

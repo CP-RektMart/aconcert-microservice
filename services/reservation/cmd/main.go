@@ -58,7 +58,7 @@ func main() {
 		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
 	)
 
-	reservationRepo := repositories.NewReservationRepository(queries, redisConn)
+	reservationRepo := repositories.NewReservationRepository(queries, pgConn, redisConn)
 
 	reservationServer := domains.New(reservationRepo)
 	reservationpb.RegisterReservationServiceServer(grpcServer, reservationServer)

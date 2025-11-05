@@ -36,3 +36,6 @@ profile.cov
 data/
 
 .DS_Store
+services/reservation/tmp/build-errors.log
+
+*/tmp/
