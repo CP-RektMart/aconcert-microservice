@@ -38,6 +38,38 @@ components:
       required:
       - id
       type: object
+    dto.CreateEventZoneRequest:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        eventId:
+          type: string
+        locationId:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        zoneNumber:
+          type: integer
+      required:
+      - color
+      - description
+      - eventId
+      - locationId
+      - name
+      - price
+      - zoneNumber
+      type: object
+    dto.CreateEventZoneResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
     dto.CreateLocationRequest:
       properties:
         city:
@@ -75,24 +107,18 @@ components:
       properties:
         capacity:
           type: integer
-        exclusive:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        price:
-          type: number
-        reserved:
-          type: boolean
+        numberOfRows:
+          type: integer
+        seatsPerRow:
+          type: integer
         zoneName:
           type: string
         zoneNumber:
           type: integer
       required:
       - capacity
-      - exclusive
-      - price
-      - reserved
+      - numberOfRows
+      - seatsPerRow
       - zoneName
       - zoneNumber
       type: object
@@ -146,6 +172,47 @@ components:
       - thumbnail
       - updatedAt
       type: object
+    dto.EventZoneListResponse:
+      properties:
+        list:
+          items:
+            $ref: '#/components/schemas/dto.EventZoneResponse'
+          type: array
+          uniqueItems: false
+      required:
+      - list
+      type: object
+    dto.EventZoneResponse:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        eventId:
+          type: string
+        id:
+          type: string
+        isSoldOut:
+          type: boolean
+        locationId:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        zoneNumber:
+          type: integer
+      required:
+      - color
+      - description
+      - eventId
+      - id
+      - isSoldOut
+      - locationId
+      - name
+      - price
+      - zoneNumber
+      type: object
     dto.HttpError:
       properties:
         error:
@@ -157,6 +224,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.CreateEventResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_CreateEventZoneResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.CreateEventZoneResponse'
       required:
       - result
       type: object
@@ -178,6 +252,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.EventResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_EventZoneListResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.EventZoneListResponse'
       required:
       - result
       type: object
@@ -213,6 +294,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.UpdateEventResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_UpdateEventZoneResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.UpdateEventZoneResponse'
       required:
       - result
       type: object
@@ -252,6 +340,15 @@ components:
             $ref: '#/components/schemas/dto.ZoneResponse'
           type: array
           uniqueItems: false
+      required:
+      - city
+      - country
+      - id
+      - latitude
+      - longitude
+      - stateProvince
+      - venueName
+      - zones
       type: object
     dto.LoginRequest:
       properties:
@@ -329,6 +426,32 @@ components:
       required:
       - id
       type: object
+    dto.UpdateEventZoneRequest:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        eventId:
+          type: string
+        isSoldOut:
+          type: boolean
+        locationId:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        zoneNumber:
+          type: integer
+      type: object
+    dto.UpdateEventZoneResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
     dto.UpdateLocationRequest:
       properties:
         city:
@@ -366,24 +489,18 @@ components:
       properties:
         capacity:
           type: integer
-        exclusive:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        price:
-          type: number
-        reserved:
-          type: boolean
+        numberOfRows:
+          type: integer
+        seatsPerRow:
+          type: integer
         zoneName:
           type: string
         zoneNumber:
           type: integer
       required:
       - capacity
-      - exclusive
-      - price
-      - reserved
+      - numberOfRows
+      - seatsPerRow
       - zoneName
       - zoneNumber
       type: object
@@ -430,19 +547,20 @@ components:
       properties:
         capacity:
           type: integer
-        exclusive:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        price:
-          type: number
-        reserved:
-          type: boolean
+        numberOfRows:
+          type: integer
+        seatsPerRow:
+          type: integer
         zoneName:
           type: string
         zoneNumber:
           type: integer
+      required:
+      - capacity
+      - numberOfRows
+      - seatsPerRow
+      - zoneName
+      - zoneNumber
       type: object
   securitySchemes:
     ApiKeyAuth:
@@ -539,6 +657,142 @@ paths:
       summary: Refresh Token
       tags:
       - auth
+  /v1/event-zones:
+    post:
+      description: Create Event Zone
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.CreateEventZoneRequest'
+        description: Create event zone request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_CreateEventZoneResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Create Event Zone
+      tags:
+      - event-zones
+  /v1/event-zones/{id}:
+    delete:
+      description: Delete Event Zone
+      parameters:
+      - description: Event Zone ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Event Zone
+      tags:
+      - event-zones
+    put:
+      description: Update Event Zone
+      parameters:
+      - description: Event Zone ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdateEventZoneRequest'
+        description: Update event zone request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_UpdateEventZoneResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Update Event Zone
+      tags:
+      - event-zones
+  /v1/event-zones/event/{eventId}:
+    get:
+      description: Get Event Zones by Event ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_EventZoneListResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Get Event Zones by Event ID
+      tags:
+      - event-zones
   /v1/events:
     get:
       description: List Events
