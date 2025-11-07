@@ -17,10 +17,10 @@ sqlc:
 	sqlc generate
 
 compose-up:
-	docker compose --env-file .env.port -f docker-compose.yaml up -d
+	docker compose -f docker-compose.yaml up -d
 
 compose-down:
-	docker compose --env-file .env.port -f docker-compose.yaml down
+	docker compose -f docker-compose.yaml down
 
 protoc:
 	protoc -I=pkg/proto \
