@@ -7,17 +7,16 @@ option go_package = "github.com/cp-rektmart/aconcert-microservice/pkg/proto/even
 // Event message
 message Event {
   string id = 1;
-  string created_at = 2;
-  string updated_at = 3;
-  string deleted_at = 4;
-
-  string name = 5;
-  string description = 6;
-  string location_id = 7;
-  repeated string artist = 8;
-  string event_date = 9;
-  string thumbnail = 10;
-  repeated string images = 11;
+  string name = 2;
+  string description = 3;
+  string location_id = 4;
+  repeated string artist = 5;
+  string event_date = 6;
+  string thumbnail = 7;
+  repeated string images = 8;
+  string created_at = 9;
+  string updated_at = 10;
+  string deleted_at = 11;
 }
 
 // CreateEvent
@@ -69,6 +68,7 @@ message DeleteEventResponse {
   // Empty response - no fields needed
   string id = 1;
 }
+
 message Pagination {
   int32 total = 1;
   int32 count = 2;
@@ -91,11 +91,73 @@ message ListEventsResponse {
   Pagination pagination = 2;
 }
 
+message Empty {}
+
+// EventZone message
+message EventZone {
+  string id = 1;
+  string event_id = 2;
+  string location_id = 3;
+  int32 zone_number = 4;
+  double price = 5;
+  string color = 6;
+  string name = 7;
+  string description = 8;
+  bool is_sold_out = 9;
+}
+
+message CreateEventZoneRequest {
+  string event_id = 1;
+  string location_id = 2;
+  int32 zone_number = 3;
+  double price = 4;
+  string color = 5;
+  string name = 6;
+  string description = 7;
+}
+
+message CreateEventZoneResponse {
+  string id = 1;
+}
+
+message GetEventZoneByEventIdRequest {
+  string event_id = 1;
+}
+
+message GetEventZoneByEventIdResponse {
+  repeated EventZone list = 1;
+}
+
+message UpdateEventZoneRequest {
+  string id = 1;
+  optional string event_id = 2;
+  optional string location_id = 3;
+  optional int32 zone_number = 4;
+  optional double price = 5;
+  optional string color = 6;
+  optional string name = 7;
+  optional string description = 8;
+  optional bool is_sold_out = 9;
+}
+
+message UpdateEventZoneResponse {
+  string id = 1;
+}
+
+message DeleteEventZoneRequest {
+  string id = 1;
+}
+
 // EventService definition
 service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
-  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (Empty);
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+
+  rpc CreateEventZone(CreateEventZoneRequest) returns (CreateEventZoneResponse);
+  rpc GetEventZoneByEventId(GetEventZoneByEventIdRequest) returns (GetEventZoneByEventIdResponse);
+  rpc UpdateEventZone(UpdateEventZoneRequest) returns (UpdateEventZoneResponse);
+  rpc DeleteEventZone(DeleteEventZoneRequest) returns (Empty);
 }

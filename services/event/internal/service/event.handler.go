@@ -1,4 +1,4 @@
-package grpcserver
+package service
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
+	"github.com/cp-rektmart/aconcert-microservice/event/internal/utils"
 	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -54,7 +55,7 @@ func (s *EventService) ListEvents(ctx context.Context, req *eventpb.ListEventsRe
 			UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
 			Name:        event.Name,
 			Description: event.Description.String,
-			LocationId:  event.LocationID.String(),
+			LocationId:  event.LocationID,
 			Artist:      event.Artist,
 			EventDate:   event.EventDate.Time.Format(time.RFC3339),
 			Thumbnail:   event.Thumbnail.String,
@@ -87,7 +88,7 @@ func (s *EventService) GetEvent(ctx context.Context, req *eventpb.GetEventReques
 		UpdatedAt:   event.UpdatedAt.Time.Format(time.RFC3339),
 		Name:        event.Name,
 		Description: event.Description.String,
-		LocationId:  event.LocationID.String(),
+		LocationId:  event.LocationID,
 		Artist:      event.Artist,
 		EventDate:   event.EventDate.Time.Format(time.RFC3339),
 		Thumbnail:   event.Thumbnail.String,
@@ -104,12 +105,6 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 
 	newUUID := uuid.New()
 
-	// Parse locationId from request
-	locationUUID, err := uuid.Parse(req.GetLocationId())
-	if err != nil {
-		return nil, errors.New("invalid locationId format")
-	}
-
 	// Parse eventDate from request
 	eventDate, err := time.Parse(time.RFC3339, req.GetEventDate())
 	if err != nil {
@@ -120,7 +115,7 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 		ID:          pgtype.UUID{Bytes: newUUID, Valid: true},
 		Name:        req.GetName(),
 		Description: pgtype.Text{String: req.GetDescription(), Valid: true},
-		LocationID:  pgtype.UUID{Bytes: locationUUID, Valid: true},
+		LocationID:  req.LocationId,
 		Artist:      req.GetArtist(),
 		EventDate:   pgtype.Timestamptz{Time: eventDate, Valid: true},
 		Thumbnail:   pgtype.Text{String: req.GetThumbnail(), Valid: true},
@@ -140,12 +135,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *eventpb.UpdateEvent
 
 	fmt.Println("UpdateEvent called with ID:", req.Id)
 
-	parsedUUID, err := parsedUUID(req.Id)
-	if err != nil {
-		return nil, errors.New("invalid UUID format")
-	}
-
-	eventData, err := s.queries.GetEventByID(ctx, parsedUUID)
+	eventData, err := s.queries.GetEventByID(ctx, utils.ParsedUUID(req.Id))
 	if err != nil {
 		return nil, errors.New("event not found")
 	}
@@ -163,10 +153,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *eventpb.UpdateEvent
 
 	locationID := eventData.LocationID
 	if req.LocationId != nil && *req.LocationId != "" {
-		parsedLoc, err := uuid.Parse(req.GetLocationId())
-		if err == nil {
-			locationID = pgtype.UUID{Bytes: parsedLoc, Valid: true}
-		}
+		locationID = *req.LocationId
 	}
 
 	artist := eventData.Artist
@@ -193,7 +180,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *eventpb.UpdateEvent
 	}
 
 	updateParams := db.UpdateEventParams{
-		ID:          parsedUUID,
+		ID:          utils.ParsedUUID(req.Id),
 		Name:        name,
 		Description: pgtype.Text{String: description, Valid: true},
 		LocationID:  locationID,
@@ -203,39 +190,23 @@ func (s *EventService) UpdateEvent(ctx context.Context, req *eventpb.UpdateEvent
 		Images:      images,
 	}
 
-	_, err = s.queries.UpdateEvent(ctx, updateParams)
+	eventID, err := s.queries.UpdateEvent(ctx, updateParams)
 	if err != nil {
 		return nil, errors.New("failed to update event")
 	}
 
-	return &eventpb.UpdateEventResponse{Id: parsedUUID.String()}, nil
+	return &eventpb.UpdateEventResponse{Id: uuid.UUID(eventID.Bytes).String()}, nil
 }
 
 // DeleteEvent deletes an event
-func (s *EventService) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventRequest) (*eventpb.DeleteEventResponse, error) {
+func (s *EventService) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventRequest) (*eventpb.Empty, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	pgUUID, err := parsedUUID(req.Id)
-	if err != nil {
-		return nil, errors.New("invalid UUID format")
-	}
-
-	_, err = s.queries.DeleteEvent(ctx, pgUUID)
+	_, err := s.queries.DeleteEvent(ctx, utils.ParsedUUID(req.Id))
 	if err != nil {
 		return nil, errors.New("event not found")
 	}
 
-	return &eventpb.DeleteEventResponse{Id: pgUUID.String()}, nil
-}
-
-func parsedUUID(id string) (pgtype.UUID, error) {
-	parsed, err := uuid.Parse(id)
-	if err != nil {
-		return pgtype.UUID{}, err
-	}
-	var pgUUID pgtype.UUID
-	pgUUID.Bytes = parsed
-	pgUUID.Valid = true
-	return pgUUID, nil
+	return &eventpb.Empty{}, nil
 }

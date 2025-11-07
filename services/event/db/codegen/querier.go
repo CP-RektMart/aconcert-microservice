@@ -13,16 +13,21 @@ import (
 type Querier interface {
 	// Insert a new event
 	CreateEvent(ctx context.Context, arg CreateEventParams) (pgtype.UUID, error)
+	CreateEventZone(ctx context.Context, arg CreateEventZoneParams) (pgtype.UUID, error)
 	// Soft delete an event
 	DeleteEvent(ctx context.Context, id pgtype.UUID) (interface{}, error)
+	DeleteEventZone(ctx context.Context, id pgtype.UUID) (interface{}, error)
 	// Get a single event by ID
 	GetEventByID(ctx context.Context, id pgtype.UUID) (Event, error)
+	GetEventZoneByID(ctx context.Context, id pgtype.UUID) (EventZone, error)
+	GetEventZonesByEventID(ctx context.Context, eventID pgtype.UUID) ([]EventZone, error)
 	// Hard delete an event (for admin use)
 	HardDeleteEvent(ctx context.Context, id pgtype.UUID) (interface{}, error)
 	// List events with optional search and pagination
 	ListEvents(ctx context.Context, arg ListEventsParams) ([]Event, error)
 	// Update an existing event
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (pgtype.UUID, error)
+	UpdateEventZone(ctx context.Context, arg UpdateEventZoneParams) (pgtype.UUID, error)
 }
 
 var _ Querier = (*Queries)(nil)

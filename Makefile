@@ -1,4 +1,4 @@
-AUTH_DB=postgres://postgres:password@localhost:5432/auth?sslmode=disable
+AUTH_DB=postgres://postgres:password@localhost:5431/auth?sslmode=disable
 EVENT_DB=postgres://postgres:password@localhost:5433/event?sslmode=disable
 RESERVATION_DB=postgres://postgres:password@localhost:5434/reservation?sslmode=disable
 

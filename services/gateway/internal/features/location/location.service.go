@@ -20,12 +20,11 @@ func NewService(client locationpb.LocationServiceClient) *LocationService {
 
 func (s *LocationService) TransformZoneResponses(zone *locationpb.Zone) dto.ZoneResponse {
 	return dto.ZoneResponse{
-		ZoneNumber: int(zone.ZoneNumber),
-		ZoneName:   zone.ZoneName,
-		Capacity:   int(zone.Capacity),
-		Reserved:   zone.Reserved,
-		Price:      zone.Price,
-		Exclusive:  zone.Exclusive,
+		ZoneNumber:   int(zone.ZoneNumber),
+		ZoneName:     zone.ZoneName,
+		Capacity:     int(zone.Capacity),
+		SeatsPerRow:  int(zone.SeatsPerRow),
+		NumberOfRows: int(zone.NumberOfRows),
 	}
 }
 
@@ -78,12 +77,11 @@ func (s *LocationService) CreateLocation(ctx context.Context, req *dto.CreateLoc
 	zones := make([]*locationpb.Zone, 0, len(req.Zones))
 	for _, zoneReq := range req.Zones {
 		zones = append(zones, &locationpb.Zone{
-			ZoneNumber: int32(zoneReq.ZoneNumber),
-			ZoneName:   zoneReq.ZoneName,
-			Capacity:   int32(zoneReq.Capacity),
-			Reserved:   zoneReq.Reserved,
-			Price:      zoneReq.Price,
-			Exclusive:  zoneReq.Exclusive,
+			ZoneNumber:   int32(zoneReq.ZoneNumber),
+			ZoneName:     zoneReq.ZoneName,
+			Capacity:     int32(zoneReq.Capacity),
+			SeatsPerRow:  int32(zoneReq.SeatsPerRow),
+			NumberOfRows: int32(zoneReq.NumberOfRows),
 		})
 	}
 
@@ -109,12 +107,11 @@ func (s *LocationService) UpdateLocation(ctx context.Context, req *dto.UpdateLoc
 	zones := make([]*locationpb.Zone, 0, len(req.Zones))
 	for _, zoneReq := range req.Zones {
 		zones = append(zones, &locationpb.Zone{
-			ZoneNumber: int32(zoneReq.ZoneNumber),
-			ZoneName:   zoneReq.ZoneName,
-			Capacity:   int32(zoneReq.Capacity),
-			Reserved:   zoneReq.Reserved,
-			Price:      zoneReq.Price,
-			Exclusive:  zoneReq.Exclusive,
+			ZoneNumber:   int32(zoneReq.ZoneNumber),
+			ZoneName:     zoneReq.ZoneName,
+			Capacity:     int32(zoneReq.Capacity),
+			SeatsPerRow:  int32(zoneReq.SeatsPerRow),
+			NumberOfRows: int32(zoneReq.NumberOfRows),
 		})
 	}
 
