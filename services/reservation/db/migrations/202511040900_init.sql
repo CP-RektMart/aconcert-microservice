@@ -33,4 +33,8 @@ CREATE TABLE ReservationTicket (
 );
 
 -- migrate:down
-DROP TABLE IF EXISTS Tickets;
+DROP TABLE IF EXISTS Ticket;
+
+DROP TABLE IF EXISTS Reservation;
+
+DROP TABLE IF EXISTS ReservationTicket;
