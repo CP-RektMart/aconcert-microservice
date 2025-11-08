@@ -204,9 +204,14 @@ func (r *ReserveDomainImpl) ListReservation(ctx context.Context, req *reservatio
 }
 func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reservationpb.ConfirmReservationRequest) (*reservationpb.ConfirmReservationResponse, error) {
 	reservationID := req.GetId()
-	userID := req.GetUserId()
 
-	timeLeft, err := r.repo.GetReservationTimeLeft(ctx, userID, reservationID)
+	reservation, err := r.repo.GetReservation(ctx, reservationID)
+	if err != nil {
+		logger.ErrorContext(ctx, "get reservation failed", slog.Any("error", err))
+		return nil, apperror.NotFound("reservation not found", err)
+	}
+
+	timeLeft, err := r.repo.GetReservationTimeLeft(ctx, reservation.UserID.String(), reservationID)
 	if err != nil || timeLeft <= 0 {
 		logger.WarnContext(ctx, "reservation not found or expired", slog.String("reservationID", reservationID))
 		return nil, apperror.NotFound("reservation not found or expired", err)
@@ -217,11 +222,6 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 		return nil, apperror.BadRequest("reservation expiring soon, please create new", nil)
 	}
 
-	reservation, err := r.repo.GetReservation(ctx, reservationID)
-	if err != nil {
-		logger.ErrorContext(ctx, "get reservation failed", slog.Any("error", err))
-		return nil, apperror.NotFound("reservation not found", err)
-	}
 	eventID := pgUUIDToString(reservation.EventID)
 
 	seats, err := r.repo.GetReservationSeats(ctx, reservationID)
@@ -238,7 +238,7 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 	for _, seat := range seats {
 		if err := r.repo.SetSeatReserved(ctx, reservation.EventID.String(), seat, reservationID, ReservationTTL); err != nil {
 			logger.ErrorContext(ctx, "reserve seat failed", slog.Any("error", err))
-			rollbackReservation(ctx, r.repo, req.GetUserId(), reservation.EventID.String(), reservationID, seats)
+			rollbackReservation(ctx, r.repo, reservation.UserID.String(), reservation.EventID.String(), reservationID, seats)
 			return nil, apperror.Internal("failed to reserve seat", err)
 		}
 	}
@@ -248,7 +248,7 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 		return nil, apperror.Internal("failed to confirm reservation", err)
 	}
 
-	if err := r.repo.DeleteReservationTemp(ctx, userID, reservationID); err != nil {
+	if err := r.repo.DeleteReservationTemp(ctx, reservation.UserID.String(), reservationID); err != nil {
 		logger.ErrorContext(ctx, "cleanup temp reservation failed", slog.Any("error", err))
 		return nil, apperror.Internal("failed to cleanup temp reservation", err)
 	}
