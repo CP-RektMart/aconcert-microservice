@@ -31,10 +31,11 @@ profile.cov
 
 # Editor/IDE
 # .idea/
-# .vscode/
+ .vscode/
+ .zed/
 
 data/
 
 .DS_Store
 
-*/tmp/
+tmp/
