@@ -42,9 +42,12 @@ message GetReservationRequest {
     string id = 1;
 }
 
+message GetReservationByStripeSessionIDRequest {
+    string session_id = 1;
+}
+
 message ConfirmReservationRequest {
     string id = 1;
-    string user_id = 2;
 }
 // ------------------ Reponse ------------------ //
 
@@ -82,4 +85,5 @@ service ReservationService {
     rpc ListReservation(ListReservationRequest) returns (ListReservationResponse) {}
     rpc GetReservation(GetReservationRequest) returns (GetReservationResponse) {}
     rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse) {}
+    rpc GetReservationByStripeSessionID(GetReservationByStripeSessionIDRequest) returns (GetReservationResponse) {}
 }
