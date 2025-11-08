@@ -4,19 +4,16 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/domain"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/dto"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/middlewares/authentication"
 	"github.com/gofiber/fiber/v2"
 )
 
 type handler struct {
-	domain         domain.AuthDomain
-	authMiddleware authentication.AuthMiddleware
+	domain domain.AuthDomain
 }
 
-func NewHandler(domain domain.AuthDomain, authMiddleware authentication.AuthMiddleware) *handler {
+func NewHandler(domain domain.AuthDomain) *handler {
 	return &handler{
-		domain:         domain,
-		authMiddleware: authMiddleware,
+		domain: domain,
 	}
 }
 
@@ -24,8 +21,8 @@ func (h *handler) Mount(r fiber.Router) {
 	userGroup := r.Group("/auth")
 	userGroup.Post("/login", h.LoginWithProvider)
 	userGroup.Post("/refresh", h.RefreshToken)
-	userGroup.Post("/logout", h.authMiddleware.Auth, h.Logout)
-	userGroup.Get("/me", h.authMiddleware.Auth, h.GetProfile)
+	userGroup.Post("/logout", h.Logout)
+	userGroup.Get("/me", h.GetProfile)
 }
 
 func (h *handler) LoginWithProvider(c *fiber.Ctx) error {
@@ -74,13 +71,12 @@ func (h *handler) RefreshToken(c *fiber.Ctx) error {
 func (h *handler) Logout(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	userID, err := h.authMiddleware.GetUserIDFromContext(c.UserContext())
-	if err != nil {
-		return c.SendStatus(fiber.StatusUnauthorized)
+	var req dto.LogoutRequest
+	if err := req.Parse(c); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	err = h.domain.Logout(ctx, userID)
-	if err != nil {
+	if err := h.domain.Logout(ctx, req.UserID); err != nil {
 		return errors.Wrap(err, "failed to logout")
 	}
 
@@ -90,12 +86,12 @@ func (h *handler) Logout(c *fiber.Ctx) error {
 func (h *handler) GetProfile(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	userID, err := h.authMiddleware.GetUserIDFromContext(ctx)
-	if err != nil {
-		return c.SendStatus(fiber.StatusUnauthorized)
+	var req dto.GetProfileRequest
+	if err := req.Parse(c); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	user, err := h.domain.GetUser(ctx, userID)
+	user, err := h.domain.GetUser(ctx, req.UserID)
 	if err != nil {
 		return errors.Wrap(err, "failed to get user")
 	}

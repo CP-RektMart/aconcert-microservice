@@ -4,4 +4,7 @@ use (
 	./services/auth
 	./services/notification
 	./services/event
+	./services/location
+	./services/gateway
+	./services/payment
 )

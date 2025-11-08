@@ -15,9 +15,24 @@ type Event struct {
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
 	Name        string             `json:"name"`
 	Description pgtype.Text        `json:"description"`
-	LocationID  pgtype.UUID        `json:"location_id"`
+	LocationID  string             `json:"location_id"`
 	Artist      []string           `json:"artist"`
 	EventDate   pgtype.Timestamptz `json:"event_date"`
 	Thumbnail   pgtype.Text        `json:"thumbnail"`
 	Images      []string           `json:"images"`
+}
+
+type EventZone struct {
+	ID          pgtype.UUID        `json:"id"`
+	EventID     pgtype.UUID        `json:"event_id"`
+	LocationID  string             `json:"location_id"`
+	ZoneNumber  int32              `json:"zone_number"`
+	Price       float64            `json:"price"`
+	Color       string             `json:"color"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	IsSoldOut   bool               `json:"is_sold_out"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
 }

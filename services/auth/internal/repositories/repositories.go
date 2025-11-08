@@ -9,7 +9,7 @@ import (
 	db "github.com/cp-rektmart/aconcert-microservice/auth/db/codegen"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/auth/internal/errs"
-	"github.com/cp-rektmart/aconcert-microservice/auth/internal/jwt"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/jwt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -26,8 +26,8 @@ type AuthRepository interface {
 	GetUserByProviderEmail(ctx context.Context, provider entities.Provider, email string) (entities.User, error)
 
 	// Redis
-	SetUserAuthToken(ctx context.Context, userID uuid.UUID, token entities.CachedTokens) error
-	GetUserAuthToken(ctx context.Context, userID uuid.UUID) (entities.CachedTokens, error)
+	SetUserAuthToken(ctx context.Context, userID uuid.UUID, token jwt.CachedTokens) error
+	GetUserAuthToken(ctx context.Context, userID uuid.UUID) (jwt.CachedTokens, error)
 	DeleteUserAuthToken(ctx context.Context, userID uuid.UUID) error
 }
 
@@ -108,24 +108,24 @@ func (r *AuthRepositoryImpl) getTokenKey(userID uuid.UUID) string {
 	return AuthTokenKey + ":" + userID.String()
 }
 
-func (r *AuthRepositoryImpl) GetUserAuthToken(ctx context.Context, userID uuid.UUID) (entities.CachedTokens, error) {
+func (r *AuthRepositoryImpl) GetUserAuthToken(ctx context.Context, userID uuid.UUID) (jwt.CachedTokens, error) {
 	redisToken, err := r.redisClient.Get(ctx, r.getTokenKey(userID)).Bytes()
 	if err != nil {
-		return entities.CachedTokens{}, errors.Wrap(err, "can't get token")
+		return jwt.CachedTokens{}, errors.Wrap(err, "can't get token")
 	}
 
 	cachedToken := tokenUID{}
 	if err = json.Unmarshal(redisToken, &cachedToken); err != nil {
-		return entities.CachedTokens{}, errors.Wrap(err, "can't unmarshal cached token")
+		return jwt.CachedTokens{}, errors.Wrap(err, "can't unmarshal cached token")
 	}
 
-	return entities.CachedTokens{
+	return jwt.CachedTokens{
 		AccessUID:  cachedToken.AccessUID,
 		RefreshUID: cachedToken.RefreshUID,
 	}, nil
 }
 
-func (r *AuthRepositoryImpl) SetUserAuthToken(ctx context.Context, userID uuid.UUID, token entities.CachedTokens) error {
+func (r *AuthRepositoryImpl) SetUserAuthToken(ctx context.Context, userID uuid.UUID, token jwt.CachedTokens) error {
 	cachedToken, err := json.Marshal(tokenUID{
 		AccessUID:  token.AccessUID,
 		RefreshUID: token.RefreshUID,

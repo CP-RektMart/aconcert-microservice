@@ -2,15 +2,17 @@ module github.com/cp-rektmart/aconcert-microservice/event
 
 go 1.25.0
 
+replace github.com/cp-rektmart/aconcert-microservice => ../../
+
 require (
 	github.com/caarlos0/env/v10 v10.0.0
+	github.com/cockroachdb/errors v1.12.0
 	github.com/cp-rektmart/aconcert-microservice v0.0.0-20250916070158-0dc391f5fc12
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/joho/godotenv v1.5.1
 	google.golang.org/genproto v0.0.0-20250908214217-97024824d090
-	google.golang.org/grpc v1.75.1
-	google.golang.org/protobuf v1.36.9
+	google.golang.org/grpc v1.76.0
 )
 
 require (
@@ -33,7 +35,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.4 // indirect
 	github.com/aws/smithy-go v1.23.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cockroachdb/errors v1.12.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -53,4 +54,5 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250826171959-ef028d996bc1 // indirect
+	google.golang.org/protobuf v1.36.10 // indirect
 )

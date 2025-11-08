@@ -1,6 +1,4 @@
 -- migrate:up
-BEGIN;
-
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -16,8 +14,6 @@ CREATE TABLE users (
     birth_date DATE,
     role VARCHAR(50) NOT NULL DEFAULT 'user'
 );
-
-COMMIT;
 
 -- migrate:down
 DROP TABLE IF EXISTS users;

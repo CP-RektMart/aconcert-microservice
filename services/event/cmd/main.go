@@ -11,13 +11,13 @@ import (
 
 	_ "google.golang.org/genproto/protobuf/ptype"
 
-	"github.com/cp-rektmart/aconcert-microservice/event/config"
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
-	eventService "github.com/cp-rektmart/aconcert-microservice/event/internal/service/event"
-	eventps "github.com/cp-rektmart/aconcert-microservice/event/proto/event"
+	"github.com/cp-rektmart/aconcert-microservice/event/internal/config"
+	eventService "github.com/cp-rektmart/aconcert-microservice/event/internal/service"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/grpclogger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
-	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"google.golang.org/grpc"
 )
@@ -48,11 +48,6 @@ func main() {
 		}
 	}()
 
-	// CONNECT TO RABBITMQ
-	rabbitmq.NewRabbitMQConnection(conf.RabbitMQ.URL)
-	// DEFER CLOSE CONNECTION TO RABBITMQ
-	defer rabbitmq.RabbitMQClient.CloseConnection()
-
 	queries := db.New(pgConn)
 
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(conf.Port))
@@ -60,14 +55,26 @@ func main() {
 		logger.PanicContext(ctx, "failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
+	)
 
 	eventServ := eventService.NewEventService(queries)
-	eventps.RegisterEventServiceServer(grpcServer, eventServ)
+	eventpb.RegisterEventServiceServer(grpcServer, eventServ)
 
-	logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))
+	go func() {
+		logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))
+		if err := grpcServer.Serve(lis); err != nil {
+			logger.PanicContext(ctx, "failed to serve", slog.Any("error", err))
+			stop() // stop context if server fails
+		}
+	}()
 
-	if err := grpcServer.Serve(lis); err != nil {
-		logger.PanicContext(ctx, "failed to serve: %v", slog.Any("error", err))
-	}
+	// Wait for interrupt signal
+	<-ctx.Done()
+	logger.InfoContext(ctx, "shutting down gRPC server gracefully")
+
+	// Gracefully stop gRPC
+	grpcServer.GracefulStop()
+	logger.InfoContext(ctx, "gRPC server stopped cleanly")
 }

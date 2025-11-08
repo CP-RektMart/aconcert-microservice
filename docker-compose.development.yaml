@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  # -------------------- AUTH DATABASES --------------------
+  auth-postgres:
+    image: postgres:15-alpine
+    container_name: auth-postgres
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5431:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+  auth-redis:
+    image: redis:latest
+    container_name: auth-redis
+    ports:
+      - "6969:6379"
+
+  # -------------------- EVENT DATABASES --------------------
+  event-postgres:
+    image: postgres:15-alpine
+    container_name: event-postgres
+    environment:
+      POSTGRES_DB: event
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - event_db_data:/var/lib/postgresql/data
+      - ../services/event/db/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d event"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  event-redis:
+    image: redis:latest
+    container_name: event-redis
+    ports:
+      - "6970:6379"
+
+  # -------------------- LOCATION DATABASE --------------------
+  location-mongo:
+    image: mongo:6.0
+    container_name: location-mongo
+    ports:
+      - "20007:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: aconcert
+    volumes:
+      - location_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# -------------------- VOLUMES --------------------
+volumes:
+  auth_db_data:
+  event_db_data:
+  location_mongo_data:
