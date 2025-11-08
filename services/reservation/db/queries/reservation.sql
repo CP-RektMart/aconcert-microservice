@@ -3,9 +3,10 @@ INSERT INTO Reservation (
     id,
     user_id,
     event_id,
-    status
+    status,
+    stripe_session_id
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetReservation :one
@@ -70,3 +71,8 @@ WHERE user_id = $1 AND deleted_at IS NULL;
 -- name: CountReservationsByEventID :one
 SELECT COUNT(*) FROM Reservation
 WHERE event_id = $1 AND deleted_at IS NULL;
+
+-- name: GetReservationByStripeSessionID :one
+SELECT * FROM Reservation
+WHERE stripe_session_id = $1 AND deleted_at IS NULL
+LIMIT 1;

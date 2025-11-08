@@ -40,17 +40,19 @@ INSERT INTO Reservation (
     id,
     user_id,
     event_id,
-    status
+    status,
+    stripe_session_id
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status
+    $1, $2, $3, $4, $5
+) RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id
 `
 
 type CreateReservationParams struct {
-	ID      pgtype.UUID `json:"id"`
-	UserID  pgtype.UUID `json:"user_id"`
-	EventID pgtype.UUID `json:"event_id"`
-	Status  string      `json:"status"`
+	ID              pgtype.UUID `json:"id"`
+	UserID          pgtype.UUID `json:"user_id"`
+	EventID         pgtype.UUID `json:"event_id"`
+	Status          string      `json:"status"`
+	StripeSessionID string      `json:"stripe_session_id"`
 }
 
 func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error) {
@@ -59,6 +61,7 @@ func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationPa
 		arg.UserID,
 		arg.EventID,
 		arg.Status,
+		arg.StripeSessionID,
 	)
 	var i Reservation
 	err := row.Scan(
@@ -69,6 +72,7 @@ func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationPa
 		&i.UserID,
 		&i.EventID,
 		&i.Status,
+		&i.StripeSessionID,
 	)
 	return i, err
 }
@@ -85,7 +89,7 @@ func (q *Queries) DeleteReservation(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getReservation = `-- name: GetReservation :one
-SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status FROM Reservation
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
 WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1
 `
@@ -101,12 +105,13 @@ func (q *Queries) GetReservation(ctx context.Context, id pgtype.UUID) (Reservati
 		&i.UserID,
 		&i.EventID,
 		&i.Status,
+		&i.StripeSessionID,
 	)
 	return i, err
 }
 
 const getReservationByID = `-- name: GetReservationByID :one
-SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status FROM Reservation
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
 WHERE id = $1
 LIMIT 1
 `
@@ -122,6 +127,29 @@ func (q *Queries) GetReservationByID(ctx context.Context, id pgtype.UUID) (Reser
 		&i.UserID,
 		&i.EventID,
 		&i.Status,
+		&i.StripeSessionID,
+	)
+	return i, err
+}
+
+const getReservationByStripeSessionID = `-- name: GetReservationByStripeSessionID :one
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
+WHERE stripe_session_id = $1 AND deleted_at IS NULL
+LIMIT 1
+`
+
+func (q *Queries) GetReservationByStripeSessionID(ctx context.Context, stripeSessionID string) (Reservation, error) {
+	row := q.db.QueryRow(ctx, getReservationByStripeSessionID, stripeSessionID)
+	var i Reservation
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.UserID,
+		&i.EventID,
+		&i.Status,
+		&i.StripeSessionID,
 	)
 	return i, err
 }
@@ -137,7 +165,7 @@ func (q *Queries) HardDeleteReservation(ctx context.Context, id pgtype.UUID) err
 }
 
 const listReservations = `-- name: ListReservations :many
-SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status FROM Reservation
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
 `
@@ -159,6 +187,7 @@ func (q *Queries) ListReservations(ctx context.Context) ([]Reservation, error) {
 			&i.UserID,
 			&i.EventID,
 			&i.Status,
+			&i.StripeSessionID,
 		); err != nil {
 			return nil, err
 		}
@@ -171,7 +200,7 @@ func (q *Queries) ListReservations(ctx context.Context) ([]Reservation, error) {
 }
 
 const listReservationsByEventID = `-- name: ListReservationsByEventID :many
-SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status FROM Reservation
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
 WHERE event_id = $1 AND deleted_at IS NULL
 ORDER BY created_at DESC
 `
@@ -193,6 +222,7 @@ func (q *Queries) ListReservationsByEventID(ctx context.Context, eventID pgtype.
 			&i.UserID,
 			&i.EventID,
 			&i.Status,
+			&i.StripeSessionID,
 		); err != nil {
 			return nil, err
 		}
@@ -205,7 +235,7 @@ func (q *Queries) ListReservationsByEventID(ctx context.Context, eventID pgtype.
 }
 
 const listReservationsByStatus = `-- name: ListReservationsByStatus :many
-SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status FROM Reservation
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
 WHERE status = $1 AND deleted_at IS NULL
 ORDER BY created_at DESC
 `
@@ -227,6 +257,7 @@ func (q *Queries) ListReservationsByStatus(ctx context.Context, status string) (
 			&i.UserID,
 			&i.EventID,
 			&i.Status,
+			&i.StripeSessionID,
 		); err != nil {
 			return nil, err
 		}
@@ -239,7 +270,7 @@ func (q *Queries) ListReservationsByStatus(ctx context.Context, status string) (
 }
 
 const listReservationsByUserID = `-- name: ListReservationsByUserID :many
-SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status FROM Reservation
+SELECT id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id FROM Reservation
 WHERE user_id = $1 AND deleted_at IS NULL
 ORDER BY created_at DESC
 `
@@ -261,6 +292,7 @@ func (q *Queries) ListReservationsByUserID(ctx context.Context, userID pgtype.UU
 			&i.UserID,
 			&i.EventID,
 			&i.Status,
+			&i.StripeSessionID,
 		); err != nil {
 			return nil, err
 		}
@@ -280,7 +312,7 @@ SET
     status = COALESCE($3, status),
     updated_at = NOW()
 WHERE id = $4 AND deleted_at IS NULL
-RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status
+RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id
 `
 
 type UpdateReservationParams struct {
@@ -306,6 +338,7 @@ func (q *Queries) UpdateReservation(ctx context.Context, arg UpdateReservationPa
 		&i.UserID,
 		&i.EventID,
 		&i.Status,
+		&i.StripeSessionID,
 	)
 	return i, err
 }
@@ -314,7 +347,7 @@ const updateReservationStatus = `-- name: UpdateReservationStatus :one
 UPDATE Reservation
 SET status = $2, updated_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status
+RETURNING id, created_at, updated_at, deleted_at, user_id, event_id, status, stripe_session_id
 `
 
 type UpdateReservationStatusParams struct {
@@ -333,6 +366,7 @@ func (q *Queries) UpdateReservationStatus(ctx context.Context, arg UpdateReserva
 		&i.UserID,
 		&i.EventID,
 		&i.Status,
+		&i.StripeSessionID,
 	)
 	return i, err
 }

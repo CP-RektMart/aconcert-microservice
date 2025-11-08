@@ -32,6 +32,7 @@ type Querier interface {
 	DeleteTicketsByReservationID(ctx context.Context, reservationID pgtype.UUID) error
 	GetReservation(ctx context.Context, id pgtype.UUID) (Reservation, error)
 	GetReservationByID(ctx context.Context, id pgtype.UUID) (Reservation, error)
+	GetReservationByStripeSessionID(ctx context.Context, stripeSessionID string) (Reservation, error)
 	GetReservationTickets(ctx context.Context, reservationID pgtype.UUID) ([]GetReservationTicketsRow, error)
 	GetTicket(ctx context.Context, id pgtype.UUID) (Ticket, error)
 	GetTicketByID(ctx context.Context, id pgtype.UUID) (Ticket, error)

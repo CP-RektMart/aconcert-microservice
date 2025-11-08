@@ -173,22 +173,23 @@ const getTicketReservations = `-- name: GetTicketReservations :many
 SELECT
     rt.reservation_id,
     rt.ticket_id,
-    r.id, r.created_at, r.updated_at, r.deleted_at, r.user_id, r.event_id, r.status
+    r.id, r.created_at, r.updated_at, r.deleted_at, r.user_id, r.event_id, r.status, r.stripe_session_id
 FROM ReservationTicket rt
 JOIN Reservation r ON rt.reservation_id = r.id
 WHERE rt.ticket_id = $1 AND r.deleted_at IS NULL
 `
 
 type GetTicketReservationsRow struct {
-	ReservationID pgtype.UUID        `json:"reservation_id"`
-	TicketID      pgtype.UUID        `json:"ticket_id"`
-	ID            pgtype.UUID        `json:"id"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
-	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
-	UserID        pgtype.UUID        `json:"user_id"`
-	EventID       pgtype.UUID        `json:"event_id"`
-	Status        string             `json:"status"`
+	ReservationID   pgtype.UUID        `json:"reservation_id"`
+	TicketID        pgtype.UUID        `json:"ticket_id"`
+	ID              pgtype.UUID        `json:"id"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+	UserID          pgtype.UUID        `json:"user_id"`
+	EventID         pgtype.UUID        `json:"event_id"`
+	Status          string             `json:"status"`
+	StripeSessionID string             `json:"stripe_session_id"`
 }
 
 func (q *Queries) GetTicketReservations(ctx context.Context, ticketID pgtype.UUID) ([]GetTicketReservationsRow, error) {
@@ -210,6 +211,7 @@ func (q *Queries) GetTicketReservations(ctx context.Context, ticketID pgtype.UUI
 			&i.UserID,
 			&i.EventID,
 			&i.Status,
+			&i.StripeSessionID,
 		); err != nil {
 			return nil, err
 		}

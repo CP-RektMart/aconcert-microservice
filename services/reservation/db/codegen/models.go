@@ -9,13 +9,14 @@ import (
 )
 
 type Reservation struct {
-	ID        pgtype.UUID        `json:"id"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
-	UserID    pgtype.UUID        `json:"user_id"`
-	EventID   pgtype.UUID        `json:"event_id"`
-	Status    string             `json:"status"`
+	ID              pgtype.UUID        `json:"id"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+	UserID          pgtype.UUID        `json:"user_id"`
+	EventID         pgtype.UUID        `json:"event_id"`
+	Status          string             `json:"status"`
+	StripeSessionID string             `json:"stripe_session_id"`
 }
 
 type Reservationticket struct {
