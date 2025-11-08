@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package reservation;
+
+option go_package = "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation;reservationpb";
+
+// ------------------ Messages ------------------ //
+message Empty {}
+
+message Seat {
+    int32 zone_number = 1;
+    double price = 3;
+    int32 row = 4;
+    int32 column = 5;
+}
+
+message Reservation {
+    string user_id = 1;
+    string event_id = 2;
+    double total_price = 3;
+    repeated Seat seats = 4;
+}
+
+// ------------------ CRUD ------------------ //
+
+message CreateReservationRequest {
+    string user_id = 1;
+    string event_id = 2;
+    double total_price = 3;
+    repeated Seat seats = 4;
+}
+
+message DeleteReservationRequest {
+    string id = 1;
+}
+
+message ListReservationRequest {
+    string user_id = 1;
+}
+
+message GetReservationRequest {
+    string id = 1;
+}
+
+message GetReservationByStripeSessionIDRequest {
+    string session_id = 1;
+}
+
+message ConfirmReservationRequest {
+    string id = 1;
+}
+// ------------------ Reponse ------------------ //
+
+message CreateReservationResponse {
+    string id = 1;
+}
+
+message DeleteReservationResponse {
+    string id = 1;
+}
+
+message ListReservationResponse {
+    repeated Reservation reservation = 1;
+}
+
+message GetReservationResponse {
+    string id = 1;
+    string user_id = 2;
+    string event_id = 3;
+    double total_price = 4;
+    repeated Seat seats = 5;
+}
+
+message ConfirmReservationResponse {
+    string id = 1;
+    bool success = 2;
+    string message = 3;
+}
+
+// ------------------ Service ------------------ //
+service ReservationService {
+    // reservation operations
+    rpc CreateReservation(CreateReservationRequest) returns (CreateReservationResponse) {}
+    rpc DeleteReservation(DeleteReservationRequest) returns (DeleteReservationResponse) {}
+    rpc ListReservation(ListReservationRequest) returns (ListReservationResponse) {}
+    rpc GetReservation(GetReservationRequest) returns (GetReservationResponse) {}
+    rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse) {}
+    rpc GetReservationByStripeSessionID(GetReservationByStripeSessionIDRequest) returns (GetReservationResponse) {}
+}
