@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/caarlos0/env/v10"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
-	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/joho/godotenv"
@@ -26,7 +25,6 @@ type AppConfig struct {
 	Environment  string          `env:"ENVIRONMENT"`
 	MaxBodyLimit int             `env:"MAX_BODY_LIMIT"`
 	Logger       logger.Config   `envPrefix:"LOGGER_"`
-	Postgres     postgres.Config `envPrefix:"POSTGRES_"`
 	Cors         CorsConfig      `envPrefix:"CORS_"`
 	RabbitMQ     rabbitmq.Config `envPrefix:"RABBITMQ_"`
 	Redis        redis.Config    `envPrefix:"REDIS_"`
