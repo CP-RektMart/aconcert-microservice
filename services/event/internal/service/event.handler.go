@@ -21,7 +21,7 @@ func (s *EventService) ListEvents(ctx context.Context, req *eventpb.ListEventsRe
 	defer s.mu.Unlock()
 
 	// Configurable offset
-	const DEFAULT_LIMIT = 10
+	const DEFAULT_LIMIT = 100000
 	const DEFAULT_PAGE = 0
 
 	// Handle optional fields (proto3 optional fields are pointers in Go)
