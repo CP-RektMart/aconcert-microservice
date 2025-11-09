@@ -10,7 +10,6 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/domain"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/hub"
-	"github.com/gofiber/contrib/otelfiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/valyala/fasthttp"
@@ -32,9 +31,8 @@ func (h *handler) Mount(r fiber.Router) {
 	sseGroup := r.Group("/", requestid.New(), requestlogger.New())
 	sseGroup.Get("/realtime", h.Realtime) // From Frontend
 
-	httpGroup := r.Group("/", otelfiber.Middleware(), requestid.New(), requestlogger.New())
+	httpGroup := r.Group("/", requestid.New(), requestlogger.New())
 	httpGroup.Post("/push-message", h.PushMessage) // From Internal Only
-	httpGroup.Post("/ack", h.Ack)                  // From Frontend
 }
 
 func (h *handler) Realtime(c *fiber.Ctx) error {
@@ -117,23 +115,6 @@ func (h *handler) PushMessage(c *fiber.Ctx) error {
 
 	if err := h.domain.PushMessage(ctx, req.UserID, req.EventType, req.Data); err != nil {
 		return errors.Wrap(err, "failed to push message")
-	}
-
-	return c.SendStatus(fiber.StatusNoContent)
-}
-
-func (h *handler) Ack(c *fiber.Ctx) error {
-	ctx := c.UserContext()
-
-	var req dto.AckPushMessage
-	if err := req.Parse(c); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(dto.HttpError{
-			Error: err.Error(),
-		})
-	}
-
-	if err := h.domain.ReceiveAck(ctx, req.EventID); err != nil {
-		return errors.Wrap(err, "failed to ack push message")
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)

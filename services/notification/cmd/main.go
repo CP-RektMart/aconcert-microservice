@@ -11,7 +11,9 @@ import (
 	"syscall"
 
 	"github.com/cp-rektmart/aconcert-microservice/notification/internal/config"
+	"github.com/cp-rektmart/aconcert-microservice/notification/internal/domain"
 	"github.com/cp-rektmart/aconcert-microservice/notification/internal/entities"
+	"github.com/cp-rektmart/aconcert-microservice/notification/internal/handler"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 )
@@ -35,15 +37,39 @@ func main() {
 		return
 	}
 
+	domain := domain.New()
+	handler := handler.New(domain)
+
 	go func() {
 		for d := range msgs {
-			var eventData entities.EventData
+			var eventData entities.Message
 			if err := json.Unmarshal(d.Body, &eventData); err != nil {
 				log.Printf("Error reading event data (invalid JSON): %s", err)
 				continue
 			}
 
 			fmt.Printf("📩 Received message: %+v\n", eventData)
+			switch eventData.Type {
+			case entities.MessageTypeEventCreated:
+				if err := handler.HandleEventCreated(ctx); err != nil {
+					log.Printf("Error handling event.created: %s", err)
+				}
+			case entities.MessageTypeEventUpdated:
+				if err := handler.HandleEventUpdated(ctx); err != nil {
+					log.Printf("Error handling event.updated: %s", err)
+				}
+			case entities.MessageTypeReservationConfirmed:
+				if err := handler.HandleReservationConfirmed(ctx); err != nil {
+					log.Printf("Error handling reservation.confirmed: %s", err)
+				}
+			case entities.MessageTypeReservationCancelled:
+				if err := handler.HandleReservationCancelled(ctx); err != nil {
+					log.Printf("Error handling reservation.cancelled: %s", err)
+				}
+			default:
+				log.Printf("Unknown message type: %s", eventData.Type)
+				continue
+			}
 		}
 	}()
 

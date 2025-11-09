@@ -67,29 +67,6 @@ func (r *PushMessage) Validate() error {
 	return errors.WithStack(v.Error())
 }
 
-type AckPushMessage struct {
-	EventID uuid.UUID `json:"eventId"`
-}
-
-func (r *AckPushMessage) Parse(c *fiber.Ctx) error {
-	if err := c.BodyParser(r); err != nil {
-		return errors.Wrap(err, "failed to parse request")
-	}
-
-	if err := r.Validate(); err != nil {
-		return errors.Wrap(err, "failed to validate request")
-	}
-
-	return nil
-}
-
-func (r *AckPushMessage) Validate() error {
-	v := validator.New()
-	v.Must(r.EventID != uuid.Nil, "eventId is required")
-
-	return errors.WithStack(v.Error())
-}
-
 type EventStream struct {
 	EventID uuid.UUID `json:"eventId"`
 	Data    any       `json:"data"`

@@ -76,23 +76,3 @@ func (d *Domain) ResendCache(ctx context.Context, userID uuid.UUID) error {
 
 	return nil
 }
-
-func (d *Domain) ReceiveAck(ctx context.Context, eventID uuid.UUID) error {
-	// 1. Get Event ID
-	event, err := d.repo.GetEvent(ctx, eventID)
-	if err != nil {
-		return errors.Wrap(err, "failed to get event")
-	}
-
-	// 2. Remove Event Cache
-	if err := d.repo.RemoveEvent(ctx, eventID); err != nil {
-		return errors.Wrap(err, "failed to remove event")
-	}
-
-	// 2. Remove User Event
-	if err := d.repo.RemoveUserEvent(ctx, event.UserID, eventID); err != nil {
-		return errors.Wrap(err, "failed to remove user event")
-	}
-
-	return nil
-}
