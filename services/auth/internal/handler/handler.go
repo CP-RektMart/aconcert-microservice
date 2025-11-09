@@ -23,6 +23,7 @@ func (h *handler) Mount(r fiber.Router) {
 	userGroup.Post("/refresh", h.RefreshToken)
 	userGroup.Post("/logout", h.Logout)
 	userGroup.Get("/me", h.GetProfile)
+	userGroup.Patch("/me", h.UpdateProfile)
 }
 
 func (h *handler) LoginWithProvider(c *fiber.Ctx) error {
@@ -94,6 +95,22 @@ func (h *handler) GetProfile(c *fiber.Ctx) error {
 	user, err := h.domain.GetUser(ctx, req.UserID)
 	if err != nil {
 		return errors.Wrap(err, "failed to get user")
+	}
+
+	return c.JSON(dto.UserEntityToDTO(user))
+}
+
+func (h *handler) UpdateProfile(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	var req dto.UpdateProfileRequest
+	if err := req.Parse(c); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	user, err := h.domain.UpdateProfile(ctx, req.UserID, req.Firstname, req.Lastname, req.ProfileImage, req.Birthdate, req.Phone)
+	if err != nil {
+		return errors.Wrap(err, "failed to update user")
 	}
 
 	return c.JSON(dto.UserEntityToDTO(user))

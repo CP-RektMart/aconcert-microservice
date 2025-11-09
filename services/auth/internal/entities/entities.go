@@ -60,3 +60,11 @@ type CreateUserInput struct {
 	Phone        string
 	Role         UserRole
 }
+
+type UpdateUserInput struct {
+	Firstname    string
+	Lastname     string
+	ProfileImage string
+	Birthdate    time.Time
+	Phone        string
+}
