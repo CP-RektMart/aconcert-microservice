@@ -69,6 +69,10 @@ func main() {
 			logger.PanicContext(ctx, "failed to serve", slog.Any("error", err))
 			stop() // stop context if server fails
 		}
+		logger.InfoContext(ctx, "starting listening Redis expiration")
+		if err := reservationRepo.StartExpirationListener(ctx); err != nil {
+			logger.ErrorContext(ctx, "failed to start expiration listener", slog.Any("error", err))
+		}
 	}()
 
 	// Wait for interrupt signal

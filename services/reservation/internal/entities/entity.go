@@ -10,6 +10,14 @@ const (
 	Cancelled ReservationStatus = "CANCELLED"
 )
 
+type SeatStatus string
+
+const (
+	SeatAvailable SeatStatus = "AVAILABLE"
+	SeatPending   SeatStatus = "PENDING"
+	SeatReserved  SeatStatus = "RESERVED"
+)
+
 type Reservation struct {
 	ID         string            `json:"id"`
 	UserID     string            `json:"user_id"`

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	db "github.com/cp-rektmart/aconcert-microservice/reservation/db/codegen"
+	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -17,6 +18,7 @@ type SeatInfo struct {
 }
 
 type ReservationRepository interface {
+	// redis
 	CreateReservationTemp(ctx context.Context, userID, reservationID string, ttl time.Duration) error
 	GetReservationTimeLeft(ctx context.Context, userID, reservationID string) (time.Duration, error)
 	DeleteReservationTemp(ctx context.Context, userID, reservationID string) error
@@ -28,6 +30,13 @@ type ReservationRepository interface {
 	GetReservationSeats(ctx context.Context, reservationID string) ([]SeatInfo, error)
 	DeleteReservationSeats(ctx context.Context, reservationID string) error
 
+	// pub/sub - redis
+	publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus)
+
+	// redis event
+	StartExpirationListener(ctx context.Context) error
+
+	// db
 	GetReservation(ctx context.Context, id string) (*db.Reservation, error)
 	ListReservationsByUserID(ctx context.Context, userID string) ([]db.Reservation, error)
 	CreateReservation(ctx context.Context, reservationID, userID, eventID, status, stripeSessionID string, totalPrice float64) (*db.Reservation, error)
