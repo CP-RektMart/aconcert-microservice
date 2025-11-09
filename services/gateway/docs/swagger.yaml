@@ -268,10 +268,6 @@ components:
             $ref: '#/components/schemas/dto.SeatDTO'
           type: array
           uniqueItems: false
-        stripeClientSecret:
-          type: string
-        timeLeft:
-          type: number
         totalPrice:
           type: number
         userId:
@@ -280,8 +276,6 @@ components:
       - eventId
       - id
       - seats
-      - stripeClientSecret
-      - timeLeft
       - totalPrice
       - userId
       type: object
@@ -415,6 +409,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.UpdateLocationResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_UserResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.UserResponse'
       required:
       - result
       type: object
@@ -774,6 +775,33 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Logout
+      tags:
+      - auth
+  /v1/auth/me:
+    get:
+      description: Get Profile
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_UserResponse'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get Profile
       tags:
       - auth
   /v1/auth/refresh:

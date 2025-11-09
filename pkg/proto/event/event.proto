@@ -28,6 +28,7 @@ message CreateEventRequest {
   string event_date = 5;
   string thumbnail = 6;
   repeated string images = 7;
+  string user_id = 8;
 }
 
 message CreateEventResponse {

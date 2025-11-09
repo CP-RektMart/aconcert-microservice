@@ -13,6 +13,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/redis/go-redis/v9 v9.14.0
+	github.com/streadway/amqp v1.1.0
 	github.com/supabase-community/storage-go v0.8.1
 	github.com/supabase-community/supabase-go v0.0.4
 	github.com/valyala/fasthttp v1.66.0

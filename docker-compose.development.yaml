@@ -62,6 +62,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  # -------------------- NOTIFICATION DATABASE --------------------
+  notification-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: aconcert-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  notification-redis:
+    image: redis:latest
+    container_name: notification-redis
+    ports:
+      - "6971:6379"
 
 # -------------------- VOLUMES --------------------
 volumes:
