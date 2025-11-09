@@ -71,6 +71,7 @@ message GetReservationResponse {
     repeated Seat seats = 5;
     string stripe_client_secret = 6;
     optional double time_left = 7;
+    string  status = 8;
 }
 
 message ConfirmReservationResponse {
