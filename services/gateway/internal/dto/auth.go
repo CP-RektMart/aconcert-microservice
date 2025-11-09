@@ -51,3 +51,12 @@ type UserResponse struct {
 	UpdatedAt    time.Time  `json:"updatedAt" validate:"required"`
 	DeletedAt    *time.Time `json:"deletedAt"`
 }
+
+type UpdateProfileRequest struct {
+	UserID       uuid.UUID `json:"userId" validate:"required"`
+	Firstname    string    `json:"firstname" validate:"required"`
+	Lastname     string    `json:"lastname" validate:"required"`
+	ProfileImage string    `json:"profileImage" validate:"required"`
+	Birthdate    time.Time `json:"birthdate" validate:"required"`
+	Phone        string    `json:"phone" validate:"required"`
+}
