@@ -104,6 +104,14 @@ func (h *Handler) Logout(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
+// @Summary			Get Profile
+// @Description		Get Profile
+// @Tags			auth
+// @Router			/v1/auth/me [GET]
+// @Security		ApiKeyAuth
+// @Success			200	{object}	dto.HttpResponse[dto.UserResponse]
+// @Failure			401	{object}	dto.HttpError
+// @Failure			500	{object}	dto.HttpError
 func (h *Handler) GetProfile(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
