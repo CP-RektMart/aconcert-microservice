@@ -24,6 +24,7 @@ type AuthRepository interface {
 	GetUser(ctx context.Context, id uuid.UUID) (entities.User, error)
 	CreateUser(ctx context.Context, userInput entities.CreateUserInput) (entities.User, error)
 	GetUserByProviderEmail(ctx context.Context, provider entities.Provider, email string) (entities.User, error)
+	UpdateUser(ctx context.Context, userID uuid.UUID, updateInput entities.UpdateUserInput) (entities.User, error)
 
 	// Redis
 	SetUserAuthToken(ctx context.Context, userID uuid.UUID, token jwt.CachedTokens) error
@@ -149,4 +150,40 @@ func (r *AuthRepositoryImpl) DeleteUserAuthToken(ctx context.Context, userID uui
 	}
 
 	return nil
+}
+
+func (r *AuthRepositoryImpl) UpdateUser(ctx context.Context, userID uuid.UUID, updateInput entities.UpdateUserInput) (entities.User, error) {
+	param := db.UpdateUserParams{
+		ID:        ParseUUID(userID),
+		FirstName: updateInput.Firstname,
+		LastName:  updateInput.Lastname,
+	}
+
+	if updateInput.ProfileImage != "" {
+		param.ProfileImage = pgtype.Text{
+			String: updateInput.ProfileImage,
+			Valid:  true,
+		}
+	}
+
+	if updateInput.Birthdate.IsZero() == false {
+		param.BirthDate = pgtype.Date{
+			Time:  updateInput.Birthdate,
+			Valid: true,
+		}
+	}
+
+	if updateInput.Phone != "" {
+		param.Phone = pgtype.Text{
+			String: updateInput.Phone,
+			Valid:  true,
+		}
+	}
+
+	user, err := r.db.UpdateUser(ctx, param)
+	if err != nil {
+		return entities.User{}, errors.Wrap(err, "can't update user")
+	}
+
+	return entities.UserModelToEntity(user), nil
 }

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/auth/config"
@@ -18,6 +19,7 @@ type AuthDomain interface {
 	RefreshToken(ctx context.Context, token string) (entities.Token, error)
 	Logout(ctx context.Context, userID uuid.UUID) error
 	GetUser(ctx context.Context, userID uuid.UUID) (entities.User, error)
+	UpdateProfile(ctx context.Context, userID uuid.UUID, firstname, lastname, profileImage string, birthdate time.Time, phone string) (entities.User, error)
 }
 
 type AuthDomainImpl struct {
@@ -152,6 +154,21 @@ func (d *AuthDomainImpl) GetUser(ctx context.Context, userID uuid.UUID) (entitie
 	user, err := d.repo.GetUser(ctx, userID)
 	if err != nil {
 		return entities.User{}, errors.Wrap(err, "failed to get user by id")
+	}
+
+	return user, nil
+}
+
+func (d *AuthDomainImpl) UpdateProfile(ctx context.Context, userID uuid.UUID, firstname, lastname, profileImage string, birthdate time.Time, phone string) (entities.User, error) {
+	user, err := d.repo.UpdateUser(ctx, userID, entities.UpdateUserInput{
+		Firstname:    firstname,
+		Lastname:     lastname,
+		ProfileImage: profileImage,
+		Birthdate:    birthdate,
+		Phone:        phone,
+	})
+	if err != nil {
+		return entities.User{}, errors.Wrap(err, "failed to update user")
 	}
 
 	return user, nil
