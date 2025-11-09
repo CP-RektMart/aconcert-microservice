@@ -656,6 +656,25 @@ components:
       - zoneName
       - zoneNumber
       type: object
+    dto.UpdateProfileRequest:
+      properties:
+        birthdate:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        phone:
+          type: string
+        profileImage:
+          type: string
+      required:
+      - birthdate
+      - firstname
+      - lastname
+      - phone
+      - profileImage
+      type: object
     dto.UserResponse:
       properties:
         birthdate:
@@ -802,6 +821,39 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get Profile
+      tags:
+      - auth
+    patch:
+      description: Update Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdateProfileRequest'
+        description: request request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_UserResponse'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Update Profile
       tags:
       - auth
   /v1/auth/refresh:

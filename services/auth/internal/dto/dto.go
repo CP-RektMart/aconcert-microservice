@@ -132,3 +132,39 @@ func (r *GetProfileRequest) Validate() error {
 
 	return errors.WithStack(v.Error())
 }
+
+type UpdateProfileRequest struct {
+	UserID       uuid.UUID `json:"userId" validate:"required"`
+	Firstname    string    `json:"firstname" validate:"required"`
+	Lastname     string    `json:"lastname" validate:"required"`
+	ProfileImage string    `json:"profileImage" validate:"required"`
+	Birthdate    time.Time `json:"birthdate" validate:"required"`
+	Phone        string    `json:"phone" validate:"required"`
+}
+
+func (r *UpdateProfileRequest) Parse(c *fiber.Ctx) error {
+	if err := c.ParamsParser(r); err != nil {
+		return errors.Wrap(err, "failed to parse request")
+	}
+
+	if err := c.BodyParser(r); err != nil {
+		return errors.Wrap(err, "failed to parse request")
+	}
+
+	if err := r.Validate(); err != nil {
+		return errors.Wrap(err, "failed to validate request")
+	}
+
+	return nil
+}
+
+func (r *UpdateProfileRequest) Validate() error {
+	v := validator.New()
+	v.Must(r.Firstname != "", "firstname is required")
+	v.Must(r.Lastname != "", "lastname is required")
+	v.Must(r.ProfileImage != "", "profile image is required")
+	v.Must(!r.Birthdate.IsZero(), "birthdate is required")
+	v.Must(r.Phone != "", "phone is required")
+
+	return errors.WithStack(v.Error())
+}

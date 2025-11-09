@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/middlewares/authentication"
 	"github.com/gofiber/fiber/v2"
@@ -24,6 +26,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	group.Post("/refresh", h.RefreshToken)
 	group.Post("/logout", h.authentication.Auth, h.Logout)
 	group.Get("/me", h.authentication.Auth, h.GetProfile)
+	group.Patch("/me", h.authentication.Auth, h.UpdateProfile)
 }
 
 // @Summary			Login
@@ -132,4 +135,49 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[dto.UserResponse]{
 		Result: response,
 	})
+}
+
+// @Summary			Update Profile
+// @Description		Update Profile
+// @Tags			auth
+// @Router			/v1/auth/me [PATCH]
+// @Security		ApiKeyAuth
+// @Param 			RequestBody 	body 	dto.UpdateProfileRequest 	true 	"request request"
+// @Success			200	{object}	dto.HttpResponse[dto.UserResponse]
+// @Failure			401	{object}	dto.HttpError
+// @Failure			500	{object}	dto.HttpError
+func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	userID, err := h.authentication.GetUserIDFromContext(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(dto.HttpError{
+			Error: "UNAUTHORIZED",
+		})
+	}
+
+	var req dto.UpdateProfileRequest
+	if err := c.BodyParser(&req); err != nil {
+		fmt.Println(err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	birthdate, err := parseFlexibleTime(req.Birthdate)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if _, err := h.service.UpdateProfile(ctx, &dto.UpdateProfileDTO{
+		UserID:       userID,
+		Firstname:    req.Firstname,
+		Lastname:     req.Lastname,
+		ProfileImage: req.ProfileImage,
+		Birthdate:    birthdate,
+		Phone:        req.Phone,
+	}); err != nil {
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
 }
