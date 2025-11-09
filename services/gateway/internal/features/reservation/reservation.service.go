@@ -2,6 +2,7 @@ package reservation
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
@@ -45,6 +46,7 @@ func (s *ReservationService) CreateReservation(ctx context.Context, req *dto.Cre
 	for _, seat := range req.Seats {
 		seats = append(seats, s.TransformSeatToProto(seat))
 	}
+	fmt.Println("---- passed 1 -----")
 
 	transUserID := userID.String()
 
@@ -54,6 +56,7 @@ func (s *ReservationService) CreateReservation(ctx context.Context, req *dto.Cre
 		TotalPrice: req.TotalPrice,
 		Seats:      seats,
 	})
+	fmt.Println("---- passed 2 -----")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create reservation")
 	}
@@ -88,11 +91,12 @@ func (s *ReservationService) GetReservation(ctx context.Context, req *dto.GetRes
 	}
 
 	return dto.GetReservationResponse{
-		ID:         response.Id,
-		UserID:     response.UserId,
-		EventID:    response.EventId,
-		TotalPrice: response.TotalPrice,
-		Seats:      seats,
+		ID:              response.Id,
+		UserID:          response.UserId,
+		EventID:         response.EventId,
+		TotalPrice:      response.TotalPrice,
+		Seats:           seats,
+		StripeIDSession: response.StripeSessionId,
 	}, nil
 }
 

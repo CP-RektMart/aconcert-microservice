@@ -70,6 +70,7 @@ message GetReservationResponse {
     double total_price = 4;
     repeated Seat seats = 5;
     string stripe_session_id = 6;
+    optional double time_left = 7;
 }
 
 message ConfirmReservationResponse {

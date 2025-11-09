@@ -42,6 +42,7 @@ type GetReservationResponse struct {
 	EventID    string    `json:"eventId" validate:"required"`
 	TotalPrice float64   `json:"totalPrice" validate:"required"`
 	Seats      []SeatDTO `json:"seats" validate:"required"`
+	StripeIDSession string `json:"stripeIdSession" validate:"required"`
 }
 
 // ListReservationRequest is the request for listing reservations

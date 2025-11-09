@@ -1,5 +1,18 @@
 components:
   schemas:
+    dto.ConfirmReservationResponse:
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        success:
+          type: boolean
+      required:
+      - id
+      - message
+      - success
+      type: object
     dto.CreateEventRequest:
       properties:
         artist:
@@ -122,6 +135,37 @@ components:
       - zoneName
       - zoneNumber
       type: object
+    dto.CreateReservationRequest:
+      properties:
+        eventId:
+          type: string
+        seats:
+          items:
+            $ref: '#/components/schemas/dto.SeatDTO'
+          minItems: 1
+          type: array
+          uniqueItems: false
+        totalPrice:
+          type: number
+      required:
+      - eventId
+      - seats
+      - totalPrice
+      type: object
+    dto.CreateReservationResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
+    dto.DeleteReservationResponse:
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
     dto.EventListResponse:
       properties:
         list:
@@ -213,12 +257,44 @@ components:
       - price
       - zoneNumber
       type: object
+    dto.GetReservationResponse:
+      properties:
+        eventId:
+          type: string
+        id:
+          type: string
+        seats:
+          items:
+            $ref: '#/components/schemas/dto.SeatDTO'
+          type: array
+          uniqueItems: false
+        stripeIdSession:
+          type: string
+        totalPrice:
+          type: number
+        userId:
+          type: string
+      required:
+      - eventId
+      - id
+      - seats
+      - stripeIdSession
+      - totalPrice
+      - userId
+      type: object
     dto.HttpError:
       properties:
         error:
           type: string
       required:
       - error
+      type: object
+    dto.HttpResponse-dto_ConfirmReservationResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.ConfirmReservationResponse'
+      required:
+      - result
       type: object
     dto.HttpResponse-dto_CreateEventResponse:
       properties:
@@ -238,6 +314,20 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.CreateLocationResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_CreateReservationResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.CreateReservationResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_DeleteReservationResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.DeleteReservationResponse'
       required:
       - result
       type: object
@@ -262,10 +352,24 @@ components:
       required:
       - result
       type: object
+    dto.HttpResponse-dto_GetReservationResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.GetReservationResponse'
+      required:
+      - result
+      type: object
     dto.HttpResponse-dto_ListLocationsResponse:
       properties:
         result:
           $ref: '#/components/schemas/dto.ListLocationsResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_ListReservationResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.ListReservationResponse'
       required:
       - result
       type: object
@@ -318,6 +422,16 @@ components:
             $ref: '#/components/schemas/dto.LocationResponse'
           type: array
           uniqueItems: false
+      type: object
+    dto.ListReservationResponse:
+      properties:
+        reservations:
+          items:
+            $ref: '#/components/schemas/dto.ReservationDTO'
+          type: array
+          uniqueItems: false
+      required:
+      - reservations
       type: object
     dto.LocationResponse:
       properties:
@@ -395,6 +509,40 @@ components:
       - accessToken
       - exp
       - refreshToken
+      type: object
+    dto.ReservationDTO:
+      properties:
+        eventId:
+          type: string
+        id:
+          type: string
+        seats:
+          items:
+            $ref: '#/components/schemas/dto.SeatDTO'
+          type: array
+          uniqueItems: false
+        totalPrice:
+          type: number
+        userId:
+          type: string
+      required:
+      - eventId
+      - userId
+      type: object
+    dto.SeatDTO:
+      properties:
+        column:
+          type: integer
+        price:
+          type: number
+        row:
+          type: integer
+        zoneNumber:
+          type: integer
+      required:
+      - column
+      - row
+      - zoneNumber
       type: object
     dto.UpdateEventRequest:
       properties:
@@ -1136,3 +1284,171 @@ paths:
       summary: Update Location
       tags:
       - locations
+  /v1/reservations:
+    get:
+      description: List all reservations for a user
+      parameters:
+      - description: User ID
+        in: query
+        name: userId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_ListReservationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: List Reservations
+      tags:
+      - reservations
+    post:
+      description: Create a new reservation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.CreateReservationRequest'
+        description: Create reservation request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_CreateReservationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Create Reservation
+      tags:
+      - reservations
+  /v1/reservations/{id}:
+    delete:
+      description: Delete a reservation
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_DeleteReservationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Reservation
+      tags:
+      - reservations
+    get:
+      description: Get a reservation by ID
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_GetReservationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get Reservation
+      tags:
+      - reservations
+  /v1/reservations/{id}/confirm:
+    post:
+      description: Confirm a reservation
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_ConfirmReservationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
+      summary: Confirm Reservation
+      tags:
+      - reservations

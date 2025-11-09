@@ -30,7 +30,7 @@ type ReservationRepository interface {
 
 	GetReservation(ctx context.Context, id string) (*db.Reservation, error)
 	ListReservationsByUserID(ctx context.Context, userID string) ([]db.Reservation, error)
-	CreateReservation(ctx context.Context, reservationID, userID, eventID, status string) (*db.Reservation, error)
+	CreateReservation(ctx context.Context, reservationID, userID, eventID, status, stripeSessionID string) (*db.Reservation, error)
 	UpdateReservationStatus(ctx context.Context, id, status string) (*db.Reservation, error)
 	DeleteReservation(ctx context.Context, id string) error
 	CreateTicket(ctx context.Context, eventID, reservationID string, seat SeatInfo) (*db.Ticket, error)
