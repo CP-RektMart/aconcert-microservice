@@ -44,6 +44,7 @@ type GetReservationResponse struct {
 	Seats              []SeatDTO `json:"seats" validate:"required"`
 	StripeClientSecret string    `json:"stripeClientSecret" validate:"required"`
 	TimeLeft           float64   `json:"timeLeft" validate:"required"`
+	Status             string    `json:"status" validate:"required"`
 }
 
 // ListReservationRequest is the request for listing reservations

@@ -208,7 +208,7 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		}
 	case string(entities.Cancelled):
 		break
-	case string(entities.Expired):
+	default:
 		break
 	}
 
@@ -217,8 +217,6 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		return nil, apperror.Internal("Failed to get Stripe Client Secret", err)
 	}
 
-	fmt.Println(session.ClientSecret)
-
 	return &reservationpb.GetReservationResponse{
 		Id:                 req.GetId(),
 		UserId:             pgUUIDToString(reservation.UserID),
@@ -226,6 +224,8 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		Seats:              seats,
 		TimeLeft:           &timeLeft,
 		StripeClientSecret: session.ClientSecret,
+		Status:             reservation.Status,
+		TotalPrice:         reservation.TotalPrice,
 	}, nil
 }
 

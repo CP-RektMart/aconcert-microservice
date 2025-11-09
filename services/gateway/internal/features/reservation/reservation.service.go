@@ -95,6 +95,7 @@ func (s *ReservationService) GetReservation(ctx context.Context, req *dto.GetRes
 		Seats:              seats,
 		StripeClientSecret: response.StripeClientSecret,
 		TimeLeft:           *response.TimeLeft,
+		Status:             response.Status,
 	}, nil
 }
 
