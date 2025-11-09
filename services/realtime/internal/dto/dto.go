@@ -60,7 +60,6 @@ func (r *PushMessage) Parse(c *fiber.Ctx) error {
 
 func (r *PushMessage) Validate() error {
 	v := validator.New()
-	v.Must(r.UserID != uuid.Nil, "userId is required")
 	v.Must(r.EventType != "", "eventType is required")
 	v.Must(r.Data != nil, "data is required")
 

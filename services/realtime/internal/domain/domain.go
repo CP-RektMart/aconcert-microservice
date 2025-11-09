@@ -38,6 +38,20 @@ func (d *Domain) sendStreamData(ctx context.Context, userID uuid.UUID, eventID u
 	return nil
 }
 
+func (d *Domain) broadcastStreamData(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, eventType entities.EventType, data any) error {
+	payload, err := json.Marshal(dto.EventStream{
+		EventID: eventID,
+		Data:    data,
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal payload")
+	}
+
+	d.hub.BroadcastAll(ctx, eventType, string(payload))
+
+	return nil
+}
+
 func (d *Domain) PushMessage(ctx context.Context, userID uuid.UUID, eventType entities.EventType, data any) error {
 	// 1. Create Event ID
 	eventID := uuid.New()
@@ -49,17 +63,27 @@ func (d *Domain) PushMessage(ctx context.Context, userID uuid.UUID, eventType en
 	}
 
 	// 2. Store Event Data
+	// TODO: Remove?
 	if err := d.repo.SetEvent(ctx, eventData); err != nil {
 		return errors.Wrap(err, "failed to store event")
 	}
 
 	// 3. Store User Events
+	// TODO: Remove?
 	if err := d.repo.AddUserEvent(ctx, userID, eventID); err != nil {
 		return errors.Wrap(err, "failed to store user event")
 	}
 
 	// 4. Broadcast the message to the user's connected clients
-	d.sendStreamData(ctx, userID, eventID, eventType, data)
+	if userID == uuid.Nil {
+		if err := d.broadcastStreamData(ctx, userID, eventID, eventType, data); err != nil {
+			return errors.Wrap(err, "failed to broadcast to all clients")
+		}
+	} else {
+		if err := d.sendStreamData(ctx, userID, eventID, eventType, data); err != nil {
+			return errors.Wrap(err, "failed to send to user clients")
+		}
+	}
 
 	return nil
 }

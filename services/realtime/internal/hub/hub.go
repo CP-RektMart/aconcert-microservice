@@ -89,7 +89,7 @@ func (h *Hub) Unregister(ctx context.Context, userID uuid.UUID, client Client) {
 	h.unregister <- subscription{userID, client}
 }
 
-// Broadcast sends an event to all userID’s clients.
+// Broadcast sends an event to userId's clients.
 func (h *Hub) Broadcast(ctx context.Context, userID uuid.UUID, eventType entities.EventType, data string) {
 	h.broadcast <- broadcast{
 		userID: userID,
@@ -97,5 +97,18 @@ func (h *Hub) Broadcast(ctx context.Context, userID uuid.UUID, eventType entitie
 			EventType: eventType,
 			Data:      data,
 		},
+	}
+}
+
+// BroadcastAll sends an event to all connected clients.
+func (h *Hub) BroadcastAll(ctx context.Context, eventType entities.EventType, data string) {
+	for userID := range h.clients {
+		h.broadcast <- broadcast{
+			userID: userID,
+			msg: Message{
+				EventType: eventType,
+				Data:      data,
+			},
+		}
 	}
 }

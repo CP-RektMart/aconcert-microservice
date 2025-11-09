@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -12,10 +10,10 @@ import (
 
 	"github.com/cp-rektmart/aconcert-microservice/notification/internal/config"
 	"github.com/cp-rektmart/aconcert-microservice/notification/internal/domain"
-	"github.com/cp-rektmart/aconcert-microservice/notification/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/notification/internal/handler"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/realtime"
 )
 
 func main() {
@@ -37,39 +35,13 @@ func main() {
 		return
 	}
 
-	domain := domain.New()
+	realtimeService := realtime.New(&config.Realtime)
+	domain := domain.New(realtimeService)
 	handler := handler.New(domain)
 
 	go func() {
-		for d := range msgs {
-			var eventData entities.Message
-			if err := json.Unmarshal(d.Body, &eventData); err != nil {
-				log.Printf("Error reading event data (invalid JSON): %s", err)
-				continue
-			}
-
-			fmt.Printf("📩 Received message: %+v\n", eventData)
-			switch eventData.Type {
-			case entities.MessageTypeEventCreated:
-				if err := handler.HandleEventCreated(ctx); err != nil {
-					log.Printf("Error handling event.created: %s", err)
-				}
-			case entities.MessageTypeEventUpdated:
-				if err := handler.HandleEventUpdated(ctx); err != nil {
-					log.Printf("Error handling event.updated: %s", err)
-				}
-			case entities.MessageTypeReservationConfirmed:
-				if err := handler.HandleReservationConfirmed(ctx); err != nil {
-					log.Printf("Error handling reservation.confirmed: %s", err)
-				}
-			case entities.MessageTypeReservationCancelled:
-				if err := handler.HandleReservationCancelled(ctx); err != nil {
-					log.Printf("Error handling reservation.cancelled: %s", err)
-				}
-			default:
-				log.Printf("Unknown message type: %s", eventData.Type)
-				continue
-			}
+		if err := handler.Mount(ctx, msgs); err != nil {
+			log.Fatalf("Failed to mount handler: %s", err)
 		}
 	}()
 

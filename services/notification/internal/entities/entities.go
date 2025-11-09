@@ -1,5 +1,7 @@
 package entities
 
+import "encoding/json"
+
 type MessageType string
 
 const (
@@ -10,6 +12,19 @@ const (
 )
 
 type Message struct {
-	Type MessageType `json:"type"`
-	Data any         `json:"data"`
+	Type MessageType     `json:"type"`
+	Data json.RawMessage `json:"data"`
+}
+
+type Event struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	LocationID  string   `json:"locationId"`
+	Artist      []string `json:"artist"`
+	EventDate   string   `json:"eventDate"`
+	Thumbnail   string   `json:"thumbnail"`
+	Images      []string `json:"images"`
+	CreatedAt   string   `json:"createdAt"`
+	UpdatedAt   string   `json:"updatedAt"`
 }

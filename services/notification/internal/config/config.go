@@ -4,6 +4,7 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/realtime"
 	"github.com/joho/godotenv"
 )
 
@@ -23,6 +24,7 @@ type AppConfig struct {
 	Environment string          `env:"ENVIRONMENT"`
 	Logger      logger.Config   `envPrefix:"LOGGER_"`
 	RabbitMQ    rabbitmq.Config `envPrefix:"RABBITMQ_"`
+	Realtime    realtime.Config `envPrefix:"REALTIME_"`
 }
 
 func Load() *AppConfig {
