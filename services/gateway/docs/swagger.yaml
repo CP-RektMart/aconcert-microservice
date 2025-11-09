@@ -268,8 +268,10 @@ components:
             $ref: '#/components/schemas/dto.SeatDTO'
           type: array
           uniqueItems: false
-        stripeIdSession:
+        stripeClientSecret:
           type: string
+        timeLeft:
+          type: number
         totalPrice:
           type: number
         userId:
@@ -278,7 +280,8 @@ components:
       - eventId
       - id
       - seats
-      - stripeIdSession
+      - stripeClientSecret
+      - timeLeft
       - totalPrice
       - userId
       type: object

@@ -173,7 +173,7 @@ const getTicketReservations = `-- name: GetTicketReservations :many
 SELECT
     rt.reservation_id,
     rt.ticket_id,
-    r.id, r.created_at, r.updated_at, r.deleted_at, r.user_id, r.event_id, r.status, r.stripe_session_id
+    r.id, r.created_at, r.updated_at, r.deleted_at, r.user_id, r.event_id, r.status, r.stripe_session_id, r.total_price
 FROM ReservationTicket rt
 JOIN Reservation r ON rt.reservation_id = r.id
 WHERE rt.ticket_id = $1 AND r.deleted_at IS NULL
@@ -190,6 +190,7 @@ type GetTicketReservationsRow struct {
 	EventID         pgtype.UUID        `json:"event_id"`
 	Status          string             `json:"status"`
 	StripeSessionID string             `json:"stripe_session_id"`
+	TotalPrice      float64            `json:"total_price"`
 }
 
 func (q *Queries) GetTicketReservations(ctx context.Context, ticketID pgtype.UUID) ([]GetTicketReservationsRow, error) {
@@ -212,6 +213,7 @@ func (q *Queries) GetTicketReservations(ctx context.Context, ticketID pgtype.UUI
 			&i.EventID,
 			&i.Status,
 			&i.StripeSessionID,
+			&i.TotalPrice,
 		); err != nil {
 			return nil, err
 		}

@@ -17,12 +17,13 @@ func (r *ReservationImpl) GetReservation(ctx context.Context, id string) (*db.Re
 	return &reservation, nil
 }
 
-func (r *ReservationImpl) CreateReservation(ctx context.Context, reservationID string, userID, eventID, status, stripeSessionID string) (*db.Reservation, error) {
+func (r *ReservationImpl) CreateReservation(ctx context.Context, reservationID string, userID, eventID, status, stripeSessionID string, totalPrice float64) (*db.Reservation, error) {
 	params := db.CreateReservationParams{
 		ID:              stringToUUID(reservationID),
 		UserID:          stringToUUID(userID),
 		EventID:         stringToUUID(eventID),
 		Status:          status,
+		TotalPrice:      totalPrice,
 		StripeSessionID: stripeSessionID,
 	}
 

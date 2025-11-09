@@ -20,7 +20,8 @@ import (
 
 const (
 	SafetyBuffer   = 30 * time.Second
-	ReservationTTL = 5*time.Minute + SafetyBuffer
+	ResevationMax  = 5 * time.Minute
+	ReservationTTL = ResevationMax + SafetyBuffer
 )
 
 func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservationpb.CreateReservationRequest) (*reservationpb.CreateReservationResponse, error) {
@@ -77,6 +78,7 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 
 	stripe.Key = r.stripe.SecretKey
 	params := &stripe.CheckoutSessionParams{
+		UIMode: stripe.String("embedded"),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
@@ -91,18 +93,16 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 			},
 		},
 		Mode:              stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL:        stripe.String(fmt.Sprintf("%s/events", r.stripe.ReturnURL)),
-		CancelURL:         stripe.String(fmt.Sprintf("%s/", r.stripe.ReturnURL)),
+		ReturnURL:         stripe.String(r.stripe.ReturnURL + "/?session_id={CHECKOUT_SESSION_ID}"),
 		ClientReferenceID: stripe.String(fmt.Sprintf("%s", reservationID)),
 	}
 
 	session, err := session.New(params)
-	fmt.Println(session.ID)
 	if err != nil {
 		return nil, apperror.Internal("Failed to create Stripe session", err)
 	}
 
-	_, err = r.repo.CreateReservation(ctx, reservationID, req.GetUserId(), req.GetEventId(), string(entities.Pending), session.ID)
+	_, err = r.repo.CreateReservation(ctx, reservationID, req.GetUserId(), req.GetEventId(), string(entities.Pending), session.ID, req.GetTotalPrice())
 	if err != nil {
 		return nil, apperror.Internal("Failed to create reservation", err)
 	}
@@ -118,7 +118,6 @@ func (r *ReserveDomainImpl) DeleteReservation(ctx context.Context, req *reservat
 
 	reservation, err := r.repo.GetReservation(ctx, reservationID)
 	if err != nil {
-		logger.ErrorContext(ctx, "get reservation failed", slog.Any("error", err))
 		return nil, apperror.NotFound("reservation not found", err)
 	}
 
@@ -191,7 +190,7 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 
 		// Convert time.Duration to float64 (seconds)
 		timeLeftSeconds := rtTime.Seconds()
-		timeLeft = max(timeLeftSeconds, 0)
+		timeLeft = min(timeLeftSeconds, ResevationMax.Seconds())
 
 	case string(entities.Confirmed):
 		// Handle confirmed status
@@ -213,12 +212,20 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		break
 	}
 
+	session, err := session.Get(reservation.StripeSessionID, &stripe.CheckoutSessionParams{})
+	if err != nil {
+		return nil, apperror.Internal("Failed to get Stripe Client Secret", err)
+	}
+
+	fmt.Println(session.ClientSecret)
+
 	return &reservationpb.GetReservationResponse{
-		Id:       req.GetId(),
-		UserId:   pgUUIDToString(reservation.UserID),
-		EventId:  pgUUIDToString(reservation.EventID),
-		Seats:    seats,
-		TimeLeft: &timeLeft,
+		Id:                 req.GetId(),
+		UserId:             pgUUIDToString(reservation.UserID),
+		EventId:            pgUUIDToString(reservation.EventID),
+		Seats:              seats,
+		TimeLeft:           &timeLeft,
+		StripeClientSecret: session.ClientSecret,
 	}, nil
 }
 

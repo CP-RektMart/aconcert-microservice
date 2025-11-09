@@ -615,16 +615,16 @@ func (x *ListReservationResponse) GetReservation() []*Reservation {
 }
 
 type GetReservationResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	EventId         string                 `protobuf:"bytes,3,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
-	TotalPrice      float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
-	Seats           []*Seat                `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
-	StripeSessionId string                 `protobuf:"bytes,6,opt,name=stripe_session_id,json=stripeSessionId,proto3" json:"stripe_session_id,omitempty"`
-	TimeLeft        *float64               `protobuf:"fixed64,7,opt,name=time_left,json=timeLeft,proto3,oneof" json:"time_left,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EventId            string                 `protobuf:"bytes,3,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	TotalPrice         float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
+	Seats              []*Seat                `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
+	StripeClientSecret string                 `protobuf:"bytes,6,opt,name=stripe_client_secret,json=stripeClientSecret,proto3" json:"stripe_client_secret,omitempty"`
+	TimeLeft           *float64               `protobuf:"fixed64,7,opt,name=time_left,json=timeLeft,proto3,oneof" json:"time_left,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *GetReservationResponse) Reset() {
@@ -692,9 +692,9 @@ func (x *GetReservationResponse) GetSeats() []*Seat {
 	return nil
 }
 
-func (x *GetReservationResponse) GetStripeSessionId() string {
+func (x *GetReservationResponse) GetStripeClientSecret() string {
 	if x != nil {
-		return x.StripeSessionId
+		return x.StripeClientSecret
 	}
 	return ""
 }
@@ -806,15 +806,15 @@ const file_reservation_reservation_proto_rawDesc = "" +
 	"\x19DeleteReservationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"U\n" +
 	"\x17ListReservationResponse\x12:\n" +
-	"\vreservation\x18\x01 \x03(\v2\x18.reservation.ReservationR\vreservation\"\x82\x02\n" +
+	"\vreservation\x18\x01 \x03(\v2\x18.reservation.ReservationR\vreservation\"\x88\x02\n" +
 	"\x16GetReservationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
 	"\bevent_id\x18\x03 \x01(\tR\aeventId\x12\x1f\n" +
 	"\vtotal_price\x18\x04 \x01(\x01R\n" +
 	"totalPrice\x12'\n" +
-	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\x12*\n" +
-	"\x11stripe_session_id\x18\x06 \x01(\tR\x0fstripeSessionId\x12 \n" +
+	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\x120\n" +
+	"\x14stripe_client_secret\x18\x06 \x01(\tR\x12stripeClientSecret\x12 \n" +
 	"\ttime_left\x18\a \x01(\x01H\x00R\btimeLeft\x88\x01\x01B\f\n" +
 	"\n" +
 	"_time_left\"`\n" +

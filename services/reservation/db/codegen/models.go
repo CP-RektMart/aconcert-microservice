@@ -17,6 +17,7 @@ type Reservation struct {
 	EventID         pgtype.UUID        `json:"event_id"`
 	Status          string             `json:"status"`
 	StripeSessionID string             `json:"stripe_session_id"`
+	TotalPrice      float64            `json:"total_price"`
 }
 
 type Reservationticket struct {

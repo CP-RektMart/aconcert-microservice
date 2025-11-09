@@ -4,9 +4,10 @@ INSERT INTO Reservation (
     user_id,
     event_id,
     status,
+    total_price,
     stripe_session_id
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
 -- name: GetReservation :one
