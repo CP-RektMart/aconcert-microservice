@@ -105,7 +105,7 @@ func (s *AuthService) GetProfile(ctx context.Context, req *dto.GetProfileRequest
 	return *data, nil
 }
 
-func (s *AuthService) UpdateProfile(ctx context.Context, req *dto.UpdateProfileRequest) (dto.UserResponse, error) {
+func (s *AuthService) UpdateProfile(ctx context.Context, req *dto.UpdateProfileDTO) (dto.UserResponse, error) {
 	marshalPayload, err := json.Marshal(req)
 	if err != nil {
 		return dto.UserResponse{}, errors.Wrap(err, "failed to marshal payload")

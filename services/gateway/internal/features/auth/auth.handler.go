@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/middlewares/authentication"
 	"github.com/gofiber/fiber/v2"
@@ -156,15 +158,22 @@ func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 
 	var req dto.UpdateProfileRequest
 	if err := c.BodyParser(&req); err != nil {
+		fmt.Println(err)
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	if _, err := h.service.UpdateProfile(ctx, &dto.UpdateProfileRequest{
+	birthdate, err := parseFlexibleTime(req.Birthdate)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if _, err := h.service.UpdateProfile(ctx, &dto.UpdateProfileDTO{
 		UserID:       userID,
 		Firstname:    req.Firstname,
 		Lastname:     req.Lastname,
 		ProfileImage: req.ProfileImage,
-		Birthdate:    req.Birthdate,
+		Birthdate:    birthdate,
 		Phone:        req.Phone,
 	}); err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
