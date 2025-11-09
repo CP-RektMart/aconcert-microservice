@@ -14,47 +14,49 @@ import (
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
+	"github.com/stripe/stripe-go/v83"
+	"github.com/stripe/stripe-go/v83/checkout/session"
 )
 
 const (
 	SafetyBuffer   = 30 * time.Second
-	ReservationTTL = 5*time.Minute + SafetyBuffer
+	ResevationMax  = 5 * time.Minute
+	ReservationTTL = ResevationMax + SafetyBuffer
 )
 
 func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservationpb.CreateReservationRequest) (*reservationpb.CreateReservationResponse, error) {
+	var err error
+	var reservationID string
+	var seats []repositories.SeatInfo
+
+	// rollback purpose
+	defer func() {
+		if err != nil {
+			rollbackReservation(ctx, r.repo, req.GetUserId(), req.GetEventId(), reservationID, seats)
+		}
+	}()
+
 	if err := validateReservationRequest(req); err != nil {
-		fmt.Println(req)
 		logger.ErrorContext(ctx, "check seat availability failed", slog.Any("error", err))
 		return nil, err
 	}
 
-	seats := convertSeatsToSeatInfo(req.GetSeats())
+	seats = convertSeatsToSeatInfo(req.GetSeats())
 
+	// quickly check by the cache
 	for _, seat := range seats {
 		available, err := r.repo.CheckSeatAvailable(ctx, req.GetEventId(), seat)
 		if err != nil {
-			logger.ErrorContext(ctx, "check seat availability failed", slog.Any("error", err))
 			return nil, apperror.Internal("failed to check seat availability", err)
 		}
 		if !available {
-			logger.WarnContext(ctx, "seat already reserved", slog.Int("zone", int(seat.ZoneNumber)), slog.Int("row", int(seat.RowNumber)), slog.Int("col", int(seat.ColNumber)))
 			return nil, apperror.BadRequest("seat already reserved", nil)
 		}
 	}
 
-	reservationID := uuid.New().String()
-
-	// Check if the reservation can be created by check from its seat
-	for _, seat := range seats {
-		_, err := r.repo.CheckSeatAvailable(ctx, req.GetEventId(), seat)
-		if err != nil {
-			logger.ErrorContext(ctx, "Seat already reserved", slog.Any("error", err))
-			return nil, apperror.Internal("failed to reserve seat", err)
-		}
-	}
-
+	reservationID = uuid.New().String()
+	// cache the reservation
 	if err := r.repo.CreateReservationTemp(ctx, req.GetUserId(), reservationID, ReservationTTL); err != nil {
-		logger.ErrorContext(ctx, "cache reservation failed", slog.Any("error", err))
 		r.repo.DeleteReservation(ctx, reservationID)
 		return nil, apperror.Internal("failed to cache reservation", err)
 	}
@@ -74,11 +76,35 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 		}
 	}
 
-	_, err := r.repo.CreateReservation(ctx, reservationID, req.GetUserId(), req.GetEventId(), string(entities.Pending))
+	stripe.Key = r.stripe.SecretKey
+	params := &stripe.CheckoutSessionParams{
+		UIMode: stripe.String("embedded"),
+		LineItems: []*stripe.CheckoutSessionLineItemParams{
+			{
+				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
+					Currency: stripe.String("thb"),
+					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
+						Name: stripe.String("your reservation checkout"),
+					},
+					// handle in satang unit
+					UnitAmount: stripe.Int64(int64(req.GetTotalPrice() * 100)),
+				},
+				Quantity: stripe.Int64(1),
+			},
+		},
+		Mode:              stripe.String(string(stripe.CheckoutSessionModePayment)),
+		ReturnURL:         stripe.String(r.stripe.ReturnURL + "/?session_id={CHECKOUT_SESSION_ID}"),
+		ClientReferenceID: stripe.String(fmt.Sprintf("%s", reservationID)),
+	}
+
+	session, err := session.New(params)
 	if err != nil {
-		logger.ErrorContext(ctx, "create reservation failed", slog.Any("error", err))
-		rollbackReservation(ctx, r.repo, req.GetUserId(), req.GetEventId(), reservationID, seats)
-		return nil, apperror.Internal("failed to create reservation", err)
+		return nil, apperror.Internal("Failed to create Stripe session", err)
+	}
+
+	_, err = r.repo.CreateReservation(ctx, reservationID, req.GetUserId(), req.GetEventId(), string(entities.Pending), session.ID, req.GetTotalPrice())
+	if err != nil {
+		return nil, apperror.Internal("Failed to create reservation", err)
 	}
 
 	logger.InfoContext(ctx, "reservation created", slog.String("reservationID", reservationID), slog.String("userID", req.GetUserId()))
@@ -89,16 +115,15 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 
 func (r *ReserveDomainImpl) DeleteReservation(ctx context.Context, req *reservationpb.DeleteReservationRequest) (*reservationpb.DeleteReservationResponse, error) {
 	reservationID := req.GetId()
-	userID := ""
-	eventID := ""
 
 	reservation, err := r.repo.GetReservation(ctx, reservationID)
 	if err != nil {
-		logger.ErrorContext(ctx, "get reservation failed", slog.Any("error", err))
 		return nil, apperror.NotFound("reservation not found", err)
 	}
-	userID = pgUUIDToString(reservation.UserID)
-	eventID = pgUUIDToString(reservation.EventID)
+
+	reservationID = pgUUIDToString(reservation.ID)
+	userID := pgUUIDToString(reservation.UserID)
+	eventID := pgUUIDToString(reservation.EventID)
 
 	timeLeft, err := r.repo.GetReservationTimeLeft(ctx, userID, reservationID)
 	if err != nil || timeLeft <= 0 {
@@ -139,8 +164,8 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		logger.ErrorContext(ctx, "get reservation failed", slog.Any("error", err))
 		return nil, apperror.NotFound("reservation not found", err)
 	}
-
 	var seats []*reservationpb.Seat
+	var timeLeft float64
 
 	switch reservation.Status {
 	case string(entities.Pending):
@@ -157,6 +182,14 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 				Column:     seat.ColNumber,
 			})
 		}
+		rtTime, err := r.repo.GetReservationTimeLeft(ctx, reservation.UserID.String(), reservation.ID.String())
+		if err != nil {
+			return nil, apperror.Internal("failed to get reservation time left", err)
+		}
+
+		// Convert time.Duration to float64 (seconds)
+		timeLeftSeconds := rtTime.Seconds()
+		timeLeft = min(timeLeftSeconds-SafetyBuffer.Seconds(), ResevationMax.Seconds())
 	case string(entities.Confirmed):
 		// Handle confirmed status
 		tickets, err := r.repo.GetTicketsByReservation(ctx, req.GetId())
@@ -173,15 +206,24 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		}
 	case string(entities.Cancelled):
 		break
-	case string(entities.Expired):
+	default:
 		break
 	}
 
+	session, err := session.Get(reservation.StripeSessionID, &stripe.CheckoutSessionParams{})
+	if err != nil {
+		return nil, apperror.Internal("Failed to get Stripe Client Secret", err)
+	}
+
 	return &reservationpb.GetReservationResponse{
-		Id:      req.GetId(),
-		UserId:  pgUUIDToString(reservation.UserID),
-		EventId: pgUUIDToString(reservation.EventID),
-		Seats:   seats,
+		Id:                 req.GetId(),
+		UserId:             pgUUIDToString(reservation.UserID),
+		EventId:            pgUUIDToString(reservation.EventID),
+		Seats:              seats,
+		TimeLeft:           &timeLeft,
+		StripeClientSecret: session.ClientSecret,
+		Status:             reservation.Status,
+		TotalPrice:         reservation.TotalPrice,
 	}, nil
 }
 
@@ -217,11 +259,6 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 		return nil, apperror.NotFound("reservation not found or expired", err)
 	}
 
-	if timeLeft < SafetyBuffer {
-		logger.WarnContext(ctx, "reservation expiring soon", slog.String("reservationID", reservationID), slog.Duration("timeLeft", timeLeft))
-		return nil, apperror.BadRequest("reservation expiring soon, please create new", nil)
-	}
-
 	eventID := pgUUIDToString(reservation.EventID)
 
 	seats, err := r.repo.GetReservationSeats(ctx, reservationID)
@@ -231,7 +268,6 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 	}
 
 	if _, err := r.repo.CreateTicketsWithTransaction(ctx, eventID, reservationID, seats); err != nil {
-		logger.ErrorContext(ctx, "create tickets failed", slog.Any("error", err))
 		return nil, apperror.Internal("failed to create tickets", err)
 	}
 
@@ -261,8 +297,63 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 	}, nil
 }
 
+func (r *ReserveDomainImpl) GetReservationByStripeSessionID(ctx context.Context, req *reservationpb.GetReservationByStripeSessionIDRequest) (*reservationpb.GetReservationByStripeSessionIDResponse, error) {
+	reservation, err := r.repo.GetReservationBySessionId(ctx, req.GetSessionId())
+	if err != nil {
+		return nil, apperror.Internal("failed to get reservation by stripe session ID", err)
+	}
+	if reservation == nil {
+		return nil, apperror.NotFound("reservation not found", nil)
+	}
+
+	var seats []*reservationpb.Seat
+
+	switch reservation.Status {
+	case string(entities.Pending):
+		// Handle pending status
+		tmpSeats, err := r.repo.GetReservationSeats(ctx, reservation.ID.String())
+		if err != nil {
+			logger.ErrorContext(ctx, "get reservation seats failed", slog.Any("error", err))
+			return nil, apperror.Internal("failed to get reservation seats", err)
+		}
+		for _, seat := range tmpSeats {
+			seats = append(seats, &reservationpb.Seat{
+				ZoneNumber: seat.ZoneNumber,
+				Row:        seat.RowNumber,
+				Column:     seat.ColNumber,
+			})
+		}
+	case string(entities.Confirmed):
+		// Handle confirmed status
+		tickets, err := r.repo.GetTicketsByReservation(ctx, reservation.ID.String())
+		if err != nil {
+			logger.ErrorContext(ctx, "get tickets failed", slog.Any("error", err))
+			return nil, apperror.Internal("failed to get tickets", err)
+		}
+		for _, ticket := range tickets {
+			seats = append(seats, &reservationpb.Seat{
+				ZoneNumber: ticket.ZoneNumber,
+				Row:        ticket.RowNumber,
+				Column:     ticket.ColNumber,
+			})
+		}
+	case string(entities.Cancelled):
+		break
+	default:
+		break
+	}
+
+	return &reservationpb.GetReservationByStripeSessionIDResponse{
+		Id:         reservation.ID.String(),
+		UserId:     pgUUIDToString(reservation.UserID),
+		EventId:    pgUUIDToString(reservation.EventID),
+		Seats:      seats,
+		Status:     reservation.Status,
+		TotalPrice: reservation.TotalPrice,
+	}, nil
+}
+
 func validateReservationRequest(req *reservationpb.CreateReservationRequest) error {
-	fmt.Println(req)
 	if req.GetUserId() == "" {
 		return apperror.BadRequest("user ID required", nil)
 	}

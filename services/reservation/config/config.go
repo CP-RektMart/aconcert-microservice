@@ -12,6 +12,11 @@ const (
 	DefaultENVPath = "./.env"
 )
 
+type StripeConfig struct {
+	SecretKey string `env:"SECRET_KEY"`
+	ReturnURL string `env:"RETURN_URL"`
+}
+
 type AppConfig struct {
 	Name        string          `env:"NAME"`
 	Port        int             `env:"PORT"`
@@ -19,6 +24,7 @@ type AppConfig struct {
 	Logger      logger.Config   `envPrefix:"LOGGER_"`
 	Postgres    postgres.Config `envPrefix:"POSTGRES_"`
 	Redis       redis.Config    `envPrefix:"REDIS_"`
+	Stripe      StripeConfig    `envPrefix:"STRIPE_"`
 }
 
 func Load() *AppConfig {

@@ -60,7 +60,7 @@ func main() {
 
 	reservationRepo := repositories.NewReservationRepository(queries, pgConn, redisConn)
 
-	reservationServer := domains.New(reservationRepo)
+	reservationServer := domains.New(reservationRepo, conf.Stripe)
 	reservationpb.RegisterReservationServiceServer(grpcServer, reservationServer)
 
 	go func() {

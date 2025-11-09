@@ -17,12 +17,14 @@ func (r *ReservationImpl) GetReservation(ctx context.Context, id string) (*db.Re
 	return &reservation, nil
 }
 
-func (r *ReservationImpl) CreateReservation(ctx context.Context, reservationID string, userID, eventID, status string) (*db.Reservation, error) {
+func (r *ReservationImpl) CreateReservation(ctx context.Context, reservationID string, userID, eventID, status, stripeSessionID string, totalPrice float64) (*db.Reservation, error) {
 	params := db.CreateReservationParams{
-		ID:      stringToUUID(reservationID),
-		UserID:  stringToUUID(userID),
-		EventID: stringToUUID(eventID),
-		Status:  status,
+		ID:              stringToUUID(reservationID),
+		UserID:          stringToUUID(userID),
+		EventID:         stringToUUID(eventID),
+		Status:          status,
+		TotalPrice:      totalPrice,
+		StripeSessionID: stripeSessionID,
 	}
 
 	reservation, err := r.db.CreateReservation(ctx, params)
@@ -154,4 +156,13 @@ func (r *ReservationImpl) CreateTicketsWithTransaction(ctx context.Context, even
 	}
 
 	return tickets, nil
+}
+
+func (r *ReservationImpl) GetReservationBySessionId(ctx context.Context, sessionID string) (*db.Reservation, error) {
+	reservation, err := r.db.GetReservationByStripeSessionID(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &reservation, nil
 }

@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # -------------------- AUTH DATABASES --------------------
   auth-postgres:
@@ -81,13 +79,46 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - aconcert-network
+      - service-level-network
   # -------------------- REALTIME DATABASE --------------------
   realtime-redis:
     image: redis:latest
     container_name: realtime-redis
     ports:
       - "6971:6379"
+
+  # -------------------- RERSERVATION DATABASE --------------------
+  reservation-postgres:
+    image: postgres:15-alpine
+    container_name: reservation-postgres
+    environment:
+      POSTGRES_DB: reservation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - reservation_db_data:/var/lib/postgresql/data
+      - ../services/reservation/db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - service-level-network
+      - reservation-network
+
+  reservation-redis:
+    image: redis:latest
+    container_name: reservation-redis
+    ports:
+      - "6972:6379"
+    networks:
+      - service-level-network
+      - reservation-network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------- REALTIME DATABASE --------------------
 
   # -------------------- AUTH SERVICE --------------------
   auth-service:
@@ -156,6 +187,7 @@ services:
 volumes:
   auth_db_data:
   event_db_data:
+  reservation_db_data:
   location_mongo_data:
 
 # -------------------- NETWORKS --------------------
@@ -167,4 +199,6 @@ networks:
   event-network:
     driver: bridge
   location-network:
+    driver: bridge
+  reservation-network:
     driver: bridge

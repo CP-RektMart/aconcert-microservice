@@ -88,11 +88,14 @@ func (s *ReservationService) GetReservation(ctx context.Context, req *dto.GetRes
 	}
 
 	return dto.GetReservationResponse{
-		ID:         response.Id,
-		UserID:     response.UserId,
-		EventID:    response.EventId,
-		TotalPrice: response.TotalPrice,
-		Seats:      seats,
+		ID:                 response.Id,
+		UserID:             response.UserId,
+		EventID:            response.EventId,
+		TotalPrice:         response.TotalPrice,
+		Seats:              seats,
+		StripeClientSecret: response.StripeClientSecret,
+		TimeLeft:           *response.TimeLeft,
+		Status:             response.Status,
 	}, nil
 }
 

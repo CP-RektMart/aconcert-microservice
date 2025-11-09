@@ -615,14 +615,17 @@ func (x *ListReservationResponse) GetReservation() []*Reservation {
 }
 
 type GetReservationResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	EventId       string                 `protobuf:"bytes,3,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
-	TotalPrice    float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
-	Seats         []*Seat                `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EventId            string                 `protobuf:"bytes,3,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	TotalPrice         float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
+	Seats              []*Seat                `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
+	StripeClientSecret string                 `protobuf:"bytes,6,opt,name=stripe_client_secret,json=stripeClientSecret,proto3" json:"stripe_client_secret,omitempty"`
+	TimeLeft           *float64               `protobuf:"fixed64,7,opt,name=time_left,json=timeLeft,proto3,oneof" json:"time_left,omitempty"`
+	Status             string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *GetReservationResponse) Reset() {
@@ -690,6 +693,27 @@ func (x *GetReservationResponse) GetSeats() []*Seat {
 	return nil
 }
 
+func (x *GetReservationResponse) GetStripeClientSecret() string {
+	if x != nil {
+		return x.StripeClientSecret
+	}
+	return ""
+}
+
+func (x *GetReservationResponse) GetTimeLeft() float64 {
+	if x != nil && x.TimeLeft != nil {
+		return *x.TimeLeft
+	}
+	return 0
+}
+
+func (x *GetReservationResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 type ConfirmReservationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -750,6 +774,90 @@ func (x *ConfirmReservationResponse) GetMessage() string {
 	return ""
 }
 
+type GetReservationByStripeSessionIDResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EventId       string                 `protobuf:"bytes,3,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	TotalPrice    float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
+	Seats         []*Seat                `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
+	Status        string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetReservationByStripeSessionIDResponse) Reset() {
+	*x = GetReservationByStripeSessionIDResponse{}
+	mi := &file_reservation_reservation_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetReservationByStripeSessionIDResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetReservationByStripeSessionIDResponse) ProtoMessage() {}
+
+func (x *GetReservationByStripeSessionIDResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_reservation_reservation_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetReservationByStripeSessionIDResponse.ProtoReflect.Descriptor instead.
+func (*GetReservationByStripeSessionIDResponse) Descriptor() ([]byte, []int) {
+	return file_reservation_reservation_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetReservationByStripeSessionIDResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetReservationByStripeSessionIDResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetReservationByStripeSessionIDResponse) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *GetReservationByStripeSessionIDResponse) GetTotalPrice() float64 {
+	if x != nil {
+		return x.TotalPrice
+	}
+	return 0
+}
+
+func (x *GetReservationByStripeSessionIDResponse) GetSeats() []*Seat {
+	if x != nil {
+		return x.Seats
+	}
+	return nil
+}
+
+func (x *GetReservationByStripeSessionIDResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 var File_reservation_reservation_proto protoreflect.FileDescriptor
 
 const file_reservation_reservation_proto_rawDesc = "" +
@@ -790,25 +898,38 @@ const file_reservation_reservation_proto_rawDesc = "" +
 	"\x19DeleteReservationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"U\n" +
 	"\x17ListReservationResponse\x12:\n" +
-	"\vreservation\x18\x01 \x03(\v2\x18.reservation.ReservationR\vreservation\"\xa6\x01\n" +
+	"\vreservation\x18\x01 \x03(\v2\x18.reservation.ReservationR\vreservation\"\xa0\x02\n" +
 	"\x16GetReservationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
 	"\bevent_id\x18\x03 \x01(\tR\aeventId\x12\x1f\n" +
 	"\vtotal_price\x18\x04 \x01(\x01R\n" +
 	"totalPrice\x12'\n" +
-	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\"`\n" +
+	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\x120\n" +
+	"\x14stripe_client_secret\x18\x06 \x01(\tR\x12stripeClientSecret\x12 \n" +
+	"\ttime_left\x18\a \x01(\x01H\x00R\btimeLeft\x88\x01\x01\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06statusB\f\n" +
+	"\n" +
+	"_time_left\"`\n" +
 	"\x1aConfirmReservationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage2\x85\x05\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"\xcf\x01\n" +
+	"'GetReservationByStripeSessionIDResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
+	"\bevent_id\x18\x03 \x01(\tR\aeventId\x12\x1f\n" +
+	"\vtotal_price\x18\x04 \x01(\x01R\n" +
+	"totalPrice\x12'\n" +
+	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status2\x97\x05\n" +
 	"\x12ReservationService\x12d\n" +
 	"\x11CreateReservation\x12%.reservation.CreateReservationRequest\x1a&.reservation.CreateReservationResponse\"\x00\x12d\n" +
 	"\x11DeleteReservation\x12%.reservation.DeleteReservationRequest\x1a&.reservation.DeleteReservationResponse\"\x00\x12^\n" +
 	"\x0fListReservation\x12#.reservation.ListReservationRequest\x1a$.reservation.ListReservationResponse\"\x00\x12[\n" +
 	"\x0eGetReservation\x12\".reservation.GetReservationRequest\x1a#.reservation.GetReservationResponse\"\x00\x12g\n" +
-	"\x12ConfirmReservation\x12&.reservation.ConfirmReservationRequest\x1a'.reservation.ConfirmReservationResponse\"\x00\x12}\n" +
-	"\x1fGetReservationByStripeSessionID\x123.reservation.GetReservationByStripeSessionIDRequest\x1a#.reservation.GetReservationResponse\"\x00BRZPgithub.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation;reservationpbb\x06proto3"
+	"\x12ConfirmReservation\x12&.reservation.ConfirmReservationRequest\x1a'.reservation.ConfirmReservationResponse\"\x00\x12\x8e\x01\n" +
+	"\x1fGetReservationByStripeSessionID\x123.reservation.GetReservationByStripeSessionIDRequest\x1a4.reservation.GetReservationByStripeSessionIDResponse\"\x00BRZPgithub.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation;reservationpbb\x06proto3"
 
 var (
 	file_reservation_reservation_proto_rawDescOnce sync.Once
@@ -822,45 +943,47 @@ func file_reservation_reservation_proto_rawDescGZIP() []byte {
 	return file_reservation_reservation_proto_rawDescData
 }
 
-var file_reservation_reservation_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_reservation_reservation_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_reservation_reservation_proto_goTypes = []any{
-	(*Empty)(nil),                                  // 0: reservation.Empty
-	(*Seat)(nil),                                   // 1: reservation.Seat
-	(*Reservation)(nil),                            // 2: reservation.Reservation
-	(*CreateReservationRequest)(nil),               // 3: reservation.CreateReservationRequest
-	(*DeleteReservationRequest)(nil),               // 4: reservation.DeleteReservationRequest
-	(*ListReservationRequest)(nil),                 // 5: reservation.ListReservationRequest
-	(*GetReservationRequest)(nil),                  // 6: reservation.GetReservationRequest
-	(*GetReservationByStripeSessionIDRequest)(nil), // 7: reservation.GetReservationByStripeSessionIDRequest
-	(*ConfirmReservationRequest)(nil),              // 8: reservation.ConfirmReservationRequest
-	(*CreateReservationResponse)(nil),              // 9: reservation.CreateReservationResponse
-	(*DeleteReservationResponse)(nil),              // 10: reservation.DeleteReservationResponse
-	(*ListReservationResponse)(nil),                // 11: reservation.ListReservationResponse
-	(*GetReservationResponse)(nil),                 // 12: reservation.GetReservationResponse
-	(*ConfirmReservationResponse)(nil),             // 13: reservation.ConfirmReservationResponse
+	(*Empty)(nil),                                   // 0: reservation.Empty
+	(*Seat)(nil),                                    // 1: reservation.Seat
+	(*Reservation)(nil),                             // 2: reservation.Reservation
+	(*CreateReservationRequest)(nil),                // 3: reservation.CreateReservationRequest
+	(*DeleteReservationRequest)(nil),                // 4: reservation.DeleteReservationRequest
+	(*ListReservationRequest)(nil),                  // 5: reservation.ListReservationRequest
+	(*GetReservationRequest)(nil),                   // 6: reservation.GetReservationRequest
+	(*GetReservationByStripeSessionIDRequest)(nil),  // 7: reservation.GetReservationByStripeSessionIDRequest
+	(*ConfirmReservationRequest)(nil),               // 8: reservation.ConfirmReservationRequest
+	(*CreateReservationResponse)(nil),               // 9: reservation.CreateReservationResponse
+	(*DeleteReservationResponse)(nil),               // 10: reservation.DeleteReservationResponse
+	(*ListReservationResponse)(nil),                 // 11: reservation.ListReservationResponse
+	(*GetReservationResponse)(nil),                  // 12: reservation.GetReservationResponse
+	(*ConfirmReservationResponse)(nil),              // 13: reservation.ConfirmReservationResponse
+	(*GetReservationByStripeSessionIDResponse)(nil), // 14: reservation.GetReservationByStripeSessionIDResponse
 }
 var file_reservation_reservation_proto_depIdxs = []int32{
 	1,  // 0: reservation.Reservation.seats:type_name -> reservation.Seat
 	1,  // 1: reservation.CreateReservationRequest.seats:type_name -> reservation.Seat
 	2,  // 2: reservation.ListReservationResponse.reservation:type_name -> reservation.Reservation
 	1,  // 3: reservation.GetReservationResponse.seats:type_name -> reservation.Seat
-	3,  // 4: reservation.ReservationService.CreateReservation:input_type -> reservation.CreateReservationRequest
-	4,  // 5: reservation.ReservationService.DeleteReservation:input_type -> reservation.DeleteReservationRequest
-	5,  // 6: reservation.ReservationService.ListReservation:input_type -> reservation.ListReservationRequest
-	6,  // 7: reservation.ReservationService.GetReservation:input_type -> reservation.GetReservationRequest
-	8,  // 8: reservation.ReservationService.ConfirmReservation:input_type -> reservation.ConfirmReservationRequest
-	7,  // 9: reservation.ReservationService.GetReservationByStripeSessionID:input_type -> reservation.GetReservationByStripeSessionIDRequest
-	9,  // 10: reservation.ReservationService.CreateReservation:output_type -> reservation.CreateReservationResponse
-	10, // 11: reservation.ReservationService.DeleteReservation:output_type -> reservation.DeleteReservationResponse
-	11, // 12: reservation.ReservationService.ListReservation:output_type -> reservation.ListReservationResponse
-	12, // 13: reservation.ReservationService.GetReservation:output_type -> reservation.GetReservationResponse
-	13, // 14: reservation.ReservationService.ConfirmReservation:output_type -> reservation.ConfirmReservationResponse
-	12, // 15: reservation.ReservationService.GetReservationByStripeSessionID:output_type -> reservation.GetReservationResponse
-	10, // [10:16] is the sub-list for method output_type
-	4,  // [4:10] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	1,  // 4: reservation.GetReservationByStripeSessionIDResponse.seats:type_name -> reservation.Seat
+	3,  // 5: reservation.ReservationService.CreateReservation:input_type -> reservation.CreateReservationRequest
+	4,  // 6: reservation.ReservationService.DeleteReservation:input_type -> reservation.DeleteReservationRequest
+	5,  // 7: reservation.ReservationService.ListReservation:input_type -> reservation.ListReservationRequest
+	6,  // 8: reservation.ReservationService.GetReservation:input_type -> reservation.GetReservationRequest
+	8,  // 9: reservation.ReservationService.ConfirmReservation:input_type -> reservation.ConfirmReservationRequest
+	7,  // 10: reservation.ReservationService.GetReservationByStripeSessionID:input_type -> reservation.GetReservationByStripeSessionIDRequest
+	9,  // 11: reservation.ReservationService.CreateReservation:output_type -> reservation.CreateReservationResponse
+	10, // 12: reservation.ReservationService.DeleteReservation:output_type -> reservation.DeleteReservationResponse
+	11, // 13: reservation.ReservationService.ListReservation:output_type -> reservation.ListReservationResponse
+	12, // 14: reservation.ReservationService.GetReservation:output_type -> reservation.GetReservationResponse
+	13, // 15: reservation.ReservationService.ConfirmReservation:output_type -> reservation.ConfirmReservationResponse
+	14, // 16: reservation.ReservationService.GetReservationByStripeSessionID:output_type -> reservation.GetReservationByStripeSessionIDResponse
+	11, // [11:17] is the sub-list for method output_type
+	5,  // [5:11] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_reservation_reservation_proto_init() }
@@ -868,13 +991,14 @@ func file_reservation_reservation_proto_init() {
 	if File_reservation_reservation_proto != nil {
 		return
 	}
+	file_reservation_reservation_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_reservation_reservation_proto_rawDesc), len(file_reservation_reservation_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -37,11 +37,14 @@ type GetReservationRequest struct {
 
 // GetReservationResponse is the response for getting a reservation
 type GetReservationResponse struct {
-	ID         string    `json:"id" validate:"required"`
-	UserID     string    `json:"userId" validate:"required"`
-	EventID    string    `json:"eventId" validate:"required"`
-	TotalPrice float64   `json:"totalPrice" validate:"required"`
-	Seats      []SeatDTO `json:"seats" validate:"required"`
+	ID                 string    `json:"id" validate:"required"`
+	UserID             string    `json:"userId" validate:"required"`
+	EventID            string    `json:"eventId" validate:"required"`
+	TotalPrice         float64   `json:"totalPrice" validate:"required"`
+	Seats              []SeatDTO `json:"seats" validate:"required"`
+	StripeClientSecret string    `json:"stripeClientSecret" validate:"required"`
+	TimeLeft           float64   `json:"timeLeft" validate:"required"`
+	Status             string    `json:"status" validate:"required"`
 }
 
 // ListReservationRequest is the request for listing reservations
