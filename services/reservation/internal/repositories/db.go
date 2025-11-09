@@ -157,3 +157,12 @@ func (r *ReservationImpl) CreateTicketsWithTransaction(ctx context.Context, even
 
 	return tickets, nil
 }
+
+func (r *ReservationImpl) GetReservationBySessionId(ctx context.Context, sessionID string) (*db.Reservation, error) {
+	reservation, err := r.db.GetReservationByStripeSessionID(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &reservation, nil
+}

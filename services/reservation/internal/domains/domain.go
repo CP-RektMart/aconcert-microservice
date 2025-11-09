@@ -14,6 +14,7 @@ type ReserveDomain interface {
 	GetReservation(ctx context.Context, req *reservationpb.GetReservationRequest) (*reservationpb.GetReservationResponse, error)
 	ListReservation(ctx context.Context, req *reservationpb.ListReservationRequest) (*reservationpb.ListReservationResponse, error)
 	ConfirmReservation(ctx context.Context, req *reservationpb.ConfirmReservationRequest) (*reservationpb.ConfirmReservationResponse, error)
+	GetReservationByStripeSessionID(ctx context.Context, req *reservationpb.GetReservationByStripeSessionIDRequest) (*reservationpb.GetReservationResponse, error)
 }
 
 type ReserveDomainImpl struct {

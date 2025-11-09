@@ -37,6 +37,7 @@ type ReservationRepository interface {
 	CreateTickets(ctx context.Context, eventID, reservationID string, seats []SeatInfo) ([]db.Ticket, error)
 	CreateTicketsWithTransaction(ctx context.Context, eventID, reservationID string, seats []SeatInfo) ([]db.Ticket, error)
 	GetTicketsByReservation(ctx context.Context, reservationID string) ([]db.Ticket, error)
+	GetReservationBySessionId(ctx context.Context, sessionID string) (*db.Reservation, error)
 }
 
 type ReservationImpl struct {

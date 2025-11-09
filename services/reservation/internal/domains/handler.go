@@ -164,7 +164,6 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		logger.ErrorContext(ctx, "get reservation failed", slog.Any("error", err))
 		return nil, apperror.NotFound("reservation not found", err)
 	}
-
 	var seats []*reservationpb.Seat
 	var timeLeft float64
 
@@ -191,7 +190,6 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 		// Convert time.Duration to float64 (seconds)
 		timeLeftSeconds := rtTime.Seconds()
 		timeLeft = min(timeLeftSeconds-SafetyBuffer.Seconds(), ResevationMax.Seconds())
-
 	case string(entities.Confirmed):
 		// Handle confirmed status
 		tickets, err := r.repo.GetTicketsByReservation(ctx, req.GetId())
@@ -270,7 +268,6 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 	}
 
 	if _, err := r.repo.CreateTicketsWithTransaction(ctx, eventID, reservationID, seats); err != nil {
-		logger.ErrorContext(ctx, "create tickets failed", slog.Any("error", err))
 		return nil, apperror.Internal("failed to create tickets", err)
 	}
 
@@ -297,6 +294,62 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 		Id:      reservationID,
 		Success: true,
 		Message: "Reservation confirmed",
+	}, nil
+}
+
+func (r *ReserveDomainImpl) GetReservationByStripeSessionID(ctx context.Context, req *reservationpb.GetReservationByStripeSessionIDRequest) (*reservationpb.GetReservationByStripeSessionIDResponse, error) {
+	reservation, err := r.repo.GetReservationBySessionId(ctx, req.GetSessionId())
+	if err != nil {
+		return nil, apperror.Internal("failed to get reservation by stripe session ID", err)
+	}
+	if reservation == nil {
+		return nil, apperror.NotFound("reservation not found", nil)
+	}
+
+	var seats []*reservationpb.Seat
+
+	switch reservation.Status {
+	case string(entities.Pending):
+		// Handle pending status
+		tmpSeats, err := r.repo.GetReservationSeats(ctx, reservation.ID.String())
+		if err != nil {
+			logger.ErrorContext(ctx, "get reservation seats failed", slog.Any("error", err))
+			return nil, apperror.Internal("failed to get reservation seats", err)
+		}
+		for _, seat := range tmpSeats {
+			seats = append(seats, &reservationpb.Seat{
+				ZoneNumber: seat.ZoneNumber,
+				Row:        seat.RowNumber,
+				Column:     seat.ColNumber,
+			})
+		}
+	case string(entities.Confirmed):
+		// Handle confirmed status
+		tickets, err := r.repo.GetTicketsByReservation(ctx, reservation.ID.String())
+		if err != nil {
+			logger.ErrorContext(ctx, "get tickets failed", slog.Any("error", err))
+			return nil, apperror.Internal("failed to get tickets", err)
+		}
+		for _, ticket := range tickets {
+			seats = append(seats, &reservationpb.Seat{
+				ZoneNumber: ticket.ZoneNumber,
+				Row:        ticket.RowNumber,
+				Column:     ticket.ColNumber,
+			})
+		}
+	case string(entities.Cancelled):
+		break
+	default:
+		break
+	}
+
+	return &reservationpb.GetReservationByStripeSessionIDResponse{
+		Id:         reservation.ID.String(),
+		UserId:     pgUUIDToString(reservation.UserID),
+		EventId:    pgUUIDToString(reservation.EventID),
+		Seats:      seats,
+		Status:     reservation.Status,
+		TotalPrice: reservation.TotalPrice,
 	}, nil
 }
 
