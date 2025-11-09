@@ -2,9 +2,11 @@ go 1.25.0
 
 use (
 	./services/auth
+	./services/notification
 	./services/event
 	./services/location
 	./services/gateway
 	./services/reservation
 	./services/payment
+	./services/realtime
 )
