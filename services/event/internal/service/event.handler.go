@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -9,6 +10,7 @@ import (
 	db "github.com/cp-rektmart/aconcert-microservice/event/db/codegen"
 	"github.com/cp-rektmart/aconcert-microservice/event/internal/utils"
 	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -123,6 +125,29 @@ func (s *EventService) CreateEvent(ctx context.Context, req *eventpb.CreateEvent
 	})
 	if err != nil {
 		return nil, errors.New("failed to create event")
+	}
+
+	event, err := s.queries.GetEventByID(ctx, id)
+	if err != nil {
+		return nil, errors.New("failed to retrieve created event")
+	}
+
+	data := struct {
+		Type string `json:"type"`
+		Data any    `json:"data"`
+	}{
+
+		Type: "event.created",
+		Data: event,
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New("failed to marshal event data")
+	}
+
+	if err := rabbitmq.RabbitMQClient.PublishToQueue("notifications", jsonData); err != nil {
+		return nil, errors.New("failed to publish event to RabbitMQ")
 	}
 
 	return &eventpb.CreateEventResponse{Id: id.String()}, nil

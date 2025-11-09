@@ -2,7 +2,6 @@ package dto
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/entities"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/moonrhythm/validator"
@@ -41,9 +40,9 @@ func (r *RealtimeRequest) Validate() error {
 }
 
 type PushMessage struct {
-	UserID    uuid.UUID          `json:"userId"`
-	EventType entities.EventType `json:"eventType"`
-	Data      any                `json:"data"`
+	UserID    uuid.UUID `json:"userId"`
+	EventType string    `json:"eventType"`
+	Data      any       `json:"data"`
 }
 
 func (r *PushMessage) Parse(c *fiber.Ctx) error {
@@ -67,6 +66,7 @@ func (r *PushMessage) Validate() error {
 }
 
 type EventStream struct {
-	EventID uuid.UUID `json:"eventId"`
-	Data    any       `json:"data"`
+	EventID   uuid.UUID `json:"eventId"`
+	EventType string    `json:"eventType"`
+	Data      any       `json:"data"`
 }

@@ -24,10 +24,11 @@ func New(hub *hub.Hub, repo repository.Repository) *Domain {
 	}
 }
 
-func (d *Domain) sendStreamData(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, eventType entities.EventType, data any) error {
+func (d *Domain) sendStreamData(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, eventType string, data any) error {
 	payload, err := json.Marshal(dto.EventStream{
-		EventID: eventID,
-		Data:    data,
+		EventID:   eventID,
+		EventType: eventType,
+		Data:      data,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal payload")
@@ -38,10 +39,11 @@ func (d *Domain) sendStreamData(ctx context.Context, userID uuid.UUID, eventID u
 	return nil
 }
 
-func (d *Domain) broadcastStreamData(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, eventType entities.EventType, data any) error {
+func (d *Domain) broadcastStreamData(ctx context.Context, eventID uuid.UUID, eventType string, data any) error {
 	payload, err := json.Marshal(dto.EventStream{
-		EventID: eventID,
-		Data:    data,
+		EventID:   eventID,
+		EventType: eventType,
+		Data:      data,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal payload")
@@ -52,7 +54,7 @@ func (d *Domain) broadcastStreamData(ctx context.Context, userID uuid.UUID, even
 	return nil
 }
 
-func (d *Domain) PushMessage(ctx context.Context, userID uuid.UUID, eventType entities.EventType, data any) error {
+func (d *Domain) PushMessage(ctx context.Context, userID uuid.UUID, eventType string, data any) error {
 	// 1. Create Event ID
 	eventID := uuid.New()
 	eventData := entities.EventData{
@@ -76,7 +78,7 @@ func (d *Domain) PushMessage(ctx context.Context, userID uuid.UUID, eventType en
 
 	// 4. Broadcast the message to the user's connected clients
 	if userID == uuid.Nil {
-		if err := d.broadcastStreamData(ctx, userID, eventID, eventType, data); err != nil {
+		if err := d.broadcastStreamData(ctx, eventID, eventType, data); err != nil {
 			return errors.Wrap(err, "failed to broadcast to all clients")
 		}
 	} else {

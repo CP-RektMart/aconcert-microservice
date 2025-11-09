@@ -6,14 +6,13 @@ import (
 
 	"slices"
 
-	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/entities"
 	"github.com/google/uuid"
 )
 
 // Message is what each client will receive over SSE.
 type Message struct {
-	EventType entities.EventType `json:"eventType"`
-	Data      string             `json:"data"`
+	EventType string `json:"eventType"`
+	Data      string `json:"data"`
 }
 
 // Client is the per-connection channel.
@@ -90,7 +89,7 @@ func (h *Hub) Unregister(ctx context.Context, userID uuid.UUID, client Client) {
 }
 
 // Broadcast sends an event to userId's clients.
-func (h *Hub) Broadcast(ctx context.Context, userID uuid.UUID, eventType entities.EventType, data string) {
+func (h *Hub) Broadcast(ctx context.Context, userID uuid.UUID, eventType string, data string) {
 	h.broadcast <- broadcast{
 		userID: userID,
 		msg: Message{
@@ -101,7 +100,7 @@ func (h *Hub) Broadcast(ctx context.Context, userID uuid.UUID, eventType entitie
 }
 
 // BroadcastAll sends an event to all connected clients.
-func (h *Hub) BroadcastAll(ctx context.Context, eventType entities.EventType, data string) {
+func (h *Hub) BroadcastAll(ctx context.Context, eventType string, data string) {
 	for userID := range h.clients {
 		h.broadcast <- broadcast{
 			userID: userID,
