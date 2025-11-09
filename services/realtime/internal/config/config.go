@@ -3,12 +3,8 @@ package config
 import (
 	"github.com/caarlos0/env/v10"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
-	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/joho/godotenv"
-)
-
-const (
-	DefaultENVPath = "./.env"
 )
 
 type CorsConfig struct {
@@ -19,10 +15,12 @@ type CorsConfig struct {
 }
 
 type AppConfig struct {
-	Name        string          `env:"NAME"`
-	Environment string          `env:"ENVIRONMENT"`
-	Logger      logger.Config   `envPrefix:"LOGGER_"`
-	RabbitMQ    rabbitmq.Config `envPrefix:"RABBITMQ_"`
+	Name         string        `env:"NAME"`
+	Port         int           `env:"PORT"`
+	MaxBodyLimit int           `env:"MAX_BODY_LIMIT"`
+	Logger       logger.Config `envPrefix:"LOGGER_"`
+	Cors         CorsConfig    `envPrefix:"CORS_"`
+	Redis        redis.Config  `envPrefix:"REDIS_"`
 }
 
 func Load() *AppConfig {

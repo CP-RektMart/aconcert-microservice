@@ -82,9 +82,10 @@ services:
       - "15672:15672"
     networks:
       - aconcert-network
-  notification-redis:
+  # -------------------- REALTIME DATABASE --------------------
+  realtime-redis:
     image: redis:latest
-    container_name: notification-redis
+    container_name: realtime-redis
     ports:
       - "6971:6379"
 
