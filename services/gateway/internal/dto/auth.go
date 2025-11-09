@@ -53,7 +53,7 @@ type UserResponse struct {
 }
 
 type UpdateProfileRequest struct {
-	UserID       uuid.UUID `json:"userId" validate:"required"`
+	UserID       uuid.UUID `json:"userId" swaggerignore:"true" validate:"required"`
 	Firstname    string    `json:"firstname" validate:"required"`
 	Lastname     string    `json:"lastname" validate:"required"`
 	ProfileImage string    `json:"profileImage" validate:"required"`

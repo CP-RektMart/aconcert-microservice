@@ -668,15 +668,12 @@ components:
           type: string
         profileImage:
           type: string
-        userId:
-          type: string
       required:
       - birthdate
       - firstname
       - lastname
       - phone
       - profileImage
-      - userId
       type: object
     dto.UserResponse:
       properties:
