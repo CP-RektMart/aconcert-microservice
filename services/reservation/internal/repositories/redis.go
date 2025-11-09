@@ -39,8 +39,8 @@ func (r *ReservationImpl) SetSeatReserved(ctx context.Context, eventID string, s
 	key := fmt.Sprintf("seat:%s:%d:%d:%d", eventID, seat.ZoneNumber, seat.RowNumber, seat.ColNumber)
 
 	r.publishSeatUpdate(ctx, eventID, seat, entities.SeatReserved)
-	//FYI: Cache the seat for 15 days
-	return r.redisClient.Set(ctx, key, reservationID, ttl*24).Err()
+	//FYI: Cache the persisted seat
+	return r.redisClient.Set(ctx, key, reservationID, 0).Err()
 }
 
 func (r *ReservationImpl) SetSeatTempReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error {
