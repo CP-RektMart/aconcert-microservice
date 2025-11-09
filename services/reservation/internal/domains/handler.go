@@ -14,8 +14,8 @@ import (
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
-	"github.com/stripe/stripe-go/v79"
-	"github.com/stripe/stripe-go/v79/checkout/session"
+	"github.com/stripe/stripe-go/v83"
+	"github.com/stripe/stripe-go/v83/checkout/session"
 )
 
 const (
@@ -190,7 +190,7 @@ func (r *ReserveDomainImpl) GetReservation(ctx context.Context, req *reservation
 
 		// Convert time.Duration to float64 (seconds)
 		timeLeftSeconds := rtTime.Seconds()
-		timeLeft = min(timeLeftSeconds, ResevationMax.Seconds())
+		timeLeft = min(timeLeftSeconds-SafetyBuffer.Seconds(), ResevationMax.Seconds())
 
 	case string(entities.Confirmed):
 		// Handle confirmed status

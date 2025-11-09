@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/payment/internal/repository"
-	"github.com/stripe/stripe-go/v79"
+	"github.com/stripe/stripe-go/v83"
 )
 
 type Domain struct {

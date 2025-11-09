@@ -7,7 +7,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/payment/internal/domain"
 	"github.com/gofiber/fiber/v2"
-	"github.com/stripe/stripe-go/v79/webhook"
+	"github.com/stripe/stripe-go/v83/webhook"
 )
 
 type Handler struct {

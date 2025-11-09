@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # -------------------- AUTH DATABASES --------------------
   auth-postgres:
@@ -189,6 +187,7 @@ services:
 volumes:
   auth_db_data:
   event_db_data:
+  reservation_db_data:
   location_mongo_data:
 
 # -------------------- NETWORKS --------------------

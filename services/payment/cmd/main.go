@@ -18,7 +18,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/requestlogger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-	"github.com/stripe/stripe-go/v79"
+	"github.com/stripe/stripe-go/v83"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
