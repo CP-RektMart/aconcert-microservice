@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-service
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realtime-service
+  template:
+    metadata:
+      labels:
+        app: realtime-service
+    spec:
+      containers:
+        - name: realtime-service
+          image: boom9387/realtime-service:latest
+          ports:
+            - containerPort: 8006
+          envFrom:
+            - secretRef:
+                name: realtime-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realtime-service
+  namespace: aconcert
+spec:
+  selector:
+    app: realtime-service
+  ports:
+    - port: 8006
+      targetPort: 8006
+  type: LoadBalancer # 👈 changed from ClusterIP → LoadBalancer for external access

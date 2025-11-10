@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-service
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservation-service
+  template:
+    metadata:
+      labels:
+        app: reservation-service
+    spec:
+      containers:
+        - name: reservation-service
+          image: boom9387/reservation-service:latest
+          ports:
+            - containerPort: 8005
+          envFrom:
+            - secretRef:
+                name: reservation-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation-service
+  namespace: aconcert
+spec:
+  selector:
+    app: reservation-service
+  ports:
+    - port: 8005
+      targetPort: 8005
+  type: ClusterIP

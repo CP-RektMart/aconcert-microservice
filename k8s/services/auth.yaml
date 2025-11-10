@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: boom9387/auth-service:latest
+          ports:
+            - containerPort: 8001
+          envFrom:
+            - secretRef:
+                name: auth-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: aconcert
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 8001
+      targetPort: 8001
+  type: ClusterIP
