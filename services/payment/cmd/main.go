@@ -17,6 +17,7 @@ import (
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/requestlogger"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/stripe/stripe-go/v83"
 	"google.golang.org/grpc"
@@ -55,6 +56,7 @@ func main() {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		},
 	})
+	app.Use(healthcheck.New())
 
 	app.Use(requestid.New()).Use(requestlogger.New())
 

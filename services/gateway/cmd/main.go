@@ -25,6 +25,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/requestlogger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 	"github.com/swaggo/swag"
@@ -73,6 +74,8 @@ func main() {
 			})
 		},
 	})
+	app.Use(healthcheck.New())
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     conf.Cors.AllowedOrigins,
 		AllowMethods:     conf.Cors.AllowedMethods,
