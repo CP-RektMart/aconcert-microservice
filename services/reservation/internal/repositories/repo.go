@@ -34,7 +34,7 @@ type ReservationRepository interface {
 	publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus)
 
 	// redis event
-	StartExpirationListener(ctx context.Context) error
+	StartExpirationListener(ctx context.Context)
 
 	// db
 	GetReservation(ctx context.Context, id string) (*db.Reservation, error)

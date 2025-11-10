@@ -21,6 +21,7 @@ type AppConfig struct {
 	Logger       logger.Config `envPrefix:"LOGGER_"`
 	Cors         CorsConfig    `envPrefix:"CORS_"`
 	Redis        redis.Config  `envPrefix:"REDIS_"`
+	PubSub       redis.Config  `envPrefix:"PUBSUB_"`
 }
 
 func Load() *AppConfig {

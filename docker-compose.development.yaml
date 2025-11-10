@@ -92,6 +92,7 @@ services:
   reservation-redis:
     image: redis:latest
     container_name: reservation-redis
+    command: redis-server --notify-keyspace-events Ex
     ports:
       - "6972:6379"
     healthcheck:

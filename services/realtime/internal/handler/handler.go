@@ -12,6 +12,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/hub"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
 )
 
@@ -33,6 +34,8 @@ func (h *handler) Mount(r fiber.Router) {
 
 	httpGroup := r.Group("/", requestid.New(), requestlogger.New())
 	httpGroup.Post("/push-message", h.PushMessage) // From Internal Only
+	httpGroup.Post("/subscribe-event", h.SubscribeEvent)
+	httpGroup.Post("/unsubscribe-event", h.UnsubscribeEvent)
 }
 
 func (h *handler) Realtime(c *fiber.Ctx) error {
@@ -65,6 +68,7 @@ func (h *handler) Realtime(c *fiber.Ctx) error {
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 		// ensure we unregister at exit
 		defer h.hub.Unregister(ctx, req.UserID, client)
+		defer h.domain.UnsubscribeUserFromAll(ctx, req.UserID)
 
 		// **initial ping** to flush headers
 		fmt.Fprint(w, ": connected\n\n")
@@ -115,6 +119,52 @@ func (h *handler) PushMessage(c *fiber.Ctx) error {
 
 	if err := h.domain.PushMessage(ctx, req.UserID, req.EventType, req.Data); err != nil {
 		return errors.Wrap(err, "failed to push message")
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *handler) SubscribeEvent(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	var req struct {
+		UserID  uuid.UUID `json:"userId"`
+		EventID string    `json:"eventId"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HttpError{
+			Error: err.Error(),
+		})
+	}
+
+	if err := h.domain.SubscribeToEvent(ctx, req.UserID, req.EventID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.HttpError{
+			Error: err.Error(),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *handler) UnsubscribeEvent(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	var req struct {
+		UserID  uuid.UUID `json:"userId"`
+		EventID string    `json:"eventId"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HttpError{
+			Error: err.Error(),
+		})
+	}
+
+	if err := h.domain.UnsubscribeFromEvent(ctx, req.UserID, req.EventID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.HttpError{
+			Error: err.Error(),
+		})
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)

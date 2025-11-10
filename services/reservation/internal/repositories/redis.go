@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -88,34 +89,44 @@ func (r *ReservationImpl) DeleteReservationSeats(ctx context.Context, reservatio
 	return r.redisClient.Del(ctx, key).Err()
 }
 
+// publishSeatUpdate broadcasts seat status changes via Redis Pub/Sub
 func (r *ReservationImpl) publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus) {
-	channel := "seats:all" // Single channel for simplicity
+	channel := "seats:all" // Single channel for all events
 
 	message := map[string]any{
 		"eventId":    eventID,
 		"zoneNumber": seat.ZoneNumber,
 		"row":        seat.RowNumber,
 		"column":     seat.ColNumber,
-		"status":     status,
+		"status":     string(status),
 		"timestamp":  time.Now().Unix(),
 	}
 
-	data, _ := json.Marshal(message)
+	data, err := json.Marshal(message)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to marshal seat update message")
+		return
+	}
 
+	// Publish in background (non-blocking)
 	go func() {
 		if err := r.redisClient.Publish(context.Background(), channel, data).Err(); err != nil {
-			logger.ErrorContext(ctx, "Error to publish message pub/sub")
+			logger.ErrorContext(context.Background(), "Failed to publish seat update to Redis")
 		}
 	}()
 }
 
-func (r *ReservationImpl) StartExpirationListener(ctx context.Context) error {
+// StartExpirationListener listens for Redis key expiration events
+// and publishes seat-available updates when seat reservations expire
+func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 	// Subscribe to keyspace notifications for expired keys
 	// Pattern: __keyevent@0__:expired
 	pubsub := r.redisClient.PSubscribe(ctx, "__keyevent@0__:expired")
 	defer pubsub.Close()
 
 	ch := pubsub.Channel()
+
+	logger.InfoContext(ctx, "StartExpirationListener: Listening for expired Redis keys")
 
 	for {
 		select {
@@ -125,7 +136,8 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) error {
 			r.handleExpiredKey(ctx, msg.Payload)
 
 		case <-ctx.Done():
-			return ctx.Err()
+			log.Println("StartExpirationListener: Stopped")
+			return
 		}
 	}
 }
@@ -155,9 +167,8 @@ func (r *ReservationImpl) handleExpiredKey(ctx context.Context, key string) {
 	}
 
 	// Publish that this seat is now available
-	r.publishSeatUpdate(ctx, eventID, seat, "AVAILABLE")
+	r.publishSeatUpdate(ctx, eventID, seat, entities.SeatAvailable)
 
-	// Optional: Log for debugging
-	fmt.Printf("Seat expired and released: Event=%s, Zone=%d, Row=%d, Col=%d\n",
+	log.Printf("Seat expired and released: Event=%s, Zone=%d, Row=%d, Col=%d\n",
 		eventID, zoneNumber, rowNumber, colNumber)
 }
