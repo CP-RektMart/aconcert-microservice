@@ -393,3 +393,35 @@ func pgUUIDToString(uuid pgtype.UUID) string {
 	}
 	return uuid.String()
 }
+
+func (r *ReserveDomainImpl) GetEventSeats(ctx context.Context, req *reservationpb.GetEventSeatsRequest) (*reservationpb.GetEventSeatsResponse, error) {
+	eventID := req.GetEventId()
+
+	if eventID == "" {
+		return nil, apperror.BadRequest("event ID required", nil)
+	}
+
+	// Get all seats for this event from Redis
+	seats, err := r.repo.GetAllEventSeats(ctx, eventID)
+	if err != nil {
+		logger.ErrorContext(ctx, "failed to get event seats", slog.Any("error", err), slog.String("eventID", eventID))
+		return nil, apperror.Internal("failed to get event seats", err)
+	}
+
+	// Convert to protobuf format
+	seatStatuses := make([]*reservationpb.SeatStatus, len(seats))
+	for i, seat := range seats {
+		seatStatuses[i] = &reservationpb.SeatStatus{
+			ZoneNumber: seat.ZoneNumber,
+			Row:        seat.RowNumber,
+			Column:     seat.ColNumber,
+			Status:     seat.Status,
+		}
+	}
+
+	logger.InfoContext(ctx, "event seats retrieved", slog.String("eventID", eventID), slog.Int("count", len(seats)))
+
+	return &reservationpb.GetEventSeatsResponse{
+		Seats: seatStatuses,
+	}, nil
+}

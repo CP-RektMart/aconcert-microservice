@@ -257,6 +257,16 @@ components:
       - price
       - zoneNumber
       type: object
+    dto.GetEventSeatsResponse:
+      properties:
+        seats:
+          items:
+            $ref: '#/components/schemas/dto.SeatStatusDTO'
+          type: array
+          uniqueItems: false
+      required:
+      - seats
+      type: object
     dto.GetReservationResponse:
       properties:
         eventId:
@@ -355,6 +365,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/dto.EventZoneListResponse'
+      required:
+      - result
+      type: object
+    dto.HttpResponse-dto_GetEventSeatsResponse:
+      properties:
+        result:
+          $ref: '#/components/schemas/dto.GetEventSeatsResponse'
       required:
       - result
       type: object
@@ -555,6 +572,23 @@ components:
       required:
       - column
       - row
+      - zoneNumber
+      type: object
+    dto.SeatStatusDTO:
+      properties:
+        column:
+          type: integer
+        row:
+          type: integer
+        status:
+          description: '"PENDING" or "RESERVED"'
+          type: string
+        zoneNumber:
+          type: integer
+      required:
+      - column
+      - row
+      - status
       - zoneNumber
       type: object
     dto.UpdateEventRequest:
@@ -979,6 +1013,38 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create Event
+      tags:
+      - events
+  /v1/events/{eventId}/seats:
+    get:
+      description: Get all reserved/pending seats for an event
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpResponse-dto_GetEventSeatsResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.HttpError'
+          description: Internal Server Error
+      summary: Get Event Seats
       tags:
       - events
   /v1/events/{id}:

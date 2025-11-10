@@ -77,3 +77,16 @@ type ConfirmReservationResponse struct {
 	Success bool   `json:"success" validate:"required"`
 	Message string `json:"message" validate:"required"`
 }
+
+// SeatStatusDTO represents a seat with its current status
+type SeatStatusDTO struct {
+	ZoneNumber int32  `json:"zoneNumber" validate:"required"`
+	Row        int32  `json:"row" validate:"required"`
+	Column     int32  `json:"column" validate:"required"`
+	Status     string `json:"status" validate:"required"` // "PENDING" or "RESERVED"
+}
+
+// GetEventSeatsResponse is the response for getting all seats for an event
+type GetEventSeatsResponse struct {
+	Seats []SeatStatusDTO `json:"seats" validate:"required"`
+}

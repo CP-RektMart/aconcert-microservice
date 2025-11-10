@@ -53,6 +53,12 @@ func (h *handler) Realtime(c *fiber.Ctx) error {
 	c.Set("Connection", "keep-alive")
 	c.Set("Transfer-Encoding", "chunked")
 	c.Set("X-Accel-Buffering", "no") // disable nginx buffering
+
+	// CORS headers for SSE (explicit for EventSource compatibility)
+	c.Set("Access-Control-Allow-Origin", "*")
+	c.Set("Access-Control-Allow-Credentials", "true")
+	c.Set("Access-Control-Expose-Headers", "Content-Type, Cache-Control")
+
 	c.Status(fiber.StatusOK)
 
 	// 3) open stream writer

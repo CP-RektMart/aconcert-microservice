@@ -858,6 +858,162 @@ func (x *GetReservationByStripeSessionIDResponse) GetStatus() string {
 	return ""
 }
 
+type GetEventSeatsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEventSeatsRequest) Reset() {
+	*x = GetEventSeatsRequest{}
+	mi := &file_reservation_reservation_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEventSeatsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEventSeatsRequest) ProtoMessage() {}
+
+func (x *GetEventSeatsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_reservation_reservation_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEventSeatsRequest.ProtoReflect.Descriptor instead.
+func (*GetEventSeatsRequest) Descriptor() ([]byte, []int) {
+	return file_reservation_reservation_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetEventSeatsRequest) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+type SeatStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ZoneNumber    int32                  `protobuf:"varint,1,opt,name=zone_number,json=zoneNumber,proto3" json:"zone_number,omitempty"`
+	Row           int32                  `protobuf:"varint,2,opt,name=row,proto3" json:"row,omitempty"`
+	Column        int32                  `protobuf:"varint,3,opt,name=column,proto3" json:"column,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"` // "AVAILABLE", "PENDING", "RESERVED"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SeatStatus) Reset() {
+	*x = SeatStatus{}
+	mi := &file_reservation_reservation_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SeatStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SeatStatus) ProtoMessage() {}
+
+func (x *SeatStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_reservation_reservation_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SeatStatus.ProtoReflect.Descriptor instead.
+func (*SeatStatus) Descriptor() ([]byte, []int) {
+	return file_reservation_reservation_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SeatStatus) GetZoneNumber() int32 {
+	if x != nil {
+		return x.ZoneNumber
+	}
+	return 0
+}
+
+func (x *SeatStatus) GetRow() int32 {
+	if x != nil {
+		return x.Row
+	}
+	return 0
+}
+
+func (x *SeatStatus) GetColumn() int32 {
+	if x != nil {
+		return x.Column
+	}
+	return 0
+}
+
+func (x *SeatStatus) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type GetEventSeatsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Seats         []*SeatStatus          `protobuf:"bytes,1,rep,name=seats,proto3" json:"seats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEventSeatsResponse) Reset() {
+	*x = GetEventSeatsResponse{}
+	mi := &file_reservation_reservation_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEventSeatsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEventSeatsResponse) ProtoMessage() {}
+
+func (x *GetEventSeatsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_reservation_reservation_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEventSeatsResponse.ProtoReflect.Descriptor instead.
+func (*GetEventSeatsResponse) Descriptor() ([]byte, []int) {
+	return file_reservation_reservation_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetEventSeatsResponse) GetSeats() []*SeatStatus {
+	if x != nil {
+		return x.Seats
+	}
+	return nil
+}
+
 var File_reservation_reservation_proto protoreflect.FileDescriptor
 
 const file_reservation_reservation_proto_rawDesc = "" +
@@ -922,14 +1078,26 @@ const file_reservation_reservation_proto_rawDesc = "" +
 	"\vtotal_price\x18\x04 \x01(\x01R\n" +
 	"totalPrice\x12'\n" +
 	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\x12\x16\n" +
-	"\x06status\x18\b \x01(\tR\x06status2\x97\x05\n" +
+	"\x06status\x18\b \x01(\tR\x06status\"1\n" +
+	"\x14GetEventSeatsRequest\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\"o\n" +
+	"\n" +
+	"SeatStatus\x12\x1f\n" +
+	"\vzone_number\x18\x01 \x01(\x05R\n" +
+	"zoneNumber\x12\x10\n" +
+	"\x03row\x18\x02 \x01(\x05R\x03row\x12\x16\n" +
+	"\x06column\x18\x03 \x01(\x05R\x06column\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"F\n" +
+	"\x15GetEventSeatsResponse\x12-\n" +
+	"\x05seats\x18\x01 \x03(\v2\x17.reservation.SeatStatusR\x05seats2\xf1\x05\n" +
 	"\x12ReservationService\x12d\n" +
 	"\x11CreateReservation\x12%.reservation.CreateReservationRequest\x1a&.reservation.CreateReservationResponse\"\x00\x12d\n" +
 	"\x11DeleteReservation\x12%.reservation.DeleteReservationRequest\x1a&.reservation.DeleteReservationResponse\"\x00\x12^\n" +
 	"\x0fListReservation\x12#.reservation.ListReservationRequest\x1a$.reservation.ListReservationResponse\"\x00\x12[\n" +
 	"\x0eGetReservation\x12\".reservation.GetReservationRequest\x1a#.reservation.GetReservationResponse\"\x00\x12g\n" +
 	"\x12ConfirmReservation\x12&.reservation.ConfirmReservationRequest\x1a'.reservation.ConfirmReservationResponse\"\x00\x12\x8e\x01\n" +
-	"\x1fGetReservationByStripeSessionID\x123.reservation.GetReservationByStripeSessionIDRequest\x1a4.reservation.GetReservationByStripeSessionIDResponse\"\x00BRZPgithub.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation;reservationpbb\x06proto3"
+	"\x1fGetReservationByStripeSessionID\x123.reservation.GetReservationByStripeSessionIDRequest\x1a4.reservation.GetReservationByStripeSessionIDResponse\"\x00\x12X\n" +
+	"\rGetEventSeats\x12!.reservation.GetEventSeatsRequest\x1a\".reservation.GetEventSeatsResponse\"\x00BRZPgithub.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation;reservationpbb\x06proto3"
 
 var (
 	file_reservation_reservation_proto_rawDescOnce sync.Once
@@ -943,7 +1111,7 @@ func file_reservation_reservation_proto_rawDescGZIP() []byte {
 	return file_reservation_reservation_proto_rawDescData
 }
 
-var file_reservation_reservation_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_reservation_reservation_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_reservation_reservation_proto_goTypes = []any{
 	(*Empty)(nil),                                   // 0: reservation.Empty
 	(*Seat)(nil),                                    // 1: reservation.Seat
@@ -960,6 +1128,9 @@ var file_reservation_reservation_proto_goTypes = []any{
 	(*GetReservationResponse)(nil),                  // 12: reservation.GetReservationResponse
 	(*ConfirmReservationResponse)(nil),              // 13: reservation.ConfirmReservationResponse
 	(*GetReservationByStripeSessionIDResponse)(nil), // 14: reservation.GetReservationByStripeSessionIDResponse
+	(*GetEventSeatsRequest)(nil),                    // 15: reservation.GetEventSeatsRequest
+	(*SeatStatus)(nil),                              // 16: reservation.SeatStatus
+	(*GetEventSeatsResponse)(nil),                   // 17: reservation.GetEventSeatsResponse
 }
 var file_reservation_reservation_proto_depIdxs = []int32{
 	1,  // 0: reservation.Reservation.seats:type_name -> reservation.Seat
@@ -967,23 +1138,26 @@ var file_reservation_reservation_proto_depIdxs = []int32{
 	2,  // 2: reservation.ListReservationResponse.reservation:type_name -> reservation.Reservation
 	1,  // 3: reservation.GetReservationResponse.seats:type_name -> reservation.Seat
 	1,  // 4: reservation.GetReservationByStripeSessionIDResponse.seats:type_name -> reservation.Seat
-	3,  // 5: reservation.ReservationService.CreateReservation:input_type -> reservation.CreateReservationRequest
-	4,  // 6: reservation.ReservationService.DeleteReservation:input_type -> reservation.DeleteReservationRequest
-	5,  // 7: reservation.ReservationService.ListReservation:input_type -> reservation.ListReservationRequest
-	6,  // 8: reservation.ReservationService.GetReservation:input_type -> reservation.GetReservationRequest
-	8,  // 9: reservation.ReservationService.ConfirmReservation:input_type -> reservation.ConfirmReservationRequest
-	7,  // 10: reservation.ReservationService.GetReservationByStripeSessionID:input_type -> reservation.GetReservationByStripeSessionIDRequest
-	9,  // 11: reservation.ReservationService.CreateReservation:output_type -> reservation.CreateReservationResponse
-	10, // 12: reservation.ReservationService.DeleteReservation:output_type -> reservation.DeleteReservationResponse
-	11, // 13: reservation.ReservationService.ListReservation:output_type -> reservation.ListReservationResponse
-	12, // 14: reservation.ReservationService.GetReservation:output_type -> reservation.GetReservationResponse
-	13, // 15: reservation.ReservationService.ConfirmReservation:output_type -> reservation.ConfirmReservationResponse
-	14, // 16: reservation.ReservationService.GetReservationByStripeSessionID:output_type -> reservation.GetReservationByStripeSessionIDResponse
-	11, // [11:17] is the sub-list for method output_type
-	5,  // [5:11] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	16, // 5: reservation.GetEventSeatsResponse.seats:type_name -> reservation.SeatStatus
+	3,  // 6: reservation.ReservationService.CreateReservation:input_type -> reservation.CreateReservationRequest
+	4,  // 7: reservation.ReservationService.DeleteReservation:input_type -> reservation.DeleteReservationRequest
+	5,  // 8: reservation.ReservationService.ListReservation:input_type -> reservation.ListReservationRequest
+	6,  // 9: reservation.ReservationService.GetReservation:input_type -> reservation.GetReservationRequest
+	8,  // 10: reservation.ReservationService.ConfirmReservation:input_type -> reservation.ConfirmReservationRequest
+	7,  // 11: reservation.ReservationService.GetReservationByStripeSessionID:input_type -> reservation.GetReservationByStripeSessionIDRequest
+	15, // 12: reservation.ReservationService.GetEventSeats:input_type -> reservation.GetEventSeatsRequest
+	9,  // 13: reservation.ReservationService.CreateReservation:output_type -> reservation.CreateReservationResponse
+	10, // 14: reservation.ReservationService.DeleteReservation:output_type -> reservation.DeleteReservationResponse
+	11, // 15: reservation.ReservationService.ListReservation:output_type -> reservation.ListReservationResponse
+	12, // 16: reservation.ReservationService.GetReservation:output_type -> reservation.GetReservationResponse
+	13, // 17: reservation.ReservationService.ConfirmReservation:output_type -> reservation.ConfirmReservationResponse
+	14, // 18: reservation.ReservationService.GetReservationByStripeSessionID:output_type -> reservation.GetReservationByStripeSessionIDResponse
+	17, // 19: reservation.ReservationService.GetEventSeats:output_type -> reservation.GetEventSeatsResponse
+	13, // [13:20] is the sub-list for method output_type
+	6,  // [6:13] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_reservation_reservation_proto_init() }
@@ -998,7 +1172,7 @@ func file_reservation_reservation_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_reservation_reservation_proto_rawDesc), len(file_reservation_reservation_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

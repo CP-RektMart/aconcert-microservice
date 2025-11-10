@@ -17,6 +17,13 @@ type SeatInfo struct {
 	ColNumber  int32
 }
 
+type SeatStatusInfo struct {
+	ZoneNumber int32
+	RowNumber  int32
+	ColNumber  int32
+	Status     string // "PENDING" or "RESERVED"
+}
+
 type ReservationRepository interface {
 	// redis
 	CreateReservationTemp(ctx context.Context, userID, reservationID string, ttl time.Duration) error
@@ -29,6 +36,7 @@ type ReservationRepository interface {
 	CacheReservationSeats(ctx context.Context, reservationID string, seats []SeatInfo, ttl time.Duration) error
 	GetReservationSeats(ctx context.Context, reservationID string) ([]SeatInfo, error)
 	DeleteReservationSeats(ctx context.Context, reservationID string) error
+	GetAllEventSeats(ctx context.Context, eventID string) ([]SeatStatusInfo, error)
 
 	// pub/sub - redis
 	publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus)

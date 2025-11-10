@@ -29,6 +29,11 @@ SELECT * FROM Ticket
 WHERE reservation_id = $1 AND deleted_at IS NULL
 ORDER BY zone_number, row_number, col_number;
 
+-- name: ListTicketsByEventID :many
+SELECT * FROM Ticket
+WHERE event_id = $1 AND deleted_at IS NULL
+ORDER BY zone_number, row_number, col_number;
+
 -- name: ListTicketsBySeat :many
 SELECT * FROM Ticket
 WHERE zone_number = $1

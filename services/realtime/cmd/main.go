@@ -72,6 +72,7 @@ func main() {
 		AllowMethods:     conf.Cors.AllowedMethods,
 		AllowHeaders:     conf.Cors.AllowedHeaders,
 		AllowCredentials: conf.Cors.AllowCredentials,
+		ExposeHeaders:    "Content-Type, Cache-Control, X-Accel-Buffering",
 	}))
 
 	hub := hub.New()

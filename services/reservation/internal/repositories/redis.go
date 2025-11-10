@@ -89,6 +89,80 @@ func (r *ReservationImpl) DeleteReservationSeats(ctx context.Context, reservatio
 	return r.redisClient.Del(ctx, key).Err()
 }
 
+// GetAllEventSeats retrieves all reserved/pending seats for a specific event
+// PENDING seats come from Redis (temporary, with TTL)
+// RESERVED seats come from Tickets table in database (confirmed, permanent)
+func (r *ReservationImpl) GetAllEventSeats(ctx context.Context, eventID string) ([]SeatStatusInfo, error) {
+	var seats []SeatStatusInfo
+
+	// 1. Get PENDING seats from Redis
+	pattern := fmt.Sprintf("seat:%s:*", eventID)
+	iter := r.redisClient.Scan(ctx, 0, pattern, 0).Iterator()
+	for iter.Next(ctx) {
+		key := iter.Val()
+		// Parse key format: "seat:eventID:zone:row:col"
+		parts := strings.Split(key, ":")
+
+		if len(parts) != 5 {
+			continue // Skip malformed keys
+		}
+
+		var zoneNum, rowNum, colNum int32
+		fmt.Sscanf(parts[2], "%d", &zoneNum)
+		fmt.Sscanf(parts[3], "%d", &rowNum)
+		fmt.Sscanf(parts[4], "%d", &colNum)
+
+		// Check TTL - only include PENDING seats (TTL > 0)
+		// RESERVED seats are in database, not Redis
+		ttl, err := r.redisClient.TTL(ctx, key).Result()
+		if err != nil {
+			logger.ErrorContext(ctx, "Failed to get TTL for seat", "key", key)
+			continue
+		}
+
+		// Only include if TTL > 0 (PENDING)
+		// Skip if TTL = -1 (would be RESERVED, but should be in DB instead)
+		if ttl > 0 {
+			seats = append(seats, SeatStatusInfo{
+				ZoneNumber: zoneNum,
+				RowNumber:  rowNum,
+				ColNumber:  colNum,
+				Status:     string(entities.SeatPending),
+			})
+		}
+	}
+
+	if err := iter.Err(); err != nil {
+		return nil, err
+	}
+
+	// 2. Get RESERVED seats from database (Tickets table)
+	tickets, err := r.db.ListTicketsByEventID(ctx, stringToUUID(eventID))
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to get tickets from database", "error", err, "eventID", eventID)
+		// Don't fail completely - return Redis seats even if DB query fails
+		return seats, nil
+	}
+
+	// Add tickets as RESERVED seats
+	for _, ticket := range tickets {
+		seats = append(seats, SeatStatusInfo{
+			ZoneNumber: ticket.ZoneNumber,
+			RowNumber:  ticket.RowNumber,
+			ColNumber:  ticket.ColNumber,
+			Status:     string(entities.SeatReserved),
+		})
+	}
+
+	logger.InfoContext(ctx, "Retrieved event seats",
+		"eventID", eventID,
+		"total", len(seats),
+		"pending", len(seats)-len(tickets),
+		"reserved", len(tickets))
+
+	return seats, nil
+}
+
 // publishSeatUpdate broadcasts seat status changes via Redis Pub/Sub
 func (r *ReservationImpl) publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus) {
 	channel := "seats:all" // Single channel for all events
@@ -104,14 +178,32 @@ func (r *ReservationImpl) publishSeatUpdate(ctx context.Context, eventID string,
 
 	data, err := json.Marshal(message)
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to marshal seat update message")
+		logger.ErrorContext(ctx, "Failed to marshal seat update message", "error", err)
 		return
 	}
 
+	logger.InfoContext(ctx, "Publishing seat update to Redis",
+		"channel", channel,
+		"eventID", eventID,
+		"zone", seat.ZoneNumber,
+		"row", seat.RowNumber,
+		"column", seat.ColNumber,
+		"status", string(status),
+		"message", string(data))
+
 	// Publish in background (non-blocking)
 	go func() {
-		if err := r.redisClient.Publish(context.Background(), channel, data).Err(); err != nil {
-			logger.ErrorContext(context.Background(), "Failed to publish seat update to Redis")
+		result := r.redisClient.Publish(context.Background(), channel, data)
+		if err := result.Err(); err != nil {
+			logger.ErrorContext(context.Background(), "Failed to publish seat update to Redis",
+				"error", err,
+				"channel", channel,
+				"message", string(data))
+		} else {
+			logger.InfoContext(context.Background(), "Successfully published seat update",
+				"channel", channel,
+				"subscribers", result.Val(),
+				"message", string(data))
 		}
 	}()
 }
@@ -127,12 +219,21 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 	ch := pubsub.Channel()
 
 	logger.InfoContext(ctx, "StartExpirationListener: Listening for expired Redis keys")
+	logger.InfoContext(ctx, "StartExpirationListener: Subscribed to __keyevent@0__:expired")
 
 	for {
 		select {
 		case msg := <-ch:
+			if msg == nil {
+				logger.WarnContext(ctx, "StartExpirationListener: Received nil message")
+				continue
+			}
 			// msg.Payload contains the expired key name
 			// Example: "seat:event-123:1:5:10"
+			logger.InfoContext(ctx, "StartExpirationListener: Received expiration event",
+				"channel", msg.Channel,
+				"pattern", msg.Pattern,
+				"payload", msg.Payload)
 			r.handleExpiredKey(ctx, msg.Payload)
 
 		case <-ctx.Done():
@@ -144,11 +245,19 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 
 // handleExpiredKey processes an expired seat reservation key
 func (r *ReservationImpl) handleExpiredKey(ctx context.Context, key string) {
+	logger.InfoContext(ctx, "handleExpiredKey: Processing expired key", "key", key)
+
 	// Parse the key: "seat:eventID:zone:row:col"
 	parts := strings.Split(key, ":")
 
+	logger.InfoContext(ctx, "handleExpiredKey: Key parts", "parts", parts, "length", len(parts))
+
 	// Expected format: ["seat", "eventID", "zone", "row", "col"]
 	if len(parts) != 5 || parts[0] != "seat" {
+		logger.WarnContext(ctx, "handleExpiredKey: Invalid key format, ignoring",
+			"key", key,
+			"parts_count", len(parts),
+			"first_part", parts[0])
 		return // Not a seat key, ignore
 	}
 
@@ -166,9 +275,18 @@ func (r *ReservationImpl) handleExpiredKey(ctx context.Context, key string) {
 		ColNumber:  colNumber,
 	}
 
+	logger.InfoContext(ctx, "handleExpiredKey: Publishing AVAILABLE status",
+		"eventID", eventID,
+		"zone", zoneNumber,
+		"row", rowNumber,
+		"column", colNumber)
+
 	// Publish that this seat is now available
 	r.publishSeatUpdate(ctx, eventID, seat, entities.SeatAvailable)
 
-	log.Printf("Seat expired and released: Event=%s, Zone=%d, Row=%d, Col=%d\n",
-		eventID, zoneNumber, rowNumber, colNumber)
+	logger.InfoContext(ctx, "Seat expired and released",
+		"eventID", eventID,
+		"zone", zoneNumber,
+		"row", rowNumber,
+		"column", colNumber)
 }

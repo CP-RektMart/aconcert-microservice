@@ -142,3 +142,25 @@ func (s *ReservationService) ConfirmReservation(ctx context.Context, req *dto.Co
 		Message: response.Message,
 	}, nil
 }
+
+// GetEventSeats gets all reserved/pending seats for an event
+func (s *ReservationService) GetEventSeats(ctx context.Context, eventID string) ([]dto.SeatStatusDTO, error) {
+	response, err := s.client.GetEventSeats(ctx, &reservationpb.GetEventSeatsRequest{
+		EventId: eventID,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get event seats")
+	}
+
+	seats := make([]dto.SeatStatusDTO, 0, len(response.Seats))
+	for _, seat := range response.Seats {
+		seats = append(seats, dto.SeatStatusDTO{
+			ZoneNumber: seat.ZoneNumber,
+			Row:        seat.Row,
+			Column:     seat.Column,
+			Status:     seat.Status,
+		})
+	}
+
+	return seats, nil
+}
