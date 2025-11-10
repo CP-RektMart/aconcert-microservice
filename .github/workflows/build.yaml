@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/build-ci-cd
   workflow_dispatch:
 
 env:
