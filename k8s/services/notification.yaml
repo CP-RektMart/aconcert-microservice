@@ -16,21 +16,6 @@ spec:
       containers:
         - name: notification-service
           image: boom9387/notification-service:latest
-          ports:
-            - containerPort: 8000
           envFrom:
             - secretRef:
                 name: notification-env
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: notification-service
-  namespace: aconcert
-spec:
-  selector:
-    app: notification-service
-  ports:
-    - port: 8000
-      targetPort: 8000
-  type: ClusterIP

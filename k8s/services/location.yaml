@@ -17,7 +17,7 @@ spec:
         - name: location-service
           image: boom9387/location-service:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8003
           envFrom:
             - secretRef:
                 name: location-env
@@ -31,6 +31,6 @@ spec:
   selector:
     app: location-service
   ports:
-    - port: 8000
-      targetPort: 8000
+    - port: 8003
+      targetPort: 8003
   type: ClusterIP

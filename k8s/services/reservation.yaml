@@ -17,7 +17,7 @@ spec:
         - name: reservation-service
           image: boom9387/reservation-service:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8005
           envFrom:
             - secretRef:
                 name: reservation-env
@@ -31,6 +31,6 @@ spec:
   selector:
     app: reservation-service
   ports:
-    - port: 8000
-      targetPort: 8000
+    - port: 8005
+      targetPort: 8005
   type: ClusterIP

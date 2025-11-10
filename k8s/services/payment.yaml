@@ -17,7 +17,7 @@ spec:
         - name: payment-service
           image: boom9387/payment-service:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8004
           envFrom:
             - secretRef:
                 name: payment-env
@@ -31,6 +31,6 @@ spec:
   selector:
     app: payment-service
   ports:
-    - port: 8000
-      targetPort: 8000
-  type: ClusterIP
+    - port: 8004
+      targetPort: 8004
+  type: LoadBalancer # optional: external access if you need webhook or testing

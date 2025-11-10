@@ -21,21 +21,6 @@ spec:
           envFrom:
             - secretRef:
                 name: gateway-env
-          env:
-            - name: AUTH_SERVICE_URL
-              value: http://auth-service:8000
-            - name: EVENT_SERVICE_URL
-              value: http://event-service:8000
-            - name: LOCATION_SERVICE_URL
-              value: http://location-service:8000
-            - name: RESERVATION_SERVICE_URL
-              value: http://reservation-service:8000
-            - name: PAYMENT_SERVICE_URL
-              value: http://payment-service:8000
-            - name: NOTIFICATION_SERVICE_URL
-              value: http://notification-service:8000
-            - name: REALTIME_SERVICE_URL
-              value: http://realtime-service:8000
 ---
 apiVersion: v1
 kind: Service
@@ -46,6 +31,6 @@ spec:
   selector:
     app: gateway
   ports:
-    - port: 80
+    - port: 8000
       targetPort: 8000
   type: LoadBalancer

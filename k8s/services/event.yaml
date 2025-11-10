@@ -17,7 +17,7 @@ spec:
         - name: event-service
           image: boom9387/event-service:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8002
           envFrom:
             - secretRef:
                 name: event-env
@@ -31,6 +31,6 @@ spec:
   selector:
     app: event-service
   ports:
-    - port: 8000
-      targetPort: 8000
+    - port: 8002
+      targetPort: 8002
   type: ClusterIP

@@ -17,7 +17,7 @@ spec:
         - name: realtime-service
           image: boom9387/realtime-service:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8006
           envFrom:
             - secretRef:
                 name: realtime-env
@@ -31,6 +31,6 @@ spec:
   selector:
     app: realtime-service
   ports:
-    - port: 8000
-      targetPort: 8000
-  type: ClusterIP
+    - port: 8006
+      targetPort: 8006
+  type: LoadBalancer # 👈 changed from ClusterIP → LoadBalancer for external access
