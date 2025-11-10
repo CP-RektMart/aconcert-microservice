@@ -140,21 +140,20 @@ func (h *Handler) GetReservation(c *fiber.Ctx) error {
 // @Tags			reservations
 // @Router			/v1/reservations [GET]
 // @Security		ApiKeyAuth
-// @Param			userId	query		string	true	"User ID"
 // @Success			200 {object}	dto.HttpResponse[dto.ListReservationResponse]
 // @Failure			400	{object}	dto.HttpError
 // @Failure			500	{object}	dto.HttpError
 func (h *Handler) ListReservation(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var req dto.ListReservationRequest
-	if err := c.QueryParser(&req); err != nil {
+	userID, err := h.authMiddleware.GetUserIDFromContext(ctx)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HttpError{
-			Error: "Invalid query parameters",
+			Error: "Invalid user ID",
 		})
 	}
 
-	reservations, err := h.service.ListReservation(ctx, &req)
+	reservations, err := h.service.ListReservation(ctx, userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HttpError{
 			Error: err.Error(),

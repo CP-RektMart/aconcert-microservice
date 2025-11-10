@@ -127,13 +127,17 @@ func (x *Seat) GetColumn() int32 {
 }
 
 type Reservation struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	EventId       string                 `protobuf:"bytes,2,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
-	TotalPrice    float64                `protobuf:"fixed64,3,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
-	Seats         []*Seat                `protobuf:"bytes,4,rep,name=seats,proto3" json:"seats,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EventId            string                 `protobuf:"bytes,3,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	TotalPrice         float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
+	Seats              []*Seat                `protobuf:"bytes,5,rep,name=seats,proto3" json:"seats,omitempty"`
+	StripeClientSecret string                 `protobuf:"bytes,6,opt,name=stripe_client_secret,json=stripeClientSecret,proto3" json:"stripe_client_secret,omitempty"`
+	TimeLeft           *float64               `protobuf:"fixed64,7,opt,name=time_left,json=timeLeft,proto3,oneof" json:"time_left,omitempty"`
+	Status             string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *Reservation) Reset() {
@@ -166,6 +170,13 @@ func (*Reservation) Descriptor() ([]byte, []int) {
 	return file_reservation_reservation_proto_rawDescGZIP(), []int{2}
 }
 
+func (x *Reservation) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 func (x *Reservation) GetUserId() string {
 	if x != nil {
 		return x.UserId
@@ -192,6 +203,27 @@ func (x *Reservation) GetSeats() []*Seat {
 		return x.Seats
 	}
 	return nil
+}
+
+func (x *Reservation) GetStripeClientSecret() string {
+	if x != nil {
+		return x.StripeClientSecret
+	}
+	return ""
+}
+
+func (x *Reservation) GetTimeLeft() float64 {
+	if x != nil && x.TimeLeft != nil {
+		return *x.TimeLeft
+	}
+	return 0
+}
+
+func (x *Reservation) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
 }
 
 type CreateReservationRequest struct {
@@ -1025,13 +1057,19 @@ const file_reservation_reservation_proto_rawDesc = "" +
 	"zoneNumber\x12\x14\n" +
 	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x10\n" +
 	"\x03row\x18\x04 \x01(\x05R\x03row\x12\x16\n" +
-	"\x06column\x18\x05 \x01(\x05R\x06column\"\x8b\x01\n" +
-	"\vReservation\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
-	"\bevent_id\x18\x02 \x01(\tR\aeventId\x12\x1f\n" +
-	"\vtotal_price\x18\x03 \x01(\x01R\n" +
+	"\x06column\x18\x05 \x01(\x05R\x06column\"\x95\x02\n" +
+	"\vReservation\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
+	"\bevent_id\x18\x03 \x01(\tR\aeventId\x12\x1f\n" +
+	"\vtotal_price\x18\x04 \x01(\x01R\n" +
 	"totalPrice\x12'\n" +
-	"\x05seats\x18\x04 \x03(\v2\x11.reservation.SeatR\x05seats\"\x98\x01\n" +
+	"\x05seats\x18\x05 \x03(\v2\x11.reservation.SeatR\x05seats\x120\n" +
+	"\x14stripe_client_secret\x18\x06 \x01(\tR\x12stripeClientSecret\x12 \n" +
+	"\ttime_left\x18\a \x01(\x01H\x00R\btimeLeft\x88\x01\x01\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06statusB\f\n" +
+	"\n" +
+	"_time_left\"\x98\x01\n" +
 	"\x18CreateReservationRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\bevent_id\x18\x02 \x01(\tR\aeventId\x12\x1f\n" +
@@ -1165,6 +1203,7 @@ func file_reservation_reservation_proto_init() {
 	if File_reservation_reservation_proto != nil {
 		return
 	}
+	file_reservation_reservation_proto_msgTypes[2].OneofWrappers = []any{}
 	file_reservation_reservation_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

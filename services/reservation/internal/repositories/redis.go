@@ -330,6 +330,7 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 }
 
 // handleExpiredKeysBatch processes multiple expired keys in a batch
+// this involves db related operations
 func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []string) {
 	if len(keys) == 0 {
 		return
@@ -344,6 +345,17 @@ func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []str
 	for _, key := range keys {
 		// Parse the key: "seat:eventID:zone:row:col"
 		parts := strings.Split(key, ":")
+
+		// Expected format: ["reservation", "tmp", "userID", "reservationID"]
+		if len(parts) == 4 && (parts[0] != "reservation" && parts[1] != "tmp") {
+			go func() {
+				_, err := r.UpdateReservationStatus(ctx, parts[3], string(entities.Cancelled))
+				if err != nil {
+					logger.ErrorContext(ctx, "handleExpiredKeysBatch: Failed to update reservation status", "error", err)
+				}
+			}()
+			continue
+		}
 
 		// Expected format: ["seat", "eventID", "zone", "row", "col"]
 		if len(parts) != 5 || parts[0] != "seat" {
@@ -371,15 +383,7 @@ func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []str
 
 	// Publish batch update for each event
 	for eventID, seats := range seatsByEvent {
-		logger.InfoContext(ctx, "handleExpiredKeysBatch: Publishing batch for event",
-			"eventID", eventID,
-			"seats_count", len(seats))
-
 		r.publishSeatUpdatesBatch(ctx, eventID, seats, entities.SeatAvailable)
-
-		logger.InfoContext(ctx, "Seats batch expired and released",
-			"eventID", eventID,
-			"seats_count", len(seats))
 	}
 }
 

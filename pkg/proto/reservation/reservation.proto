@@ -15,10 +15,14 @@ message Seat {
 }
 
 message Reservation {
-    string user_id = 1;
-    string event_id = 2;
-    double total_price = 3;
-    repeated Seat seats = 4;
+    string id = 1;
+    string user_id = 2;
+    string event_id = 3;
+    double total_price = 4;
+    repeated Seat seats = 5;
+    string stripe_client_secret = 6;
+    optional double time_left = 7;
+    string  status = 8;
 }
 
 // ------------------ CRUD ------------------ //
