@@ -53,7 +53,6 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 			return nil, apperror.BadRequest("seat already reserved", nil)
 		}
 	}
-
 	reservationID = uuid.New().String()
 	// cache the reservation
 	if err := r.repo.CreateReservationTemp(ctx, req.GetUserId(), reservationID, ReservationTTL); err != nil {
@@ -68,12 +67,16 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 		return nil, apperror.Internal("failed to cache seats", err)
 	}
 
-	for _, seat := range seats {
-		if err := r.repo.SetSeatTempReserved(ctx, req.GetEventId(), seat, reservationID, ReservationTTL); err != nil {
-			logger.ErrorContext(ctx, "reserve seat failed", slog.Any("error", err))
-			rollbackReservation(ctx, r.repo, req.GetUserId(), req.GetEventId(), reservationID, seats)
-			return nil, apperror.Internal("failed to reserve seat", err)
-		}
+	// ✅ NEW: Use batch update instead of individual updates for PENDING status
+	logger.InfoContext(ctx, "CreateReservation: Marking seats as PENDING (batch mode)",
+		slog.String("reservationID", reservationID),
+		slog.Int("seats_count", len(seats)))
+
+	// Use batch update for all seats at once
+	if err := r.repo.SetSeatsTempReservedBatch(ctx, req.GetEventId(), seats, reservationID, ReservationTTL); err != nil {
+		logger.ErrorContext(ctx, "batch temp reserve seats failed", slog.Any("error", err))
+		rollbackReservation(ctx, r.repo, req.GetUserId(), req.GetEventId(), reservationID, seats)
+		return nil, apperror.Internal("failed to reserve seats", err)
 	}
 
 	stripe.Key = r.stripe.SecretKey
@@ -271,12 +274,16 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 		return nil, apperror.Internal("failed to create tickets", err)
 	}
 
-	for _, seat := range seats {
-		if err := r.repo.SetSeatReserved(ctx, reservation.EventID.String(), seat, reservationID, ReservationTTL); err != nil {
-			logger.ErrorContext(ctx, "reserve seat failed", slog.Any("error", err))
-			rollbackReservation(ctx, r.repo, reservation.UserID.String(), reservation.EventID.String(), reservationID, seats)
-			return nil, apperror.Internal("failed to reserve seat", err)
-		}
+	// ✅ NEW: Use batch update instead of individual updates
+	logger.InfoContext(ctx, "ConfirmReservation: Marking seats as RESERVED (batch mode)",
+		slog.String("reservationID", reservationID),
+		slog.Int("seats_count", len(seats)))
+
+	// Use batch update for all seats at once
+	if err := r.repo.SetSeatsReservedBatch(ctx, reservation.EventID.String(), seats, reservationID); err != nil {
+		logger.ErrorContext(ctx, "batch reserve seats failed", slog.Any("error", err))
+		rollbackReservation(ctx, r.repo, reservation.UserID.String(), reservation.EventID.String(), reservationID, seats)
+		return nil, apperror.Internal("failed to reserve seats", err)
 	}
 
 	if _, err := r.repo.UpdateReservationStatus(ctx, reservationID, string(entities.Confirmed)); err != nil {
@@ -289,7 +296,10 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 		return nil, apperror.Internal("failed to cleanup temp reservation", err)
 	}
 
-	logger.InfoContext(ctx, "reservation confirmed", slog.String("reservationID", reservationID))
+	logger.InfoContext(ctx, "reservation confirmed (batch mode)",
+		slog.String("reservationID", reservationID),
+		slog.Int("seats_count", len(seats)))
+
 	return &reservationpb.ConfirmReservationResponse{
 		Id:      reservationID,
 		Success: true,

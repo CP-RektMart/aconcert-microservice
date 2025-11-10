@@ -31,7 +31,9 @@ type ReservationRepository interface {
 	DeleteReservationTemp(ctx context.Context, userID, reservationID string) error
 	CheckSeatAvailable(ctx context.Context, eventID string, seat SeatInfo) (bool, error)
 	SetSeatReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error
+	SetSeatsReservedBatch(ctx context.Context, eventID string, seats []SeatInfo, reservationID string) error // NEW: Batch RESERVED
 	SetSeatTempReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error
+	SetSeatsTempReservedBatch(ctx context.Context, eventID string, seats []SeatInfo, reservationID string, ttl time.Duration) error // NEW: Batch PENDING
 	DeleteSeatReservation(ctx context.Context, eventID string, seat SeatInfo) error
 	CacheReservationSeats(ctx context.Context, reservationID string, seats []SeatInfo, ttl time.Duration) error
 	GetReservationSeats(ctx context.Context, reservationID string) ([]SeatInfo, error)
@@ -40,6 +42,7 @@ type ReservationRepository interface {
 
 	// pub/sub - redis
 	publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus)
+	publishSeatUpdatesBatch(ctx context.Context, eventID string, seats []SeatInfo, status entities.SeatStatus) // NEW: Batch publisher
 
 	// redis event
 	StartExpirationListener(ctx context.Context)

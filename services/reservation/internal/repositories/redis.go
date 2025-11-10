@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -208,8 +207,67 @@ func (r *ReservationImpl) publishSeatUpdate(ctx context.Context, eventID string,
 	}()
 }
 
+// publishSeatUpdatesBatch broadcasts multiple seat status changes in a single message
+func (r *ReservationImpl) publishSeatUpdatesBatch(ctx context.Context, eventID string, seats []SeatInfo, status entities.SeatStatus) {
+	if len(seats) == 0 {
+		return
+	}
+
+	channel := "seats:all"
+	timestamp := time.Now().Unix()
+
+	// Create array of seat updates
+	updates := make([]map[string]any, len(seats))
+	for i, seat := range seats {
+		updates[i] = map[string]any{
+			"eventId":    eventID,
+			"zoneNumber": seat.ZoneNumber,
+			"row":        seat.RowNumber,
+			"column":     seat.ColNumber,
+			"status":     string(status),
+			"timestamp":  timestamp,
+		}
+	}
+
+	// Wrap in batch message
+	batchMessage := map[string]any{
+		"type":    "batch",
+		"updates": updates,
+	}
+
+	data, err := json.Marshal(batchMessage)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to marshal batch seat update message", "error", err)
+		return
+	}
+
+	logger.InfoContext(ctx, "Publishing BATCH seat update to Redis",
+		"channel", channel,
+		"eventID", eventID,
+		"seats_count", len(seats),
+		"status", string(status),
+		"message_size", len(data))
+
+	// Publish in background (non-blocking)
+	go func() {
+		result := r.redisClient.Publish(context.Background(), channel, data)
+		if err := result.Err(); err != nil {
+			logger.ErrorContext(context.Background(), "Failed to publish batch seat update to Redis",
+				"error", err,
+				"channel", channel,
+				"seats_count", len(seats))
+		} else {
+			logger.InfoContext(context.Background(), "Successfully published BATCH seat update",
+				"channel", channel,
+				"subscribers", result.Val(),
+				"seats_count", len(seats))
+		}
+	}()
+}
+
 // StartExpirationListener listens for Redis key expiration events
-// and publishes seat-available updates when seat reservations expire
+// and publishes seat-available updates when seat reservations expire.
+// It batches multiple expired keys together to reduce pub/sub message count.
 func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 	// Subscribe to keyspace notifications for expired keys
 	// Pattern: __keyevent@0__:expired
@@ -218,8 +276,13 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 
 	ch := pubsub.Channel()
 
-	logger.InfoContext(ctx, "StartExpirationListener: Listening for expired Redis keys")
+	logger.InfoContext(ctx, "StartExpirationListener: Listening for expired Redis keys (BATCH MODE)")
 	logger.InfoContext(ctx, "StartExpirationListener: Subscribed to __keyevent@0__:expired")
+
+	// Buffer for batching expired keys
+	pendingKeys := make([]string, 0, 100)
+	batchTimer := time.NewTimer(50 * time.Millisecond)
+	batchTimer.Stop() // Stop initially, start when first key arrives
 
 	for {
 		select {
@@ -228,22 +291,100 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 				logger.WarnContext(ctx, "StartExpirationListener: Received nil message")
 				continue
 			}
-			// msg.Payload contains the expired key name
-			// Example: "seat:event-123:1:5:10"
-			logger.InfoContext(ctx, "StartExpirationListener: Received expiration event",
-				"channel", msg.Channel,
-				"pattern", msg.Pattern,
-				"payload", msg.Payload)
-			r.handleExpiredKey(ctx, msg.Payload)
+
+			// Add expired key to batch
+			pendingKeys = append(pendingKeys, msg.Payload)
+
+			logger.InfoContext(ctx, "StartExpirationListener: Key expired (buffering for batch)",
+				"key", msg.Payload,
+				"buffer_size", len(pendingKeys))
+
+			// Start/reset batch timer
+			// If this is the first key, start the timer
+			// If timer already running, reset it to wait for more keys
+			if !batchTimer.Stop() {
+				select {
+				case <-batchTimer.C:
+				default:
+				}
+			}
+			batchTimer.Reset(50 * time.Millisecond)
+
+		case <-batchTimer.C:
+			// Timer expired - process the batch
+			if len(pendingKeys) > 0 {
+				logger.InfoContext(ctx, "StartExpirationListener: Batch timer fired, processing batch",
+					"batch_size", len(pendingKeys))
+
+				r.handleExpiredKeysBatch(ctx, pendingKeys)
+
+				// Reset buffer
+				pendingKeys = pendingKeys[:0]
+			}
 
 		case <-ctx.Done():
-			log.Println("StartExpirationListener: Stopped")
+			logger.InfoContext(ctx, "StartExpirationListener: Stopped")
 			return
 		}
 	}
 }
 
-// handleExpiredKey processes an expired seat reservation key
+// handleExpiredKeysBatch processes multiple expired keys in a batch
+func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []string) {
+	if len(keys) == 0 {
+		return
+	}
+
+	logger.InfoContext(ctx, "handleExpiredKeysBatch: Processing batch of expired keys",
+		"count", len(keys))
+
+	// Group seats by eventID
+	seatsByEvent := make(map[string][]SeatInfo)
+
+	for _, key := range keys {
+		// Parse the key: "seat:eventID:zone:row:col"
+		parts := strings.Split(key, ":")
+
+		// Expected format: ["seat", "eventID", "zone", "row", "col"]
+		if len(parts) != 5 || parts[0] != "seat" {
+			logger.WarnContext(ctx, "handleExpiredKeysBatch: Invalid key format, skipping",
+				"key", key)
+			continue
+		}
+
+		eventID := parts[1]
+
+		// Parse seat coordinates
+		var zoneNumber, rowNumber, colNumber int32
+		fmt.Sscanf(parts[2], "%d", &zoneNumber)
+		fmt.Sscanf(parts[3], "%d", &rowNumber)
+		fmt.Sscanf(parts[4], "%d", &colNumber)
+
+		seat := SeatInfo{
+			ZoneNumber: zoneNumber,
+			RowNumber:  rowNumber,
+			ColNumber:  colNumber,
+		}
+
+		seatsByEvent[eventID] = append(seatsByEvent[eventID], seat)
+	}
+
+	// Publish batch update for each event
+	for eventID, seats := range seatsByEvent {
+		logger.InfoContext(ctx, "handleExpiredKeysBatch: Publishing batch for event",
+			"eventID", eventID,
+			"seats_count", len(seats))
+
+		r.publishSeatUpdatesBatch(ctx, eventID, seats, entities.SeatAvailable)
+
+		logger.InfoContext(ctx, "Seats batch expired and released",
+			"eventID", eventID,
+			"seats_count", len(seats))
+	}
+}
+
+// handleExpiredKey processes an expired seat reservation key (DEPRECATED - keeping for backwards compatibility)
+// This is now replaced by handleExpiredKeysBatch for better performance
 func (r *ReservationImpl) handleExpiredKey(ctx context.Context, key string) {
 	logger.InfoContext(ctx, "handleExpiredKey: Processing expired key", "key", key)
 
@@ -289,4 +430,69 @@ func (r *ReservationImpl) handleExpiredKey(ctx context.Context, key string) {
 		"zone", zoneNumber,
 		"row", rowNumber,
 		"column", colNumber)
+}
+
+// SetSeatsReservedBatch marks multiple seats as RESERVED in a single batch operation
+// This is used when confirming a reservation with multiple seats
+func (r *ReservationImpl) SetSeatsReservedBatch(ctx context.Context, eventID string, seats []SeatInfo, reservationID string) error {
+	if len(seats) == 0 {
+		return nil
+	}
+
+	logger.InfoContext(ctx, "SetSeatsReservedBatch: Marking seats as RESERVED",
+		"eventID", eventID,
+		"reservationID", reservationID,
+		"seats_count", len(seats))
+
+	// 1. Update all seats in Redis (set TTL=0 for permanent)
+	for _, seat := range seats {
+		key := fmt.Sprintf("seat:%s:%d:%d:%d", eventID, seat.ZoneNumber, seat.RowNumber, seat.ColNumber)
+		if err := r.redisClient.Set(ctx, key, reservationID, 0).Err(); err != nil {
+			logger.ErrorContext(ctx, "Failed to set seat reserved in Redis",
+				"error", err,
+				"seat", seat)
+			return err
+		}
+	}
+
+	// 2. Publish batch update (single message for all seats)
+	r.publishSeatUpdatesBatch(ctx, eventID, seats, entities.SeatReserved)
+
+	logger.InfoContext(ctx, "SetSeatsReservedBatch: Successfully marked seats as RESERVED",
+		"seats_count", len(seats))
+
+	return nil
+}
+
+// SetSeatsTempReservedBatch marks multiple seats as PENDING in a single batch operation
+// This is used when creating a reservation with multiple seats
+func (r *ReservationImpl) SetSeatsTempReservedBatch(ctx context.Context, eventID string, seats []SeatInfo, reservationID string, ttl time.Duration) error {
+	if len(seats) == 0 {
+		return nil
+	}
+
+	logger.InfoContext(ctx, "SetSeatsTempReservedBatch: Marking seats as PENDING",
+		"eventID", eventID,
+		"reservationID", reservationID,
+		"seats_count", len(seats),
+		"ttl", ttl)
+
+	// 1. Update all seats in Redis (set TTL for temporary hold)
+	for _, seat := range seats {
+		key := fmt.Sprintf("seat:%s:%d:%d:%d", eventID, seat.ZoneNumber, seat.RowNumber, seat.ColNumber)
+		if err := r.redisClient.Set(ctx, key, reservationID, ttl).Err(); err != nil {
+			logger.ErrorContext(ctx, "Failed to set seat temp reserved in Redis",
+				"error", err,
+				"seat", seat)
+			return err
+		}
+	}
+
+	// 2. Publish batch update (single message for all seats)
+	r.publishSeatUpdatesBatch(ctx, eventID, seats, entities.SeatPending)
+
+	logger.InfoContext(ctx, "SetSeatsTempReservedBatch: Successfully marked seats as PENDING",
+		"seats_count", len(seats))
+
+	return nil
 }
