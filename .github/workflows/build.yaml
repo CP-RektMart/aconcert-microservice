@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/k8s
-  workflow_dispatch:
 
 env:
   REGISTRY: docker.io
