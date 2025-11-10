@@ -69,11 +69,6 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  notification-redis:
-    image: redis:latest
-    container_name: notification-redis
-    ports:
-      - "6971:6379"
 
   # -------------------- RERSERVATION DATABASE --------------------
   reservation-postgres:
@@ -95,6 +90,18 @@ services:
     command: redis-server --notify-keyspace-events Ex
     ports:
       - "6972:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # -------------------- REALTIME DATABASE --------------------
+  realtime-redis:
+    image: redis:latest
+    container_name: realtime-redis
+    command: redis-server --notify-keyspace-events Ex
+    ports:
+      - "6971:6379"
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping"]
       interval: 10s
