@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: location-service
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: location-service
+  template:
+    metadata:
+      labels:
+        app: location-service
+    spec:
+      containers:
+        - name: location-service
+          image: boom9387/location-service:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: location-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: location-service
+  namespace: aconcert
+spec:
+  selector:
+    app: location-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP

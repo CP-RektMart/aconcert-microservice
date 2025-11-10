@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-service
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-service
+  template:
+    metadata:
+      labels:
+        app: event-service
+    spec:
+      containers:
+        - name: event-service
+          image: boom9387/event-service:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: event-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-service
+  namespace: aconcert
+spec:
+  selector:
+    app: event-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP
