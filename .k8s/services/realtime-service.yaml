@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: realtime-service-config
+  namespace: aconcert
+data:
+  NAME: "aconcert-realtime-service"
+  PORT: "8000"
+  MAX_BODY_LIMIT: "10485760"
+  LOGGER_LEVEL: "info"
+  LOGGER_FORMAT: "json"
+  CORS_ALLOWED_ORIGINS: "*"
+  REDIS_URL: "redis://realtime-redis.aconcert.svc.cluster.local:6379"
+  PUBSUB_URL: "redis://realtime-redis.aconcert.svc.cluster.local:6379"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-service
+  namespace: aconcert
+  labels:
+    app: realtime-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realtime-service
+  template:
+    metadata:
+      labels:
+        app: realtime-service
+    spec:
+      containers:
+        - name: realtime-service
+          image: aconcert/realtime-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: realtime-service-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z realtime-redis.aconcert.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done;",
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realtime-service
+  namespace: aconcert
+spec:
+  selector:
+    app: realtime-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30001
+  type: NodePort

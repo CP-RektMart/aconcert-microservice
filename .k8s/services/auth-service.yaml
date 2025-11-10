@@ -1,0 +1,98 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-service-config
+  namespace: aconcert
+data:
+  NAME: "aconcert-auth-service"
+  PORT: "8000"
+  ENVIRONMENT: "production"
+  MAX_BODY_LIMIT: "10485760"
+  LOGGER_LEVEL: "info"
+  LOGGER_FORMAT: "json"
+  POSTGRES_HOST: "auth-postgres.aconcert.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "password"
+  POSTGRES_DB: "auth"
+  REDIS_URL: "redis://auth-redis.aconcert.svc.cluster.local:6379"
+  JWT_SECRET: "your-jwt-secret-change-this"
+  JWT_EXPIRES_IN: "24h"
+  CORS_ALLOWED_ORIGINS: "*"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: aconcert
+  labels:
+    app: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: aconcert/auth-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: auth-service-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z auth-postgres.aconcert.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done;",
+            ]
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z auth-redis.aconcert.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done;",
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: aconcert
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP

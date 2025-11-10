@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  namespace: aconcert
+data:
+  NAME: "aconcert-notification-service"
+  ENVIRONMENT: "production"
+  LOGGER_LEVEL: "info"
+  LOGGER_FORMAT: "json"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq.aconcert.svc.cluster.local:5672/"
+  REALTIME_REDIS_URL: "redis://realtime-redis.aconcert.svc.cluster.local:6379"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: aconcert
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: aconcert/notification-service:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: notification-service-config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep -f notification
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z rabbitmq.aconcert.svc.cluster.local 5672; do echo waiting for rabbitmq; sleep 2; done;",
+            ]
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z realtime-redis.aconcert.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done;",
+            ]
+---
+# No Service needed as notification is a consumer-only service

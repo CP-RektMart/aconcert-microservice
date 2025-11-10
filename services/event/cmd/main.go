@@ -21,6 +21,8 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
@@ -63,6 +65,14 @@ func main() {
 		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
 	)
 
+	// Register health check service
+	healthServer := health.NewServer()
+	healthpb.RegisterHealthServer(grpcServer, healthServer)
+
+	// Set service as serving
+	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus("event.EventService", healthpb.HealthCheckResponse_SERVING)
+
 	eventServ := eventService.NewEventService(queries)
 	eventpb.RegisterEventServiceServer(grpcServer, eventServ)
 
@@ -77,6 +87,9 @@ func main() {
 	// Wait for interrupt signal
 	<-ctx.Done()
 	logger.InfoContext(ctx, "shutting down gRPC server gracefully")
+
+	// Mark as not serving before shutdown
+	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
 
 	// Gracefully stop gRPC
 	grpcServer.GracefulStop()

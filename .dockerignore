@@ -1,0 +1,77 @@
+# Ignore Git
+.git
+.gitignore
+
+# Ignore documentation
+*.md
+README.md
+LICENSE
+
+# Ignore development files
+.env
+.env.local
+.env.*.local
+*.example
+
+# Ignore IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+build/
+
+# Ignore test files
+*_test.go
+*.test
+coverage.txt
+coverage.html
+
+# Ignore temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Ignore Kubernetes files
+.k8s/
+k8s/
+*.yaml
+*.yml
+!go.mod
+!go.sum
+
+# Ignore Docker files
+Dockerfile*
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+
+# Ignore CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Ignore node modules (if any)
+node_modules/
+
+# Ignore air live reload
+.air.toml
+tmp/
+
+# Ignore database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Ignore data directories
+data/

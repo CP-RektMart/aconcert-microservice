@@ -1,0 +1,107 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-service-config
+  namespace: aconcert
+data:
+  NAME: "aconcert-event-service"
+  PORT: "8000"
+  ENVIRONMENT: "production"
+  LOGGER_LEVEL: "info"
+  LOGGER_FORMAT: "json"
+  POSTGRES_HOST: "event-postgres.aconcert.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "password"
+  POSTGRES_DB: "event"
+  REDIS_URL: "redis://event-redis.aconcert.svc.cluster.local:6379"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq.aconcert.svc.cluster.local:5672/"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-service
+  namespace: aconcert
+  labels:
+    app: event-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-service
+  template:
+    metadata:
+      labels:
+        app: event-service
+    spec:
+      containers:
+        - name: event-service
+          image: aconcert/event-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: grpc
+          envFrom:
+            - configMapRef:
+                name: event-service-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            grpc:
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 120
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            grpc:
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 120
+            timeoutSeconds: 3
+            failureThreshold: 2
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z event-postgres.aconcert.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done;",
+            ]
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z event-redis.aconcert.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done;",
+            ]
+        - name: wait-for-rabbitmq
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z rabbitmq.aconcert.svc.cluster.local 5672; do echo waiting for rabbitmq; sleep 2; done;",
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-service
+  namespace: aconcert
+spec:
+  selector:
+    app: event-service
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: grpc
+  type: ClusterIP

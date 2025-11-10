@@ -1,0 +1,222 @@
+---
+# Auth PostgreSQL
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-postgres-config
+  namespace: aconcert
+data:
+  POSTGRES_DB: "auth"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "password"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: auth-postgres-pvc
+  namespace: aconcert
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-postgres
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-postgres
+  template:
+    metadata:
+      labels:
+        app: auth-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        envFrom:
+        - configMapRef:
+            name: auth-postgres-config
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: auth-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-postgres
+  namespace: aconcert
+spec:
+  selector:
+    app: auth-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None
+---
+# Event PostgreSQL
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-postgres-config
+  namespace: aconcert
+data:
+  POSTGRES_DB: "event"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "password"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: event-postgres-pvc
+  namespace: aconcert
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-postgres
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-postgres
+  template:
+    metadata:
+      labels:
+        app: event-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        envFrom:
+        - configMapRef:
+            name: event-postgres-config
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: event-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-postgres
+  namespace: aconcert
+spec:
+  selector:
+    app: event-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None
+---
+# Reservation PostgreSQL
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reservation-postgres-config
+  namespace: aconcert
+data:
+  POSTGRES_DB: "reservation"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "password"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: reservation-postgres-pvc
+  namespace: aconcert
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-postgres
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservation-postgres
+  template:
+    metadata:
+      labels:
+        app: reservation-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        envFrom:
+        - configMapRef:
+            name: reservation-postgres-config
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: reservation-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation-postgres
+  namespace: aconcert
+spec:
+  selector:
+    app: reservation-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None

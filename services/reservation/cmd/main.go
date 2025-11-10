@@ -19,6 +19,8 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/domains"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // grpc server
@@ -58,6 +60,14 @@ func main() {
 		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
 	)
 
+	// Register health check service
+	healthServer := health.NewServer()
+	healthpb.RegisterHealthServer(grpcServer, healthServer)
+
+	// Set service as serving
+	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus("reservation.ReservationService", healthpb.HealthCheckResponse_SERVING)
+
 	reservationRepo := repositories.NewReservationRepository(queries, pgConn, redisConn)
 
 	reservationServer := domains.New(reservationRepo, conf.Stripe)
@@ -79,6 +89,9 @@ func main() {
 	// Wait for interrupt signal
 	<-ctx.Done()
 	logger.InfoContext(ctx, "shutting down gRPC server gracefully")
+
+	// Mark as not serving before shutdown
+	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
 
 	// Gracefully stop gRPC
 	grpcServer.GracefulStop()

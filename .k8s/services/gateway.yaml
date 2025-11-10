@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: aconcert
+data:
+  NAME: "aconcert-gateway"
+  PORT: "8000"
+  ENVIRONMENT: "production"
+  MAX_BODY_LIMIT: "10485760"
+  LOGGER_LEVEL: "info"
+  LOGGER_FORMAT: "json"
+  CORS_ALLOWED_ORIGINS: "*"
+  AUTHREDIS_URL: "redis://auth-redis.aconcert.svc.cluster.local:6379"
+  JWT_SECRET: "your-jwt-secret-change-this"
+  JWT_EXPIRES_IN: "24h"
+  AUTH_CLIENT_BASE_URL: "http://auth-service.aconcert.svc.cluster.local:8000"
+  EVENT_CLIENT_BASE_URL: "http://event-service.aconcert.svc.cluster.local:8000"
+  LOCATION_CLIENT_BASE_URL: "http://location-service.aconcert.svc.cluster.local:8000"
+  RESERVATION_CLIENT_BASE_URL: "http://reservation-service.aconcert.svc.cluster.local:8000"
+  PAYMENT_CLIENT_BASE_URL: "http://payment-service.aconcert.svc.cluster.local:8000"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: aconcert
+  labels:
+    app: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: aconcert/gateway-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: gateway-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: aconcert
+spec:
+  selector:
+    app: gateway
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30000
+  type: NodePort

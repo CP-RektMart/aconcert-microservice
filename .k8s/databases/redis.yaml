@@ -1,0 +1,169 @@
+---
+# Auth Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-redis
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-redis
+  template:
+    metadata:
+      labels:
+        app: auth-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-redis
+  namespace: aconcert
+spec:
+  selector:
+    app: auth-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+---
+# Event Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-redis
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-redis
+  template:
+    metadata:
+      labels:
+        app: event-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-redis
+  namespace: aconcert
+spec:
+  selector:
+    app: event-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+---
+# Reservation Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-redis
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservation-redis
+  template:
+    metadata:
+      labels:
+        app: reservation-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        command: ["redis-server", "--notify-keyspace-events", "Ex"]
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation-redis
+  namespace: aconcert
+spec:
+  selector:
+    app: reservation-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+---
+# Realtime Redis (for WebSocket & PubSub)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-redis
+  namespace: aconcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realtime-redis
+  template:
+    metadata:
+      labels:
+        app: realtime-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realtime-redis
+  namespace: aconcert
+spec:
+  selector:
+    app: realtime-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
