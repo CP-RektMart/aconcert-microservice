@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/build-ci-cd
+      - feat/k8s
   workflow_dispatch:
 
 env:
@@ -48,6 +48,7 @@ jobs:
           context: .
           file: ./services/${{ matrix.service }}/Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ matrix.service }}-service:latest
             ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ matrix.service }}-service:${{ github.sha }}
