@@ -106,3 +106,4 @@ volumes:
   auth_db_data:
   event_db_data:
   location_mongo_data:
+  reservation_db_data:
