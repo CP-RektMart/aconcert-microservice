@@ -89,6 +89,21 @@ message GetReservationByStripeSessionIDResponse {
     string  status = 8;
 }
 
+message GetEventSeatsRequest {
+    string event_id = 1;
+}
+
+message SeatStatus {
+    int32 zone_number = 1;
+    int32 row = 2;
+    int32 column = 3;
+    string status = 4; // "AVAILABLE", "PENDING", "RESERVED"
+}
+
+message GetEventSeatsResponse {
+    repeated SeatStatus seats = 1;
+}
+
 // ------------------ Service ------------------ //
 service ReservationService {
     // reservation operations
@@ -98,4 +113,5 @@ service ReservationService {
     rpc GetReservation(GetReservationRequest) returns (GetReservationResponse) {}
     rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse) {}
     rpc GetReservationByStripeSessionID(GetReservationByStripeSessionIDRequest) returns (GetReservationByStripeSessionIDResponse) {}
+    rpc GetEventSeats(GetEventSeatsRequest) returns (GetEventSeatsResponse) {}
 }

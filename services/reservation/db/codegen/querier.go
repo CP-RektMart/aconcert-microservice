@@ -46,6 +46,7 @@ type Querier interface {
 	ListReservationsByStatus(ctx context.Context, status string) ([]Reservation, error)
 	ListReservationsByUserID(ctx context.Context, userID pgtype.UUID) ([]Reservation, error)
 	ListTickets(ctx context.Context) ([]Ticket, error)
+	ListTicketsByEventID(ctx context.Context, eventID pgtype.UUID) ([]Ticket, error)
 	ListTicketsByReservationID(ctx context.Context, reservationID pgtype.UUID) ([]Ticket, error)
 	ListTicketsBySeat(ctx context.Context, arg ListTicketsBySeatParams) ([]Ticket, error)
 	UpdateReservation(ctx context.Context, arg UpdateReservationParams) (Reservation, error)

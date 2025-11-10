@@ -5,6 +5,7 @@ import (
 	"time"
 
 	db "github.com/cp-rektmart/aconcert-microservice/reservation/db/codegen"
+	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -16,18 +17,37 @@ type SeatInfo struct {
 	ColNumber  int32
 }
 
+type SeatStatusInfo struct {
+	ZoneNumber int32
+	RowNumber  int32
+	ColNumber  int32
+	Status     string // "PENDING" or "RESERVED"
+}
+
 type ReservationRepository interface {
+	// redis
 	CreateReservationTemp(ctx context.Context, userID, reservationID string, ttl time.Duration) error
 	GetReservationTimeLeft(ctx context.Context, userID, reservationID string) (time.Duration, error)
 	DeleteReservationTemp(ctx context.Context, userID, reservationID string) error
 	CheckSeatAvailable(ctx context.Context, eventID string, seat SeatInfo) (bool, error)
 	SetSeatReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error
+	SetSeatsReservedBatch(ctx context.Context, eventID string, seats []SeatInfo, reservationID string) error // NEW: Batch RESERVED
 	SetSeatTempReserved(ctx context.Context, eventID string, seat SeatInfo, reservationID string, ttl time.Duration) error
+	SetSeatsTempReservedBatch(ctx context.Context, eventID string, seats []SeatInfo, reservationID string, ttl time.Duration) error // NEW: Batch PENDING
 	DeleteSeatReservation(ctx context.Context, eventID string, seat SeatInfo) error
 	CacheReservationSeats(ctx context.Context, reservationID string, seats []SeatInfo, ttl time.Duration) error
 	GetReservationSeats(ctx context.Context, reservationID string) ([]SeatInfo, error)
 	DeleteReservationSeats(ctx context.Context, reservationID string) error
+	GetAllEventSeats(ctx context.Context, eventID string) ([]SeatStatusInfo, error)
 
+	// pub/sub - redis
+	publishSeatUpdate(ctx context.Context, eventID string, seat SeatInfo, status entities.SeatStatus)
+	publishSeatUpdatesBatch(ctx context.Context, eventID string, seats []SeatInfo, status entities.SeatStatus) // NEW: Batch publisher
+
+	// redis event
+	StartExpirationListener(ctx context.Context)
+
+	// db
 	GetReservation(ctx context.Context, id string) (*db.Reservation, error)
 	ListReservationsByUserID(ctx context.Context, userID string) ([]db.Reservation, error)
 	CreateReservation(ctx context.Context, reservationID, userID, eventID, status, stripeSessionID string, totalPrice float64) (*db.Reservation, error)

@@ -63,6 +63,11 @@ func main() {
 	reservationServer := domains.New(reservationRepo, conf.Stripe)
 	reservationpb.RegisterReservationServiceServer(grpcServer, reservationServer)
 
+	// Start Redis expiration listener in background
+	go func() {
+		reservationRepo.StartExpirationListener(ctx)
+	}()
+
 	go func() {
 		logger.InfoContext(ctx, "starting gRPC server", slog.String("port", strconv.Itoa(conf.Port)))
 		if err := grpcServer.Serve(lis); err != nil {

@@ -16,6 +16,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/handler"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/hub"
+	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/pubsub"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -42,6 +43,16 @@ func main() {
 		}
 	}()
 
+	reservationConn, err := redis.New(ctx, conf.PubSub)
+	if err != nil {
+		logger.PanicContext(ctx, "failed to connect to redis", slog.Any("error", err))
+	}
+	defer func() {
+		if err := reservationConn.Close(); err != nil {
+			logger.ErrorContext(ctx, "failed to close redis connection", slog.Any("error", err))
+		}
+	}()
+
 	app := fiber.New(fiber.Config{
 		AppName:       conf.Name,
 		BodyLimit:     conf.MaxBodyLimit * 1024 * 1024,
@@ -61,12 +72,23 @@ func main() {
 		AllowMethods:     conf.Cors.AllowedMethods,
 		AllowHeaders:     conf.Cors.AllowedHeaders,
 		AllowCredentials: conf.Cors.AllowCredentials,
+		ExposeHeaders:    "Content-Type, Cache-Control, X-Accel-Buffering",
 	}))
 
 	hub := hub.New()
+
+	// Initialize Event Subscriber for seat updates
+	reservationSubscriber := pubsub.NewEventSubscriber(reservationConn, hub)
+	defer func() {
+		if err := reservationSubscriber.Close(); err != nil {
+			logger.ErrorContext(ctx, "failed to close event subscriber", slog.Any("error", err))
+		}
+		logger.InfoContext(ctx, "event subscriber closed")
+	}()
+
 	repo := repository.New(redisConn)
-	domain := domain.New(hub, repo)
-	handler := handler.New(hub, domain)
+	d := domain.New(hub, repo, reservationSubscriber)
+	handler := handler.New(hub, d)
 
 	v1 := app.Group("/v1")
 	v1.Get("/", func(c *fiber.Ctx) error {

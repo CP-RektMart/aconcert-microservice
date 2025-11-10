@@ -25,6 +25,10 @@ func (h *Handler) Mount(r fiber.Router) {
 	group.Get("/:id", h.authMiddleware.Auth, h.GetReservation)
 	group.Get("/", h.authMiddleware.Auth, h.ListReservation)
 	group.Post("/:id/confirm", h.authMiddleware.Auth, h.ConfirmReservation)
+
+	// Event seats endpoint
+	eventGroup := r.Group("/events")
+	eventGroup.Get("/:eventId/seats", h.GetEventSeats)
 }
 
 // @Summary      	Create Reservation
@@ -192,5 +196,37 @@ func (h *Handler) ConfirmReservation(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[dto.ConfirmReservationResponse]{
 		Result: result,
+	})
+}
+
+// @Summary      	Get Event Seats
+// @Description  	Get all reserved/pending seats for an event
+// @Tags			events
+// @Router			/v1/events/{eventId}/seats [GET]
+// @Param			eventId	path		string	true	"Event ID"
+// @Success			200 {object}	dto.HttpResponse[dto.GetEventSeatsResponse]
+// @Failure			400	{object}	dto.HttpError
+// @Failure			500	{object}	dto.HttpError
+func (h *Handler) GetEventSeats(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	eventID := c.Params("eventId")
+	if eventID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HttpError{
+			Error: "Event ID is required",
+		})
+	}
+
+	seats, err := h.service.GetEventSeats(ctx, eventID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.HttpError{
+			Error: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.HttpResponse[dto.GetEventSeatsResponse]{
+		Result: dto.GetEventSeatsResponse{
+			Seats: seats,
+		},
 	})
 }

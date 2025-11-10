@@ -7,21 +7,39 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/dto"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/hub"
+	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/pubsub"
 	"github.com/cp-rektmart/aconcert-microservice/realtime/internal/repository"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type Domain struct {
-	hub  *hub.Hub
-	repo repository.Repository
+	hub             *hub.Hub
+	repo            repository.Repository
+	eventSubscriber *pubsub.EventSubscriber
 }
 
-func New(hub *hub.Hub, repo repository.Repository) *Domain {
+func New(hub *hub.Hub, repo repository.Repository, eventSubscriber *pubsub.EventSubscriber) *Domain {
 	return &Domain{
-		hub:  hub,
-		repo: repo,
+		hub:             hub,
+		repo:            repo,
+		eventSubscriber: eventSubscriber,
 	}
+}
+
+// SubscribeToEvent registers a user's interest in event seat updates
+func (d *Domain) SubscribeToEvent(ctx context.Context, userID uuid.UUID, eventID string) error {
+	return d.eventSubscriber.Subscribe(ctx, userID, eventID)
+}
+
+// UnsubscribeFromEvent removes a user from event seat updates
+func (d *Domain) UnsubscribeFromEvent(ctx context.Context, userID uuid.UUID, eventID string) error {
+	return d.eventSubscriber.Unsubscribe(ctx, userID, eventID)
+}
+
+// UnsubscribeUserFromAll removes a user from all event subscriptions
+func (d *Domain) UnsubscribeUserFromAll(ctx context.Context, userID uuid.UUID) error {
+	return d.eventSubscriber.UnsubscribeUserFromAll(ctx, userID)
 }
 
 func (d *Domain) sendStreamData(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, eventType string, data any) error {

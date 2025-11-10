@@ -320,6 +320,42 @@ func (q *Queries) ListTickets(ctx context.Context) ([]Ticket, error) {
 	return items, nil
 }
 
+const listTicketsByEventID = `-- name: ListTicketsByEventID :many
+SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
+WHERE event_id = $1 AND deleted_at IS NULL
+ORDER BY zone_number, row_number, col_number
+`
+
+func (q *Queries) ListTicketsByEventID(ctx context.Context, eventID pgtype.UUID) ([]Ticket, error) {
+	rows, err := q.db.Query(ctx, listTicketsByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Ticket{}
+	for rows.Next() {
+		var i Ticket
+		if err := rows.Scan(
+			&i.ID,
+			&i.ReservationID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.ZoneNumber,
+			&i.RowNumber,
+			&i.ColNumber,
+			&i.EventID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTicketsByReservationID = `-- name: ListTicketsByReservationID :many
 SELECT id, reservation_id, created_at, updated_at, deleted_at, zone_number, row_number, col_number, event_id FROM Ticket
 WHERE reservation_id = $1 AND deleted_at IS NULL
