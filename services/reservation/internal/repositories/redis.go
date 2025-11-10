@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 )
 
@@ -346,14 +347,33 @@ func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []str
 		// Parse the key: "seat:eventID:zone:row:col"
 		parts := strings.Split(key, ":")
 
-		// Expected format: ["reservation", "tmp", "userID", "reservationID"]
-		if len(parts) == 4 && (parts[0] != "reservation" && parts[1] != "tmp") {
-			go func() {
-				_, err := r.UpdateReservationStatus(ctx, parts[3], string(entities.Cancelled))
-				if err != nil {
-					logger.ErrorContext(ctx, "handleExpiredKeysBatch: Failed to update reservation status", "error", err)
-				}
-			}()
+		// Expected format: ["reservation", "temp", "userID", "reservationID"]
+		if len(parts) == 4 && (parts[0] == "reservation" && parts[1] == "temp") {
+			_, err := r.UpdateReservationStatus(ctx, parts[3], string(entities.Cancelled))
+			if err != nil {
+				logger.ErrorContext(ctx, "handleExpiredKeysBatch: Failed to update reservation status", "error", err)
+			}
+
+			data := struct {
+				Type string `json:"type"`
+				Data any    `json:"data"`
+			}{
+				Type: "reservation.cancelled",
+				Data: entities.CancelledNotiReservation{
+					ID:     parts[3],
+					UserID: parts[2],
+				},
+			}
+
+			jsonData, err := json.Marshal(data)
+			if err != nil {
+				logger.ErrorContext(ctx, "Failed to marshal event")
+			}
+
+			if err := rabbitmq.RabbitMQClient.PublishToQueue("notifications", jsonData); err != nil {
+				logger.ErrorContext(ctx, "Failed to publish notification")
+			}
+
 			continue
 		}
 

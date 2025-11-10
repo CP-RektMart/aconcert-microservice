@@ -27,14 +27,18 @@ func (d *Domain) EventCreatedEvent(ctx context.Context, event entities.Event) er
 	return nil
 }
 
-func (d *Domain) EventUpdatedEvent(ctx context.Context) error {
-	panic("unimplemented")
+func (d *Domain) ReservationConfirmedEvent(ctx context.Context, reservation entities.ConfirmedNotiReservation) error {
+	if err := d.realtime.PushMessage(ctx, uuid.Nil, "reservation.confirmed", reservation); err != nil {
+		return errors.Wrap(err, "failed to push reservation.confirmed message")
+	}
+
+	return nil
 }
 
-func (d *Domain) ReservationConfirmedEvent(ctx context.Context) error {
-	panic("unimplemented")
-}
+func (d *Domain) ReservationCancelledEvent(ctx context.Context, reservation entities.CancelledNotiReservation) error {
+	if err := d.realtime.PushMessage(ctx, uuid.Nil, "reservation.cancelled", reservation); err != nil {
+		return errors.Wrap(err, "failed to push reservation.cancelled message")
+	}
 
-func (d *Domain) ReservationCancelledEvent(ctx context.Context) error {
-	panic("unimplemented")
+	return nil
 }

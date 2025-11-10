@@ -1,6 +1,8 @@
 package entities
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type MessageType string
 
@@ -27,4 +29,16 @@ type Event struct {
 	Images      []string `json:"images"`
 	CreatedAt   string   `json:"createdAt"`
 	UpdatedAt   string   `json:"updatedAt"`
+}
+
+type ConfirmedNotiReservation struct {
+	ID      string `json:"id"`
+	UserID  string `json:"user_id"`
+	EventID string `json:"event_id"`
+}
+
+type CancelledNotiReservation struct {
+	ID      string `json:"id"`
+	UserID  string `json:"user_id"`
+	EventID string `json:"event_id"`
 }

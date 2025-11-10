@@ -4,6 +4,7 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/joho/godotenv"
 )
@@ -25,6 +26,7 @@ type AppConfig struct {
 	Postgres    postgres.Config `envPrefix:"POSTGRES_"`
 	Redis       redis.Config    `envPrefix:"REDIS_"`
 	Stripe      StripeConfig    `envPrefix:"STRIPE_"`
+	RabbitMQ    rabbitmq.Config `envPrefix:"RABBITMQ_"`
 }
 
 func Load() *AppConfig {

@@ -11,7 +11,7 @@ import (
 
 // Message is what each client will receive over SSE.
 type Message struct {
-	EventType string `json:"eventType"`
+	EventType string `json:"type"`
 	Data      string `json:"data"`
 }
 

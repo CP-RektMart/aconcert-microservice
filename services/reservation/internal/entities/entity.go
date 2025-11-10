@@ -47,3 +47,14 @@ type Event struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
+
+type ConfirmedNotiReservation struct {
+	ID      string `json:"id"`
+	UserID  string `json:"user_id"`
+	EventID string `json:"event_id"`
+}
+
+type CancelledNotiReservation struct {
+	ID     string `json:"id"`
+	UserID string `json:"user_id"`
+}

@@ -2,6 +2,8 @@ package domains
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -12,6 +14,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/apperror"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
 	"github.com/stripe/stripe-go/v83"
@@ -288,7 +291,7 @@ func (r *ReserveDomainImpl) ListReservation(ctx context.Context, req *reservatio
 				})
 			}
 		case string(entities.Cancelled):
-			continue
+			break
 		default:
 			continue
 		}
@@ -355,6 +358,27 @@ func (r *ReserveDomainImpl) ConfirmReservation(ctx context.Context, req *reserva
 	if err := r.repo.DeleteReservationTemp(ctx, reservation.UserID.String(), reservationID); err != nil {
 		logger.ErrorContext(ctx, "cleanup temp reservation failed", slog.Any("error", err))
 		return nil, apperror.Internal("failed to cleanup temp reservation", err)
+	}
+
+	data := struct {
+		Type string `json:"type"`
+		Data any    `json:"data"`
+	}{
+		Type: "reservation.confirmed",
+		Data: entities.ConfirmedNotiReservation{
+			ID:      reservation.ID.String(),
+			UserID:  reservation.UserID.String(),
+			EventID: reservation.EventID.String(),
+		},
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New("failed to marshal event data")
+	}
+
+	if err := rabbitmq.RabbitMQClient.PublishToQueue("notifications", jsonData); err != nil {
+		return nil, errors.New("failed to publish event to RabbitMQ")
 	}
 
 	logger.InfoContext(ctx, "reservation confirmed (batch mode)",
