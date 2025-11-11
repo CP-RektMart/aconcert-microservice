@@ -2,6 +2,7 @@ package reservation
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/cp-rektmart/aconcert-microservice/gateway/internal/dto"
@@ -100,28 +101,34 @@ func (s *ReservationService) GetReservation(ctx context.Context, req *dto.GetRes
 }
 
 // ListReservation lists all reservations for a user
-func (s *ReservationService) ListReservation(ctx context.Context, req *dto.ListReservationRequest) ([]dto.ReservationDTO, error) {
+func (s *ReservationService) ListReservation(ctx context.Context, userID uuid.UUID) ([]dto.GetReservationResponse, error) {
+	transUserID := userID.String()
+
 	response, err := s.client.ListReservation(ctx, &reservationpb.ListReservationRequest{
-		UserId: req.UserID,
+		UserId: transUserID,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list reservations")
 	}
 
-	reservations := make([]dto.ReservationDTO, 0, len(response.Reservation))
+	fmt.Println(response)
+
+	reservations := make([]dto.GetReservationResponse, 0, len(response.Reservation))
 	for _, reservation := range response.Reservation {
-		seats := make([]dto.SeatDTO, 0, len(reservation.Seats))
+		seats := []dto.SeatDTO{}
 		for _, seat := range reservation.Seats {
 			seats = append(seats, s.TransformSeatToDTO(seat))
 		}
 
-		reservations = append(reservations, dto.ReservationDTO{
-			ID:         "", // ID not available in protobuf Reservation message
-			UserID:     reservation.UserId,
-			EventID:    reservation.EventId,
-			TotalPrice: reservation.TotalPrice,
-			Seats:      seats,
-		})
+		reservations = append(reservations, dto.GetReservationResponse{
+			ID:                 reservation.Id,
+			UserID:             reservation.UserId,
+			EventID:            reservation.EventId,
+			TotalPrice:         reservation.TotalPrice,
+			Seats:              seats,
+			StripeClientSecret: reservation.StripeClientSecret,
+			TimeLeft:           0, // HACK
+			Status:             reservation.Status})
 	}
 
 	return reservations, nil

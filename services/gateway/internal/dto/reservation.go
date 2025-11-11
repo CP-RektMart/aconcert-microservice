@@ -47,14 +47,9 @@ type GetReservationResponse struct {
 	Status             string    `json:"status" validate:"required"`
 }
 
-// ListReservationRequest is the request for listing reservations
-type ListReservationRequest struct {
-	UserID string `query:"userId" validate:"required"`
-}
-
 // ListReservationResponse is the response for listing reservations
 type ListReservationResponse struct {
-	Reservations []ReservationDTO `json:"reservations" validate:"required"`
+	Reservations []GetReservationResponse `json:"reservations" validate:"required"`
 }
 
 // ReservationDTO represents a reservation in the list

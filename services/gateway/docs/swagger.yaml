@@ -457,7 +457,7 @@ components:
       properties:
         reservations:
           items:
-            $ref: '#/components/schemas/dto.ReservationDTO'
+            $ref: '#/components/schemas/dto.GetReservationResponse'
           type: array
           uniqueItems: false
       required:
@@ -539,25 +539,6 @@ components:
       - accessToken
       - exp
       - refreshToken
-      type: object
-    dto.ReservationDTO:
-      properties:
-        eventId:
-          type: string
-        id:
-          type: string
-        seats:
-          items:
-            $ref: '#/components/schemas/dto.SeatDTO'
-          type: array
-          uniqueItems: false
-        totalPrice:
-          type: number
-        userId:
-          type: string
-      required:
-      - eventId
-      - userId
       type: object
     dto.SeatDTO:
       properties:
@@ -1445,13 +1426,6 @@ paths:
   /v1/reservations:
     get:
       description: List all reservations for a user
-      parameters:
-      - description: User ID
-        in: query
-        name: userId
-        required: true
-        schema:
-          type: string
       responses:
         "200":
           content:

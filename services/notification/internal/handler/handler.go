@@ -41,16 +41,24 @@ func (h *Handler) Mount(ctx context.Context, msgs <-chan amqp.Delivery) error {
 			if err := h.domain.EventCreatedEvent(ctx, event); err != nil {
 				log.Printf("Error handling event.created: %s", err)
 			}
-		case entities.MessageTypeEventUpdated:
-			if err := h.domain.EventUpdatedEvent(ctx); err != nil {
-				log.Printf("Error handling event.updated: %s", err)
-			}
 		case entities.MessageTypeReservationConfirmed:
-			if err := h.domain.ReservationConfirmedEvent(ctx); err != nil {
+			var reservation entities.ConfirmedNotiReservation
+			if err := json.Unmarshal(eventData.Data, &reservation); err != nil {
+				log.Printf("Error unmarshaling reservation.confirmed payload: %s", err)
+				continue
+			}
+
+			if err := h.domain.ReservationConfirmedEvent(ctx, reservation); err != nil {
 				log.Printf("Error handling reservation.confirmed: %s", err)
 			}
 		case entities.MessageTypeReservationCancelled:
-			if err := h.domain.ReservationCancelledEvent(ctx); err != nil {
+			var reservation entities.CancelledNotiReservation
+			if err := json.Unmarshal(eventData.Data, &reservation); err != nil {
+				log.Printf("Error unmarshaling reservation.cancelled payload: %s", err)
+				continue
+			}
+
+			if err := h.domain.ReservationCancelledEvent(ctx, reservation); err != nil {
 				log.Printf("Error handling reservation.cancelled: %s", err)
 			}
 		default:

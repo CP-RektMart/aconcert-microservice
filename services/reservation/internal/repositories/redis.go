@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
 )
 
@@ -330,6 +331,7 @@ func (r *ReservationImpl) StartExpirationListener(ctx context.Context) {
 }
 
 // handleExpiredKeysBatch processes multiple expired keys in a batch
+// this involves db related operations
 func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []string) {
 	if len(keys) == 0 {
 		return
@@ -344,6 +346,36 @@ func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []str
 	for _, key := range keys {
 		// Parse the key: "seat:eventID:zone:row:col"
 		parts := strings.Split(key, ":")
+
+		// Expected format: ["reservation", "temp", "userID", "reservationID"]
+		if len(parts) == 4 && (parts[0] == "reservation" && parts[1] == "temp") {
+			_, err := r.UpdateReservationStatus(ctx, parts[3], string(entities.Cancelled))
+			if err != nil {
+				logger.ErrorContext(ctx, "handleExpiredKeysBatch: Failed to update reservation status", "error", err)
+			}
+
+			data := struct {
+				Type string `json:"type"`
+				Data any    `json:"data"`
+			}{
+				Type: "reservation.cancelled",
+				Data: entities.CancelledNotiReservation{
+					ID:     parts[3],
+					UserID: parts[2],
+				},
+			}
+
+			jsonData, err := json.Marshal(data)
+			if err != nil {
+				logger.ErrorContext(ctx, "Failed to marshal event")
+			}
+
+			if err := rabbitmq.RabbitMQClient.PublishToQueue("notifications", jsonData); err != nil {
+				logger.ErrorContext(ctx, "Failed to publish notification")
+			}
+
+			continue
+		}
 
 		// Expected format: ["seat", "eventID", "zone", "row", "col"]
 		if len(parts) != 5 || parts[0] != "seat" {
@@ -371,15 +403,7 @@ func (r *ReservationImpl) handleExpiredKeysBatch(ctx context.Context, keys []str
 
 	// Publish batch update for each event
 	for eventID, seats := range seatsByEvent {
-		logger.InfoContext(ctx, "handleExpiredKeysBatch: Publishing batch for event",
-			"eventID", eventID,
-			"seats_count", len(seats))
-
 		r.publishSeatUpdatesBatch(ctx, eventID, seats, entities.SeatAvailable)
-
-		logger.InfoContext(ctx, "Seats batch expired and released",
-			"eventID", eventID,
-			"seats_count", len(seats))
 	}
 }
 

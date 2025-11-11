@@ -13,6 +13,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
+	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/config"
 	db "github.com/cp-rektmart/aconcert-microservice/reservation/db/codegen"
@@ -52,6 +53,9 @@ func main() {
 	if err != nil {
 		logger.PanicContext(ctx, "failed to listen: %v", err)
 	}
+
+	rabbitmq.NewRabbitMQConnection(conf.RabbitMQ.URL)
+	defer rabbitmq.RabbitMQClient.CloseConnection()
 
 	queries := db.New(pgConn)
 	grpcServer := grpc.NewServer(
