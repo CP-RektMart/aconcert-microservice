@@ -27,11 +27,16 @@ message Reservation {
 
 // ------------------ CRUD ------------------ //
 
+message CreateReservationSeatRequest {
+    int32 zone_number = 1;
+    int32 row = 2;
+    int32 column = 3;
+}
+
 message CreateReservationRequest {
     string user_id = 1;
     string event_id = 2;
-    double total_price = 3;
-    repeated Seat seats = 4;
+    repeated CreateReservationSeatRequest seats = 4;
 }
 
 message DeleteReservationRequest {

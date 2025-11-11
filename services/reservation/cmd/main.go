@@ -12,6 +12,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/pkg/grpclogger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/postgres"
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/redis"
@@ -20,6 +21,7 @@ import (
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/domains"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // grpc server
@@ -62,9 +64,15 @@ func main() {
 		grpc.UnaryInterceptor(grpclogger.LoggingUnaryInterceptor),
 	)
 
+	eventConn, err := grpc.NewClient(conf.EventClientBaseURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.PanicContext(ctx, "failed to connect to event service", slog.Any("error", err))
+	}
+	eventClient := eventpb.NewEventServiceClient(eventConn)
+
 	reservationRepo := repositories.NewReservationRepository(queries, pgConn, redisConn)
 
-	reservationServer := domains.New(reservationRepo, conf.Stripe)
+	reservationServer := domains.New(reservationRepo, conf.Stripe, eventClient)
 	reservationpb.RegisterReservationServiceServer(grpcServer, reservationServer)
 
 	// Start Redis expiration listener in background

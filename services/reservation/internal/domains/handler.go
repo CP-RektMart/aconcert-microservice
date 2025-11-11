@@ -13,6 +13,7 @@ import (
 
 	"github.com/cp-rektmart/aconcert-microservice/pkg/apperror"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/logger"
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/pkg/rabbitmq"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/entities"
@@ -46,8 +47,28 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 
 	seats = convertSeatsToSeatInfo(req.GetSeats())
 
+	eventZone, err := r.eventClient.GetEventZoneByEventId(ctx, &eventpb.GetEventZoneByEventIdRequest{
+		EventId: req.GetEventId(),
+	})
+	if err != nil {
+		return nil, apperror.Internal("failed to get event zone", err)
+	}
+
+	eventZonePriceMap := make(map[int32]float64)
+	for _, zone := range eventZone.List {
+		eventZonePriceMap[zone.GetZoneNumber()] = zone.GetPrice()
+	}
+
 	// quickly check by the cache
+	var totalPrice float64
 	for _, seat := range seats {
+		price, ok := eventZonePriceMap[seat.ZoneNumber]
+		if !ok {
+			return nil, apperror.BadRequest("invalid zone number", nil)
+		}
+
+		totalPrice += price
+
 		available, err := r.repo.CheckSeatAvailable(ctx, req.GetEventId(), seat)
 		if err != nil {
 			return nil, apperror.Internal("failed to check seat availability", err)
@@ -93,7 +114,7 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 						Name: stripe.String("your reservation checkout"),
 					},
 					// handle in satang unit
-					UnitAmount: stripe.Int64(int64(req.GetTotalPrice() * 100)),
+					UnitAmount: stripe.Int64(int64(totalPrice * 100)),
 				},
 				Quantity: stripe.Int64(1),
 			},
@@ -108,7 +129,7 @@ func (r *ReserveDomainImpl) CreateReservation(ctx context.Context, req *reservat
 		return nil, apperror.Internal("Failed to create Stripe session", err)
 	}
 
-	_, err = r.repo.CreateReservation(ctx, reservationID, req.GetUserId(), req.GetEventId(), string(entities.Pending), session.ID, req.GetTotalPrice())
+	_, err = r.repo.CreateReservation(ctx, reservationID, req.GetUserId(), req.GetEventId(), string(entities.Pending), session.ID, totalPrice)
 	if err != nil {
 		return nil, apperror.Internal("Failed to create reservation", err)
 	}
@@ -290,8 +311,6 @@ func (r *ReserveDomainImpl) ListReservation(ctx context.Context, req *reservatio
 					Column:     ticket.ColNumber,
 				})
 			}
-		case string(entities.Cancelled):
-			break
 		default:
 			continue
 		}
@@ -461,7 +480,7 @@ func validateReservationRequest(req *reservationpb.CreateReservationRequest) err
 	return nil
 }
 
-func convertSeatsToSeatInfo(seats []*reservationpb.Seat) []repositories.SeatInfo {
+func convertSeatsToSeatInfo(seats []*reservationpb.CreateReservationSeatRequest) []repositories.SeatInfo {
 	result := make([]repositories.SeatInfo, len(seats))
 	for i, seat := range seats {
 		result[i] = repositories.SeatInfo{

@@ -40,20 +40,28 @@ func (s *ReservationService) TransformSeatToProto(seat dto.SeatDTO) *reservation
 	}
 }
 
+// TransformSeatToProto transforms a DTO Seat to protobuf
+func (s *ReservationService) TransformCreateReservationSeatToProto(seat dto.CreateReservationSeatDTO) *reservationpb.CreateReservationSeatRequest {
+	return &reservationpb.CreateReservationSeatRequest{
+		ZoneNumber: seat.ZoneNumber,
+		Row:        seat.Row,
+		Column:     seat.Column,
+	}
+}
+
 // CreateReservation creates a new reservation
 func (s *ReservationService) CreateReservation(ctx context.Context, req *dto.CreateReservationRequest, userID uuid.UUID) (string, error) {
-	seats := make([]*reservationpb.Seat, 0, len(req.Seats))
+	seats := make([]*reservationpb.CreateReservationSeatRequest, 0, len(req.Seats))
 	for _, seat := range req.Seats {
-		seats = append(seats, s.TransformSeatToProto(seat))
+		seats = append(seats, s.TransformCreateReservationSeatToProto(seat))
 	}
 
 	transUserID := userID.String()
 
 	response, err := s.client.CreateReservation(ctx, &reservationpb.CreateReservationRequest{
-		UserId:     transUserID,
-		EventId:    req.EventID,
-		TotalPrice: req.TotalPrice,
-		Seats:      seats,
+		UserId:  transUserID,
+		EventId: req.EventID,
+		Seats:   seats,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create reservation")

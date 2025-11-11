@@ -19,14 +19,15 @@ type StripeConfig struct {
 }
 
 type AppConfig struct {
-	Name        string          `env:"NAME"`
-	Port        int             `env:"PORT"`
-	Environment string          `env:"ENVIRONMENT"`
-	Logger      logger.Config   `envPrefix:"LOGGER_"`
-	Postgres    postgres.Config `envPrefix:"POSTGRES_"`
-	Redis       redis.Config    `envPrefix:"REDIS_"`
-	Stripe      StripeConfig    `envPrefix:"STRIPE_"`
-	RabbitMQ    rabbitmq.Config `envPrefix:"RABBITMQ_"`
+	Name               string          `env:"NAME"`
+	Port               int             `env:"PORT"`
+	Environment        string          `env:"ENVIRONMENT"`
+	Logger             logger.Config   `envPrefix:"LOGGER_"`
+	Postgres           postgres.Config `envPrefix:"POSTGRES_"`
+	Redis              redis.Config    `envPrefix:"REDIS_"`
+	Stripe             StripeConfig    `envPrefix:"STRIPE_"`
+	RabbitMQ           rabbitmq.Config `envPrefix:"RABBITMQ_"`
+	EventClientBaseURL string          `env:"EVENT_CLIENT_BASE_URL"`
 }
 
 func Load() *AppConfig {

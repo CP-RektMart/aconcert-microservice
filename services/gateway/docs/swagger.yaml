@@ -141,16 +141,13 @@ components:
           type: string
         seats:
           items:
-            $ref: '#/components/schemas/dto.SeatDTO'
+            $ref: '#/components/schemas/dto.CreateReservationSeatDTO'
           minItems: 1
           type: array
           uniqueItems: false
-        totalPrice:
-          type: number
       required:
       - eventId
       - seats
-      - totalPrice
       type: object
     dto.CreateReservationResponse:
       properties:
@@ -158,6 +155,19 @@ components:
           type: string
       required:
       - id
+      type: object
+    dto.CreateReservationSeatDTO:
+      properties:
+        column:
+          type: integer
+        row:
+          type: integer
+        zoneNumber:
+          type: integer
+      required:
+      - column
+      - row
+      - zoneNumber
       type: object
     dto.DeleteReservationResponse:
       properties:

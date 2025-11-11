@@ -3,6 +3,7 @@ package domains
 import (
 	"context"
 
+	eventpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/event"
 	reservationpb "github.com/cp-rektmart/aconcert-microservice/pkg/proto/reservation"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/config"
 	"github.com/cp-rektmart/aconcert-microservice/reservation/internal/repositories"
@@ -19,13 +20,15 @@ type ReserveDomain interface {
 
 type ReserveDomainImpl struct {
 	reservationpb.UnimplementedReservationServiceServer
-	stripe config.StripeConfig
-	repo   repositories.ReservationRepository
+	stripe      config.StripeConfig
+	repo        repositories.ReservationRepository
+	eventClient eventpb.EventServiceClient
 }
 
-func New(repo repositories.ReservationRepository, stripe config.StripeConfig) *ReserveDomainImpl {
+func New(repo repositories.ReservationRepository, stripe config.StripeConfig, eventClient eventpb.EventServiceClient) *ReserveDomainImpl {
 	return &ReserveDomainImpl{
-		repo:   repo,
-		stripe: stripe,
+		repo:        repo,
+		stripe:      stripe,
+		eventClient: eventClient,
 	}
 }

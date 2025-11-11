@@ -8,11 +8,16 @@ type SeatDTO struct {
 	Price      float64 `json:"price,omitempty"`
 }
 
+type CreateReservationSeatDTO struct {
+	ZoneNumber int32 `json:"zoneNumber" validate:"required"`
+	Row        int32 `json:"row" validate:"required"`
+	Column     int32 `json:"column" validate:"required"`
+}
+
 // CreateReservationRequest is the request body for creating a reservation
 type CreateReservationRequest struct {
-	EventID    string    `json:"eventId" validate:"required"`
-	TotalPrice float64   `json:"totalPrice" validate:"required"`
-	Seats      []SeatDTO `json:"seats" validate:"required,min=1"`
+	EventID string                     `json:"eventId" validate:"required"`
+	Seats   []CreateReservationSeatDTO `json:"seats" validate:"required,min=1"`
 }
 
 // CreateReservationResponse is the response for creating a reservation
